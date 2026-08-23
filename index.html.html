@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Intizom & Maqsad — Shaxsiy Boshqaruv</title>
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        :root {
+            --bg: #000000;
+            --card-bg: rgba(28, 28, 30, 0.78);
+            --card-subtle: rgba(44, 44, 46, 0.6);
+            --card-hover: rgba(58, 58, 60, 0.7);
+            --border: rgba(255, 255, 255, 0.12);
+            --border-light: rgba(255, 255, 255, 0.2);
+            
+            --ios-blue: #0A84FF;
+            --ios-green: #30D158;
+            --ios-orange: #FF9F0A;
+            --ios-red: #FF453A;
+            --ios-indigo: #5E5CE6;
+            --ios-teal: #64D2FF;
+            
+            --label-primary: #FFFFFF;
+            --label-secondary: rgba(235, 235, 245, 0.6);
+            --label-tertiary: rgba(235, 235, 245, 0.35);
+            
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(94, 92, 230, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(10, 132, 255, 0.12) 0px, transparent 50%);
+            color: var(--label-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 16px 12px;
+            padding-bottom: calc(24px + env(safe-area-inset-bottom));
+            letter-spacing: -0.2px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1060px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .glass-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(25px) saturate(190%);
+            -webkit-backdrop-filter: blur(25px) saturate(190%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+        }
+
+        /* ----------------------------------------------------
+           A. ONBOARDING WIZARD (Bosqichma-bosqich kiritish)
+           ---------------------------------------------------- */
+        #onboarding-screen {
+            max-width: 520px;
+            margin: 30px auto 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .step-progress-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .step-indicator {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 2px;
+            transition: background 0.3s ease;
+        }
+
+        .step-indicator.active {
+            background: var(--ios-blue);
+            box-shadow: 0 0 10px rgba(10, 132, 255, 0.5);
+        }
+
+        .wizard-step {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .wizard-step.active-step {
+            display: flex;
+        }
+
+        .wizard-header h2 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+            margin-bottom: 4px;
+        }
+
+        .wizard-header p {
+            font-size: 13px;
+            color: var(--label-secondary);
+            line-height: 1.4;
+        }
+
+        /* ----------------------------------------------------
+           B. MAIN DASHBOARD (Asosiy boshqaruv paneli)
+           ---------------------------------------------------- */
+        #main-dashboard {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .header-widget {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .user-identity {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-ring {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--ios-indigo), var(--ios-blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 15px rgba(10, 132, 255, 0.35);
+        }
+
+        .user-meta h1 {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.4px;
+        }
+
+        .user-meta p {
+            font-size: 12.5px;
+            color: var(--label-secondary);
+            margin-top: 2px;
+        }
+
+        .phone-chip {
+            color: var(--ios-blue);
+            font-weight: 600;
+        }
+
+        .status-pills {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .ios-pill {
+            background: var(--card-subtle);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .goal-banner {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .goal-headline {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .goal-title {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(180deg, #FFFFFF 30%, rgba(255,255,255,0.7) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .canvas-track-wrapper {
+            position: relative;
+            width: 100%;
+            height: 75px;
+            border-radius: var(--radius-md);
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        #track-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .metric-widgets-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .mini-widget {
+            background: var(--card-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px 8px;
+            text-align: center;
+        }
+
+        .mini-widget .val {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .mini-widget .sub {
+            font-size: 11px;
+            color: var(--label-secondary);
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .apple-callout {
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            font-size: 12.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+        .apple-callout.normal {
+            background: rgba(10, 132, 255, 0.12);
+            border: 1px solid rgba(10, 132, 255, 0.25);
+            color: #d0e6ff;
+        }
+        .apple-callout.critical {
+            background: rgba(255, 69, 58, 0.15);
+            border: 1px solid rgba(255, 69, 58, 0.3);
+            color: #ffd2cf;
+        }
+
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        @media (min-width: 880px) {
+            .workspace-grid {
+                grid-template-columns: 1.15fr 1fr;
+            }
+        }
+
+        .section-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .panel-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14.5px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .eval-widget {
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 12.5px;
+        }
+        .eval-widget.bad {
+            background: rgba(255, 69, 58, 0.12);
+            border: 1px solid rgba(255, 69, 58, 0.25);
+            color: #ffd2cf;
+        }
+        .eval-widget.med {
+            background: rgba(255, 159, 10, 0.12);
+            border: 1px solid rgba(255, 159, 10, 0.25);
+            color: #ffe0b2;
+        }
+        .eval-widget.good {
+            background: rgba(48, 209, 88, 0.12);
+            border: 1px solid rgba(48, 209, 88, 0.25);
+            color: #c9f7d5;
+        }
+
+        .ios-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ios-cell {
+            background: var(--card-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .ios-cell:active { transform: scale(0.98); }
+
+        .ios-cell.completed {
+            background: rgba(48, 209, 88, 0.08);
+            border-color: rgba(48, 209, 88, 0.25);
+        }
+
+        .ios-cell.completed .cell-text {
+            text-decoration: line-through;
+            color: var(--label-secondary);
+        }
+
+        .cell-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .apple-checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1.5px solid var(--label-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .ios-cell.completed .apple-checkbox {
+            background: var(--ios-green);
+            border-color: var(--ios-green);
+        }
+
+        .cell-text {
+            font-size: 13.5px;
+            font-weight: 500;
+            line-height: 1.35;
+        }
+
+        .reward-tag {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--ios-orange);
+            background: rgba(255, 159, 10, 0.12);
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .cell-delete-btn {
+            background: transparent;
+            border: none;
+            color: var(--label-tertiary);
+            cursor: pointer;
+            padding: 4px 6px;
+            font-size: 15px;
+            margin-left: 4px;
+        }
+
+        .timer-screen {
+            text-align: center;
+            padding: 8px 0;
+        }
+
+        .timer-display {
+            font-size: 50px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 1px;
+            color: #FFFFFF;
+            margin-bottom: 4px;
+        }
+
+        .timer-task-active {
+            font-size: 12.5px;
+            color: var(--ios-teal);
+            font-weight: 600;
+            margin-bottom: 12px;
+            background: rgba(100, 210, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .history-card-item {
+            background: var(--card-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .history-tasks-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 2px;
+        }
+
+        .task-chip-done {
+            font-size: 10.5px;
+            background: rgba(48, 209, 88, 0.12);
+            color: var(--ios-green);
+            border: 1px solid rgba(48, 209, 88, 0.2);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .ios-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13.5px;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .ios-input:focus {
+            border-color: var(--ios-blue);
+        }
+
+        .ios-btn {
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .ios-btn:active { transform: scale(0.96); }
+
+        .btn-blue { background: var(--ios-blue); color: #fff; }
+        .btn-green { background: var(--ios-green); color: #000; font-weight: 700; }
+        .btn-red { background: rgba(255, 69, 58, 0.15); color: var(--ios-red); border: 1px solid rgba(255, 69, 58, 0.3); }
+        .btn-gray { background: var(--card-subtle); border: 1px solid var(--border); color: var(--label-secondary); }
+
+        .coin-bubble {
+            position: absolute;
+            color: var(--ios-orange);
+            font-weight: 800;
+            font-size: 13px;
+            pointer-events: none;
+            animation: bubbleUp 0.8s ease forwards;
+        }
+
+        @keyframes bubbleUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-30px) scale(1.15); }
+        }
+
+        canvas#confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<div class="container">
+    
+    <!-- =========================================================
+         A. BOSQICHMA-BOSQICH RO'YXATDAN O'TISH (ONBOARDING)
+         ========================================================= -->
+    <div id="onboarding-screen" class="glass-panel">
+        
+        <div class="step-progress-bar">
+            <div class="step-indicator active" id="ind-1"></div>
+            <div class="step-indicator" id="ind-2"></div>
+            <div class="step-indicator" id="ind-3"></div>
+        </div>
+
+        <!-- 1-Qadam: Profil Ma'lumotlari -->
+        <div class="wizard-step active-step" id="step-1">
+            <div class="wizard-header">
+                <h2>1-Qadam: Shaxsiy Profil</h2>
+                <p>Xush kelibsiz! Avval o'zingiz haqingizdagi ma'lumotlarni kiriting.</p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <input type="text" class="ios-input" id="wiz-name" placeholder="Ism va Familiyangiz">
+                <input type="tel" class="ios-input" id="wiz-phone" placeholder="Telefon raqamingiz (masalan: +998 90 123 45 67)">
+            </div>
+
+            <button type="button" class="ios-btn btn-blue" style="margin-top: 6px;" onclick="goToStep(2)">
+                Davom etish →
+            </button>
+        </div>
+
+        <!-- 2-Qadam: Asosiy Maqsad -->
+        <div class="wizard-step" id="step-2">
+            <div class="wizard-header">
+                <h2>2-Qadam: Bosh Maqsad</h2>
+                <p>Erishmoqchi bo'lgan asosiy maqsadingiz va belgilangan muddatni kiriting.</p>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <input type="text" class="ios-input" id="wiz-goal" placeholder="Asosiy maqsad (masalan: Uy va Mashina sotib olish)">
+                <input type="number" class="ios-input" id="wiz-days" placeholder="Rejadagi kunlar soni (masalan: 100 yoki 30)">
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 6px;">
+                <button type="button" class="ios-btn btn-gray" style="flex: 1;" onclick="goToStep(1)">← Orqaga</button>
+                <button type="button" class="ios-btn btn-blue" style="flex: 2;" onclick="goToStep(3)">Davom etish →</button>
+            </div>
+        </div>
+
+        <!-- 3-Qadam: Boshlang'ich Vazifalar -->
+        <div class="wizard-step" id="step-3">
+            <div class="wizard-header">
+                <h2>3-Qadam: Kunlik Vazifalar</h2>
+                <p>Ushbu maqsadga erishish uchun har kuni bajaradigan rejalaringizni qo'shing.</p>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <input type="text" class="ios-input" id="wiz-task-input" placeholder="Vazifa nomi (masalan: Sport bilan shug'ullanish)">
+                <button type="button" class="ios-btn btn-blue" onclick="addWizardTask()">+</button>
+            </div>
+
+            <div id="wiz-tasks-list" style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px; max-height: 180px; overflow-y: auto;">
+                <p style="color: var(--label-tertiary); font-size: 12.5px; text-align: center; padding: 12px 0;">Kamida 1 ta vazifa kiriting.</p>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <button type="button" class="ios-btn btn-gray" style="flex: 1;" onclick="goToStep(2)">← Orqaga</button>
+                <button type="button" class="ios-btn btn-green" style="flex: 2;" onclick="finishWizard()">🚀 Ilovani Boshlash</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =========================================================
+         B. ASOSIY BOSHQARUV PANELI (MAIN DASHBOARD)
+         ========================================================= -->
+    <div id="main-dashboard">
+        
+        <!-- 1. Header Widget -->
+        <header class="glass-panel header-widget">
+            <div class="user-identity">
+                <div class="avatar-ring" id="txt-avatar">⚡</div>
+                <div class="user-meta">
+                    <h1 id="txt-user-name">Foydalanuvchi</h1>
+                    <p>
+                        <span id="txt-user-role">Shaxsiy Profil</span> • 
+                        <span class="phone-chip" id="txt-user-phone">+998 -- --- -- --</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="status-pills">
+                <div class="ios-pill" style="color: var(--ios-orange);">
+                    <span>🪙</span>
+                    <span id="txt-coins">0 Coins</span>
+                </div>
+                <div class="ios-pill" style="color: var(--ios-blue);" id="txt-level">
+                    ⭐ 1-Daraja
+                </div>
+                <div class="ios-pill" id="txt-streak">
+                    🔥 0 Kunlik Streak
+                </div>
+            </div>
+        </header>
+
+        <!-- 2. Goal Widget -->
+        <section class="glass-panel goal-banner">
+            <div class="goal-headline">
+                <div class="goal-title" id="txt-goal-title">Asosiy Maqsad</div>
+                <div style="font-size: 12.5px; color: var(--label-secondary); font-weight: 600;" id="txt-overall-percent">0% Bajarildi</div>
+            </div>
+
+            <div class="canvas-track-wrapper">
+                <canvas id="track-canvas"></canvas>
+            </div>
+
+            <div class="apple-callout normal" id="urgency-banner">
+                <span id="urgency-icon">🎯</span>
+                <span id="urgency-text">Maqsadingiz sari qat'iy intiling!</span>
+            </div>
+
+            <div class="metric-widgets-grid">
+                <div class="mini-widget">
+                    <div class="val" id="txt-days-left">0</div>
+                    <div class="sub">Qolgan kun</div>
+                </div>
+                <div class="mini-widget">
+                    <div class="val" id="txt-days-done">0</div>
+                    <div class="sub">Yakunlangan</div>
+                </div>
+                <div class="mini-widget">
+                    <div class="val" id="txt-xp">0 XP</div>
+                    <div class="sub">Tajriba bali</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Workspace Grid -->
+        <div class="workspace-grid">
+            
+            <!-- Chap Panel: Vazifalar va Baholash -->
+            <div class="section-panel">
+                
+                <div class="eval-widget bad" id="eval-box">
+                    <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                        <span>Bugungi Natija</span>
+                        <span id="eval-badge">0% — Boshlanmadi</span>
+                    </div>
+                    <div id="eval-desc" style="line-height: 1.4;">
+                        Bugungi vazifalar hali boshlanmadi. Kunni g'alaba bilan boshlang!
+                    </div>
+                </div>
+
+                <div class="glass-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                    <div class="panel-title">
+                        <span>Bugungi Reja</span>
+                        <span id="txt-tasks-count" style="font-size: 12.5px; color: var(--ios-blue);">0/0 Bajarildi</span>
+                    </div>
+
+                    <div class="ios-list" id="task-list"></div>
+
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" class="ios-input" id="input-new-task" placeholder="Yangi vazifa yozing...">
+                        <button type="button" class="ios-btn btn-blue" onclick="addNewDashboardTask()">+</button>
+                    </div>
+
+                    <button type="button" class="ios-btn btn-green" style="width: 100%; padding: 13px;" onclick="completeDay()">
+                        Kunni Yakunlash
+                    </button>
+                </div>
+
+                <!-- Sozlamalar -->
+                <div class="glass-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+                    <div class="panel-title">
+                        <span>⚙️ Ma'lumotlarni Tahrirlash</span>
+                        <button type="button" class="ios-btn btn-gray" style="padding: 4px 8px; font-size: 11px;" onclick="restartOnboarding()">
+                            🔄 Qaytadan sozlash
+                        </button>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <input type="text" class="ios-input" id="cfg-name" placeholder="Ism va Familiya">
+                        <input type="tel" class="ios-input" id="cfg-phone" placeholder="Telefon raqam">
+                        <input type="text" class="ios-input" id="cfg-goal" placeholder="O'z maqsadingiz nomini kiriting">
+                        <input type="number" class="ios-input" id="cfg-days" placeholder="Jami kunlar soni">
+                        
+                        <button type="button" class="ios-btn btn-blue" style="margin-top: 2px;" onclick="saveSettings()">Saqlash</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- O'ng Panel: Aqlli Taymer va Tarix -->
+            <div class="section-panel">
+                
+                <!-- Smart Focus Timer -->
+                <div class="glass-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                    <div class="panel-title">
+                        <span>⏱️ Aqlli Taymer (Erkin Sozlash)</span>
+                        <span style="font-size: 11.5px; color: var(--ios-teal);">Avto-bajarish</span>
+                    </div>
+
+                    <div class="timer-screen">
+                        <div class="timer-display" id="timer-display">30:00</div>
+                        <div class="timer-task-active" id="timer-task-label">🎯 Maqsad: 30 daqiqa mashg'ulot</div>
+                        
+                        <div style="display: flex; justify-content: center; gap: 8px; margin-top: 4px;">
+                            <button type="button" class="ios-btn btn-blue" id="btn-timer" onclick="toggleTimer()">Boshlash</button>
+                            <button type="button" class="ios-btn btn-gray" onclick="resetTimer()">Qayta o'rnatish</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label style="font-size: 11.5px; color: var(--label-secondary); font-weight: 600;">Taymer vaqtini kiriting (daqiqa):</label>
+                        
+                        <div style="display: flex; gap: 8px;">
+                            <input type="number" class="ios-input" id="inp-custom-minutes" placeholder="Daqiqa (masalan: 20, 35, 90)" min="1" max="720">
+                            <button type="button" class="ios-btn btn-blue" onclick="applyCustomMinutes()">O'rnatish</button>
+                        </div>
+
+                        <input type="text" class="ios-input" id="timer-custom-task" placeholder="Nima qilasiz? (masalan: 30 daqiqa yugurish)">
+                        
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" class="ios-btn btn-gray" style="flex:1; font-size:11.5px; padding:7px;" onclick="setTimerDuration(15)">15 daq</button>
+                            <button type="button" class="ios-btn btn-gray" style="flex:1; font-size:11.5px; padding:7px;" onclick="setTimerDuration(30)">30 daq</button>
+                            <button type="button" class="ios-btn btn-gray" style="flex:1; font-size:11.5px; padding:7px;" onclick="setTimerDuration(45)">45 daq</button>
+                            <button type="button" class="ios-btn btn-gray" style="flex:1; font-size:11.5px; padding:7px;" onclick="setTimerDuration(60)">60 daq</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed History -->
+                <div class="glass-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+                    <div class="panel-title">
+                        <span>📊 Bajarilgan Vazifalar Tarixi</span>
+                        <button type="button" class="ios-btn btn-red" style="padding: 4px 8px; font-size: 11px;" onclick="clearHistory()">
+                            🗑️ Tarixni tozalash
+                        </button>
+                    </div>
+
+                    <div id="history-container" style="display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto; padding-right: 2px;"></div>
+
+                    <div style="display: flex; gap: 8px; margin-top: 2px;">
+                        <button type="button" class="ios-btn btn-gray" style="flex: 1; font-size: 11.5px;" onclick="exportData()">💾 Zaxiralash (JSON)</button>
+                        <button type="button" class="ios-btn btn-gray" style="flex: 1; font-size: 11.5px;" onclick="document.getElementById('file-input').click()">📥 Tiklash</button>
+                        <input type="file" id="file-input" style="display: none;" onchange="importData(event)">
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    /* ==========================================
+       1. STORAGE & SAFE INITIALIZATION
+       ========================================== */
+    const defaultData = {
+        onboardingComplete: false,
+        user: {
+            name: "",
+            phone: "",
+            role: "Shaxsiy Profil",
+            avatar: "⚡"
+        },
+        goalTitle: "",
+        totalDays: 30,
+        daysCompleted: 0,
+        streak: 0,
+        coins: 0,
+        xp: 0,
+        tasks: [],
+        history: []
+    };
+
+    let appState = defaultData;
+    let wizardTempTasks = [];
+
+    function loadState() {
+        try {
+            const saved = localStorage.getItem('habits_wizard_state_v1');
+            if (saved) {
+                appState = JSON.parse(saved);
+            }
+        } catch (e) {
+            console.warn("Storage restricted, using in-memory state:", e);
+        }
+    }
+
+    function saveState() {
+        try {
+            localStorage.setItem('habits_wizard_state_v1', JSON.stringify(appState));
+        } catch (e) {
+            console.warn("Storage save error:", e);
+        }
+        renderApp();
+    }
+
+    /* ==========================================
+       2. WIZARD / STEPPER LOGIC
+       ========================================== */
+    function goToStep(stepNum) {
+        if (stepNum === 2) {
+            const name = document.getElementById('wiz-name').value.trim();
+            const phone = document.getElementById('wiz-phone').value.trim();
+            if (!name) {
+                alert("Iltimos, ism va familiyangizni kiriting!");
+                return;
+            }
+            appState.user.name = name;
+            appState.user.phone = phone || "+998 -- --- -- --";
+        }
+
+        if (stepNum === 3) {
+            const goal = document.getElementById('wiz-goal').value.trim();
+            const days = parseInt(document.getElementById('wiz-days').value);
+            if (!goal) {
+                alert("Iltimos, asosiy maqsadingizni kiriting!");
+                return;
+            }
+            if (!days || days <= 0) {
+                alert("Iltimos, maqsadga erishish uchun to'g'ri kunlar sonini kiriting!");
+                return;
+            }
+            appState.goalTitle = goal;
+            appState.totalDays = days;
+        }
+
+        // Switch active step
+        document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active-step'));
+        document.getElementById(`step-${stepNum}`).classList.add('active-step');
+
+        // Update progress indicators
+        for (let i = 1; i <= 3; i++) {
+            const ind = document.getElementById(`ind-${i}`);
+            if (i <= stepNum) ind.classList.add('active');
+            else ind.classList.remove('active');
+        }
+    }
+
+    function addWizardTask() {
+        const inp = document.getElementById('wiz-task-input');
+        const val = inp.value.trim();
+        if (!val) return;
+
+        wizardTempTasks.push({
+            id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            text: val,
+            reward: 30,
+            done: false
+        });
+
+        inp.value = '';
+        renderWizardTasksList();
+    }
+
+    function removeWizardTask(index) {
+        wizardTempTasks.splice(index, 1);
+        renderWizardTasksList();
+    }
+
+    function renderWizardTasksList() {
+        const container = document.getElementById('wiz-tasks-list');
+        if (wizardTempTasks.length === 0) {
+            container.innerHTML = `<p style="color: var(--label-tertiary); font-size: 12.5px; text-align: center; padding: 12px 0;">Kamida 1 ta vazifa kiriting.</p>`;
+            return;
+        }
+
+        container.innerHTML = wizardTempTasks.map((t, idx) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-subtle); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                <span style="font-size:13px; font-weight:500;">✓ ${t.text}</span>
+                <button type="button" style="background:transparent; border:none; color:var(--ios-red); font-size:14px; cursor:pointer;" onclick="removeWizardTask(${idx})">✕</button>
+            </div>
+        `).join('');
+    }
+
+    function finishWizard() {
+        if (wizardTempTasks.length === 0) {
+            alert("Iltimos, ilovani boshlashdan avval kamida 1 ta vazifa qo'shing!");
+            return;
+        }
+
+        appState.tasks = wizardTempTasks;
+        appState.onboardingComplete = true;
+        saveState();
+
+        // Reveal Main Dashboard
+        document.getElementById('onboarding-screen').style.display = 'none';
+        document.getElementById('main-dashboard').style.display = 'flex';
+        
+        resizeCanvas();
+        playChime(true);
+        triggerConfetti();
+    }
+
+    function restartOnboarding() {
+        if (confirm("Barcha ma'lumotlarni qaytadan kiritishni xohlaysizmi?")) {
+            appState.onboardingComplete = false;
+            wizardTempTasks = [];
+            document.getElementById('wiz-name').value = appState.user.name;
+            document.getElementById('wiz-phone').value = appState.user.phone;
+            document.getElementById('wiz-goal').value = appState.goalTitle;
+            document.getElementById('wiz-days').value = appState.totalDays;
+            renderWizardTasksList();
+            goToStep(1);
+
+            document.getElementById('main-dashboard').style.display = 'none';
+            document.getElementById('onboarding-screen').style.display = 'flex';
+        }
+    }
+
+    /* ==========================================
+       3. AUDIO ENGINE (Safe Web Audio API)
+       ========================================== */
+    let audioCtx = null;
+    function initAudio() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playChime(success = false) {
+        try {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            
+            if (success) {
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } else {
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            }
+        } catch (e) {
+            console.warn("Audio unavailable:", e);
+        }
+    }
+
+    /* ==========================================
+       4. 60FPS ROADMAP CANVAS ENGINE
+       ========================================== */
+    const canvas = document.getElementById('track-canvas');
+    const ctx = canvas.getContext('2d');
+    let carProgress = 0;
+    let targetProgress = 0;
+
+    function resizeCanvas() {
+        if (!canvas.offsetWidth) return;
+        canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+        canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function animateTrack() {
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        if (w > 0 && h > 0) {
+            carProgress += (targetProgress - carProgress) * 0.08;
+
+            const startX = 30 * window.devicePixelRatio;
+            const endX = w - 30 * window.devicePixelRatio;
+            const trackY = h * 0.52;
+            const currentX = startX + (endX - startX) * carProgress;
+
+            // Track background line
+            ctx.beginPath();
+            ctx.moveTo(startX, trackY);
+            ctx.lineTo(endX, trackY);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 5 * window.devicePixelRatio;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // Progress active line
+            const grad = ctx.createLinearGradient(startX, 0, currentX, 0);
+            grad.addColorStop(0, '#0A84FF');
+            grad.addColorStop(1, '#30D158');
+
+            ctx.beginPath();
+            ctx.moveTo(startX, trackY);
+            ctx.lineTo(currentX, trackY);
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 5 * window.devicePixelRatio;
+            ctx.stroke();
+
+            // Goal destination flag
+            ctx.font = `${14 * window.devicePixelRatio}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🏁', endX, trackY);
+
+            // Cruiser Avatar
+            ctx.font = `${14 * window.devicePixelRatio}px sans-serif`;
+            ctx.fillText('🚀', currentX, trackY);
+        }
+
+        requestAnimationFrame(animateTrack);
+    }
+
+    /* ==========================================
+       5. DASHBOARD RENDER & LOGIC
+       ========================================== */
+    function renderApp() {
+        if (!appState.onboardingComplete) {
+            document.getElementById('onboarding-screen').style.display = 'flex';
+            document.getElementById('main-dashboard').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('onboarding-screen').style.display = 'none';
+        document.getElementById('main-dashboard').style.display = 'flex';
+
+        const daysLeft = Math.max(0, appState.totalDays - appState.daysCompleted);
+        const overallPercent = appState.totalDays > 0 
+            ? Math.min(100, Math.round((appState.daysCompleted / appState.totalDays) * 100)) 
+            : 0;
+
+        targetProgress = overallPercent / 100;
+
+        document.getElementById('txt-user-name').innerText = appState.user.name;
+        document.getElementById('txt-user-phone').innerText = appState.user.phone;
+        document.getElementById('txt-user-role').innerText = appState.user.role;
+        document.getElementById('txt-avatar').innerText = appState.user.avatar;
+
+        document.getElementById('txt-coins').innerText = `${appState.coins} Coins`;
+        document.getElementById('txt-level').innerText = `⭐ ${Math.floor(appState.xp / 150) + 1}-Daraja`;
+        document.getElementById('txt-streak').innerText = `🔥 ${appState.streak} Kunlik Streak`;
+
+        document.getElementById('txt-goal-title').innerText = appState.goalTitle;
+        document.getElementById('txt-overall-percent').innerText = `${overallPercent}% Bajarildi`;
+
+        document.getElementById('txt-days-left').innerText = daysLeft;
+        document.getElementById('txt-days-done').innerText = appState.daysCompleted;
+        document.getElementById('txt-xp').innerText = `${appState.xp} XP`;
+
+        updateUrgencyBanner(daysLeft);
+
+        // Render Task List
+        const list = document.getElementById('task-list');
+        list.innerHTML = '';
+        let doneCount = 0;
+
+        if (appState.tasks.length === 0) {
+            list.innerHTML = `<div style="text-align:center; padding:18px; color:var(--label-tertiary); font-size:13px; border:1px dashed var(--border); border-radius:var(--radius-md);">Hozircha vazifalar yo'q.</div>`;
+        } else {
+            appState.tasks.forEach(t => {
+                if (t.done) doneCount++;
+                const cell = document.createElement('div');
+                cell.className = `ios-cell ${t.done ? 'completed' : ''}`;
+                cell.innerHTML = `
+                    <div class="cell-left" onclick="toggleTask('${t.id}', event)">
+                        <div class="apple-checkbox">${t.done ? '✓' : ''}</div>
+                        <span class="cell-text">${t.text}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="reward-tag">+${t.reward} 🪙</span>
+                        <button type="button" class="cell-delete-btn" onclick="deleteTask('${t.id}')">✕</button>
+                    </div>
+                `;
+                list.appendChild(cell);
+            });
+        }
+
+        const total = appState.tasks.length;
+        document.getElementById('txt-tasks-count').innerText = `${doneCount}/${total} Bajarildi`;
+
+        updateEvaluationWidget(doneCount, total);
+        renderHistoryList();
+
+        // Populate settings fields
+        document.getElementById('cfg-name').value = appState.user.name;
+        document.getElementById('cfg-phone').value = appState.user.phone;
+        document.getElementById('cfg-goal').value = appState.goalTitle;
+        document.getElementById('cfg-days').value = appState.totalDays;
+    }
+
+    function updateEvaluationWidget(done, total) {
+        const box = document.getElementById('eval-box');
+        const badge = document.getElementById('eval-badge');
+        const desc = document.getElementById('eval-desc');
+
+        if (total === 0) {
+            box.className = 'eval-widget bad';
+            badge.innerText = '0%';
+            desc.innerText = "Hozircha vazifalar belgilanmagan. O'z rejangizni qo'shing.";
+            return;
+        }
+
+        const percent = Math.round((done / total) * 100);
+
+        if (percent === 0) {
+            box.className = 'eval-widget bad';
+            badge.innerText = `0% — Boshlanmadi`;
+            desc.innerHTML = `Bugungi ${total} ta vazifadan hali birortasi bajarilmadi. Qat'iyat bilan harakatni boshlang!`;
+        } else if (percent < 50) {
+            box.className = 'eval-widget bad';
+            badge.innerText = `${percent}% — Qoniqarsiz ⚠️`;
+            desc.innerHTML = `<b>Qoniqarsiz natija.</b> Rejalashtirilgan ${total} ta vazifadan atigi ${done} tasini (${percent}%) bajardingiz. Maqsad sari sur'atni oshiring.`;
+        } else if (percent < 80) {
+            box.className = 'eval-widget med';
+            badge.innerText = `${percent}% — O'rtacha ⏳`;
+            desc.innerHTML = `<b>O'rtacha ko'rsatkich.</b> Bugungi rejaning ${percent}% qismi bajarildi. Kunni to'liq g'alaba bilan yakunlashga intiling.`;
+        } else {
+            box.className = 'eval-widget good';
+            badge.innerText = `${percent}% — A'lo 💎`;
+            desc.innerHTML = `<b>Mukammal intizom!</b> Bugungi barcha vazifalar to'liq (${percent}%) bajarildi. Maqsadingiz sari dadil qadam tashladingiz!`;
+        }
+    }
+
+    function updateUrgencyBanner(daysLeft) {
+        const banner = document.getElementById('urgency-banner');
+        const icon = document.getElementById('urgency-icon');
+        const text = document.getElementById('urgency-text');
+
+        banner.className = 'apple-callout';
+
+        if (daysLeft === 0) {
+            banner.classList.add('critical');
+            icon.innerText = '🏆';
+            text.innerHTML = `<b>Muddat yakunlandi!</b> Barcha belgilangan kunlar bosib o'tildi.`;
+        } else if (daysLeft === 1) {
+            banner.classList.add('critical');
+            icon.innerText = '🚨';
+            text.innerHTML = `<b>Diqqat: Bor-yo'g'i 1 kun qoldi!</b> Bugun bor kuchingiz bilan harakat qiling.`;
+        } else if (daysLeft <= 3) {
+            banner.classList.add('critical');
+            icon.innerText = '⚡';
+            text.innerHTML = `<b>Shoshiling: Atigi ${daysLeft} kun qoldi!</b> Marra chizig'iga sanoqli qadamlar qoldi.`;
+        } else {
+            banner.classList.add('normal');
+            icon.innerText = '🎯';
+            text.innerText = `Maqsadga erishish uchun oldinda ${daysLeft} kunlik intizomli mehnat turibdi.`;
+        }
+    }
+
+    function toggleTask(id, event) {
+        const t = appState.tasks.find(x => x.id === id);
+        if (!t) return;
+
+        t.done = !t.done;
+
+        if (t.done) {
+            appState.coins += t.reward;
+            appState.xp += t.reward;
+            playChime(false);
+            spawnBubble(event, `+${t.reward} 🪙`);
+        } else {
+            appState.coins = Math.max(0, appState.coins - t.reward);
+            appState.xp = Math.max(0, appState.xp - t.reward);
+        }
+
+        saveState();
+    }
+
+    function spawnBubble(e, text) {
+        if (!e) return;
+        const span = document.createElement('div');
+        span.className = 'coin-bubble';
+        span.innerText = text;
+        const rect = e.currentTarget.getBoundingClientRect();
+        span.style.left = `${e.clientX || rect.left + 30}px`;
+        span.style.top = `${e.clientY || rect.top}px`;
+        document.body.appendChild(span);
+        setTimeout(() => span.remove(), 800);
+    }
+
+    function addNewDashboardTask() {
+        const input = document.getElementById('input-new-task');
+        const v = input.value.trim();
+        if (v) {
+            appState.tasks.push({
+                id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                text: v,
+                reward: 30,
+                done: false
+            });
+            input.value = '';
+            saveState();
+        }
+    }
+
+    function deleteTask(id) {
+        appState.tasks = appState.tasks.filter(t => t.id !== id);
+        saveState();
+    }
+
+    function completeDay() {
+        const total = appState.tasks.length;
+        if (total === 0) {
+            alert("Avval kamida bitta vazifa qo'shing!");
+            return;
+        }
+
+        const completedTasks = appState.tasks.filter(t => t.done);
+        const completedCount = completedTasks.length;
+        const percent = Math.round((completedCount / total) * 100);
+        let status = "Qoniqarsiz";
+
+        if (percent < 50) {
+            alert(`⚠️ Qoniqarsiz natija!\n\nBugun ${total} ta vazifadan faqat ${completedCount} tasini (${percent}%) bajardingiz.`);
+            appState.streak = 0;
+            status = "Qoniqarsiz";
+        } else if (percent < 80) {
+            alert(`⏳ O'rtacha natija!\n\nBugun ${percent}% natija ko'rsatdingiz.`);
+            status = "O'rtacha";
+        } else {
+            appState.streak += 1;
+            appState.coins += 100;
+            appState.xp += 100;
+            triggerConfetti();
+            alert(`🎉 A'lo natija!\n\nBugungi rejangiz ${percent}% bajarildi! +100 bonus tanga!`);
+            status = percent === 100 ? "A'lo" : "Yaxshi";
+        }
+
+        if (appState.daysCompleted < appState.totalDays) {
+            appState.daysCompleted += 1;
+        }
+
+        const today = new Date().toLocaleDateString('uz-UZ', { weekday: 'short', day: 'numeric', month: 'short' });
+        const timeNow = new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+        
+        appState.history.push({
+            id: Date.now(),
+            date: today,
+            time: timeNow,
+            percent: percent,
+            status: status,
+            tasksList: completedTasks.map(t => t.text)
+        });
+
+        appState.tasks.forEach(t => t.done = false);
+        saveState();
+    }
+
+    function renderHistoryList() {
+        const container = document.getElementById('history-container');
+        if (!appState.history || appState.history.length === 0) {
+            container.innerHTML = `<p style="color: var(--label-tertiary); font-size: 12px; text-align: center; padding: 12px 0;">Hozircha yakunlangan kunlar tarixi yo'q.</p>`;
+            return;
+        }
+
+        container.innerHTML = appState.history.slice().reverse().map(item => `
+            <div class="history-card-item">
+                <div class="history-header">
+                    <span style="font-weight: 700; color: #fff;">📅 ${item.date} <small style="color:var(--label-tertiary);">(${item.time || ''})</small></span>
+                    <span style="color:${item.percent >= 70 ? 'var(--ios-green)' : 'var(--ios-red)'}; font-weight:700;">
+                        ${item.percent}% • ${item.status}
+                    </span>
+                </div>
+                ${item.tasksList && item.tasksList.length > 0 ? `
+                    <div class="history-tasks-tags">
+                        ${item.tasksList.map(taskName => `<span class="task-chip-done">✓ ${taskName}</span>`).join('')}
+                    </div>
+                ` : `<span style="font-size: 11px; color: var(--label-tertiary);">Birorta ham vazifa bajarilmagan</span>`}
+            </div>
+        `).join('');
+    }
+
+    function clearHistory() {
+        if (!appState.history || appState.history.length === 0) {
+            alert("Tarix allaqachon bo'sh!");
+            return;
+        }
+        if (confirm("Haqiqatan ham barcha bajarilgan ishlar tarixini o'chirib tashlamoqchimisiz?")) {
+            appState.history = [];
+            saveState();
+            alert("Tarix muvaffaqiyatli tozalandi!");
+        }
+    }
+
+    function saveSettings() {
+        const name = document.getElementById('cfg-name').value.trim();
+        const phone = document.getElementById('cfg-phone').value.trim();
+        const goal = document.getElementById('cfg-goal').value.trim();
+        const days = parseInt(document.getElementById('cfg-days').value);
+
+        if (name) appState.user.name = name;
+        if (phone) appState.user.phone = phone;
+        if (goal) appState.goalTitle = goal;
+        if (days && days > 0) {
+            appState.totalDays = days;
+            appState.daysCompleted = 0;
+        }
+
+        saveState();
+        alert("Sozlamalar saqlandi!");
+    }
+
+    /* ==========================================
+       6. SMART FOCUS TIMER
+       ========================================== */
+    let timerDurationMins = 30;
+    let timerTargetTimestamp = null;
+    let timerRemainingSeconds = 30 * 60;
+    let timerInterval = null;
+    let isTimerRunning = false;
+
+    function formatTimerDisplay(sec) {
+        const m = Math.floor(sec / 60).toString().padStart(2, '0');
+        const s = (sec % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    function setTimerDuration(mins) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        isTimerRunning = false;
+        timerDurationMins = mins;
+        timerRemainingSeconds = mins * 60;
+        document.getElementById('timer-display').innerText = formatTimerDisplay(timerRemainingSeconds);
+        document.getElementById('btn-timer').innerText = "Boshlash";
+        document.getElementById('inp-custom-minutes').value = mins;
+        updateTimerTaskLabel();
+    }
+
+    function applyCustomMinutes() {
+        const inputVal = parseInt(document.getElementById('inp-custom-minutes').value);
+        if (inputVal && inputVal > 0) {
+            setTimerDuration(inputVal);
+        } else {
+            alert("Iltimos, to'g'ri daqiqa kiriting (masalan: 20 yoki 45)!");
+        }
+    }
+
+    function updateTimerTaskLabel() {
+        const customInput = document.getElementById('timer-custom-task').value.trim();
+        const taskName = customInput || `${timerDurationMins} daqiqa mashg'ulot / fokus`;
+        document.getElementById('timer-task-label').innerText = `🎯 Maqsad: ${taskName}`;
+    }
+
+    document.getElementById('timer-custom-task').addEventListener('input', updateTimerTaskLabel);
+
+    function toggleTimer() {
+        initAudio();
+        const btn = document.getElementById('btn-timer');
+
+        if (isTimerRunning) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isTimerRunning = false;
+            btn.innerText = "Davom ettirish";
+        } else {
+            timerTargetTimestamp = Date.now() + (timerRemainingSeconds * 1000);
+            isTimerRunning = true;
+            btn.innerText = "To'xtatish";
+            updateTimerTaskLabel();
+            
+            timerInterval = setInterval(() => {
+                const now = Date.now();
+                const diff = Math.max(0, Math.ceil((timerTargetTimestamp - now) / 1000));
+                timerRemainingSeconds = diff;
+                document.getElementById('timer-display').innerText = formatTimerDisplay(timerRemainingSeconds);
+
+                if (diff <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    isTimerRunning = false;
+                    btn.innerText = "Boshlash";
+                    handleTimerAutoCompletion();
+                }
+            }, 400);
+        }
+    }
+
+    function resetTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        isTimerRunning = false;
+        timerRemainingSeconds = timerDurationMins * 60;
+        document.getElementById('timer-display').innerText = formatTimerDisplay(timerRemainingSeconds);
+        document.getElementById('btn-timer').innerText = "Boshlash";
+    }
+
+    function handleTimerAutoCompletion() {
+        const customTask = document.getElementById('timer-custom-task').value.trim();
+        const taskName = customTask || `${timerDurationMins} daqiqa mashg'ulot`;
+
+        let matched = appState.tasks.find(t => t.text.toLowerCase().includes(taskName.toLowerCase()) || taskName.toLowerCase().includes(t.text.toLowerCase()));
+
+        if (matched) {
+            matched.done = true;
+        } else {
+            appState.tasks.push({
+                id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                text: taskName,
+                reward: 35,
+                done: true
+            });
+        }
+
+        appState.coins += 35;
+        appState.xp += 35;
+        playChime(true);
+        triggerConfetti();
+
+        saveState();
+        alert(`🎉 VAQT TUGADI!\n\n"${taskName}" vazifasi muvaffaqiyatli yakunlandi va AVTOMATIK TARZDA BAJARILDI deb belgilandi!\n+35 Coins & +35 XP berildi.`);
+    }
+
+    function exportData() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
+        const dl = document.createElement('a');
+        dl.setAttribute("href", dataStr);
+        dl.setAttribute("download", `intizom_backup_${Date.now()}.json`);
+        dl.click();
+    }
+
+    function importData(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            try {
+                const parsed = JSON.parse(evt.target.result);
+                if (parsed && parsed.tasks) {
+                    appState = parsed;
+                    saveState();
+                    alert("Ma'lumotlar tiklandi!");
+                }
+            } catch (err) {
+                alert("Fayl formati mos kelmadi!");
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function triggerConfetti() {
+        const c = document.getElementById('confetti-canvas');
+        const cx = c.getContext('2d');
+        c.width = window.innerWidth;
+        c.height = window.innerHeight;
+
+        const pieces = [];
+        const colors = ['#0A84FF', '#30D158', '#FF9F0A', '#BF5AF2', '#FF453A'];
+
+        for (let i = 0; i < 75; i++) {
+            pieces.push({
+                x: c.width / 2,
+                y: c.height / 2,
+                w: 7, h: 7,
+                vx: (Math.random() - 0.5) * 14,
+                vy: (Math.random() - 0.7) * 14,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                opacity: 1
+            });
+        }
+
+        function draw() {
+            cx.clearRect(0, 0, c.width, c.height);
+            let active = false;
+
+            pieces.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.38;
+                p.opacity -= 0.015;
+
+                if (p.opacity > 0) {
+                    active = true;
+                    cx.fillStyle = p.color;
+                    cx.fillRect(p.x, p.y, p.w, p.h);
+                }
+            });
+
+            if (active) requestAnimationFrame(draw);
+            else cx.clearRect(0, 0, c.width, c.height);
+        }
+        draw();
+    }
+
+    // Initialize View on Load
+    window.addEventListener('DOMContentLoaded', () => {
+        loadState();
+        renderApp();
+        setTimeout(resizeCanvas, 100);
+        requestAnimationFrame(animateTrack);
+    });
+</script>
+
+</body>
+</html>
