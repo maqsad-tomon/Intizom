@@ -3,56 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Intizom & Maqsad — Shaxsiy Boshqaruv</title>
+    <title>Intizom & Speed Reading — Pro Ekotizim</title>
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Lexend:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #000000;
-            --card-bg: rgba(28, 28, 30, 0.78);
-            --card-subtle: rgba(44, 44, 46, 0.6);
-            --card-hover: rgba(58, 58, 60, 0.7);
-            --border: rgba(255, 255, 255, 0.12);
-            --border-light: rgba(255, 255, 255, 0.2);
-            
+            --bg: #030304;
+            --card-bg: rgba(26, 26, 30, 0.78);
+            --card-subtle: rgba(44, 44, 46, 0.55);
+            --border: rgba(255, 255, 255, 0.1);
+            --border-bright: rgba(255, 255, 255, 0.22);
+
             --ios-blue: #0A84FF;
             --ios-green: #30D158;
             --ios-orange: #FF9F0A;
             --ios-red: #FF453A;
             --ios-indigo: #5E5CE6;
             --ios-teal: #64D2FF;
-            
+            --ios-purple: #BF5AF2;
+
+            --grad-primary: linear-gradient(135deg, #5E5CE6 0%, #0A84FF 55%, #64D2FF 100%);
+            --grad-success: linear-gradient(135deg, #30D158 0%, #64D2FF 130%);
+            --grad-warm: linear-gradient(135deg, #FF9F0A 0%, #FF453A 130%);
+            --grad-sheen: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.16) 45%, transparent 70%);
+
             --label-primary: #FFFFFF;
-            --label-secondary: rgba(235, 235, 245, 0.6);
+            --label-secondary: rgba(235, 235, 245, 0.62);
             --label-tertiary: rgba(235, 235, 245, 0.35);
-            
-            --radius-lg: 20px;
-            --radius-md: 14px;
-            --radius-sm: 10px;
+
+            --radius-lg: 22px;
+            --radius-md: 15px;
+            --radius-sm: 11px;
+
+            --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
+        h1, h2, .display-font { font-family: 'Lexend', 'Manrope', -apple-system, sans-serif; letter-spacing: -0.01em; }
+
+        html { scroll-behavior: smooth; }
+
+        ::selection { background: rgba(10, 132, 255, 0.35); color: #fff; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.24); }
+
         body {
             background-color: var(--bg);
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(94, 92, 230, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(10, 132, 255, 0.12) 0px, transparent 50%);
+            background-image:
+                radial-gradient(at 12% 8%, rgba(94, 92, 230, 0.22) 0px, transparent 52%),
+                radial-gradient(at 88% 92%, rgba(10, 132, 255, 0.18) 0px, transparent 52%),
+                radial-gradient(at 85% 15%, rgba(100, 210, 255, 0.10) 0px, transparent 45%),
+                radial-gradient(at 8% 90%, rgba(191, 90, 242, 0.10) 0px, transparent 45%);
+            background-attachment: fixed;
+            background-size: 200% 200%;
+            animation: ambientDrift 26s ease-in-out infinite;
             color: var(--label-primary);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: flex-start;
             padding: 16px 12px;
-            padding-bottom: calc(24px + env(safe-area-inset-bottom));
-            letter-spacing: -0.2px;
+            padding-bottom: calc(28px + env(safe-area-inset-bottom));
+        }
+
+        @keyframes ambientDrift {
+            0%, 100% { background-position: 0% 0%, 100% 100%, 100% 0%, 0% 100%; }
+            50% { background-position: 8% 6%, 92% 94%, 90% 8%, 6% 92%; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body { animation: none; }
+            *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
         }
 
         .container {
@@ -70,219 +107,371 @@
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
             padding: 20px;
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+            position: relative;
+            animation: panelRise 0.6s var(--ease-premium) backwards;
         }
 
-        /* ----------------------------------------------------
-           A. ONBOARDING WIZARD (Bosqichma-bosqich kiritish)
-           ---------------------------------------------------- */
-        #onboarding-screen {
+        @keyframes panelRise {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #main-app > .nav-tabs { animation: panelRise 0.5s var(--ease-premium) backwards; }
+        #main-app > #view-goals > *:nth-child(1) { animation-delay: 0.04s; }
+        #main-app > #view-goals > *:nth-child(2) { animation-delay: 0.09s; }
+        #main-app > #view-goals > *:nth-child(3) { animation-delay: 0.14s; }
+
+        /* Kirish / Onboarding Wizard */
+        #auth-screen {
             max-width: 520px;
-            margin: 30px auto 0 auto;
+            margin: 30px auto;
             width: 100%;
             display: flex;
             flex-direction: column;
             gap: 16px;
         }
+        .step-progress-bar { display: flex; gap: 6px; margin-bottom: 8px; }
+        .step-indicator { flex: 1; height: 4px; background: rgba(255, 255, 255, 0.12); border-radius: 2px; transition: 0.3s; }
+        .step-indicator.active { background: var(--ios-blue); box-shadow: 0 0 10px rgba(10, 132, 255, 0.5); }
+        .wizard-step { display: none; flex-direction: column; gap: 14px; }
+        .wizard-step.active-step { display: flex; animation: stepSlide 0.45s var(--ease-premium); }
+        @keyframes stepSlide {
+            from { opacity: 0; transform: translateX(14px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        #auth-screen { animation: panelRise 0.6s var(--ease-premium); }
 
-        .step-progress-bar {
+        /* Navigatsiya */
+        .nav-tabs {
             display: flex;
-            gap: 6px;
-            margin-bottom: 10px;
-        }
-
-        .step-indicator {
-            flex: 1;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.12);
-            border-radius: 2px;
-            transition: background 0.3s ease;
-        }
-
-        .step-indicator.active {
-            background: var(--ios-blue);
-            box-shadow: 0 0 10px rgba(10, 132, 255, 0.5);
-        }
-
-        .wizard-step {
-            display: none;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .wizard-step.active-step {
-            display: flex;
-        }
-
-        .wizard-header h2 {
-            font-size: 20px;
-            font-weight: 800;
-            letter-spacing: -0.4px;
-            margin-bottom: 4px;
-        }
-
-        .wizard-header p {
-            font-size: 13px;
-            color: var(--label-secondary);
-            line-height: 1.4;
-        }
-
-        /* ----------------------------------------------------
-           B. MAIN DASHBOARD (Asosiy boshqaruv paneli)
-           ---------------------------------------------------- */
-        #main-dashboard {
-            display: none;
-            flex-direction: column;
-            gap: 16px;
-            width: 100%;
-        }
-
-        .header-widget {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 14px;
-        }
-
-        .user-identity {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .avatar-ring {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, var(--ios-indigo), var(--ios-blue));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 4px 15px rgba(10, 132, 255, 0.35);
-        }
-
-        .user-meta h1 {
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: -0.4px;
-        }
-
-        .user-meta p {
-            font-size: 12.5px;
-            color: var(--label-secondary);
-            margin-top: 2px;
-        }
-
-        .phone-chip {
-            color: var(--ios-blue);
-            font-weight: 600;
-        }
-
-        .status-pills {
-            display: flex;
-            align-items: center;
             gap: 8px;
-            flex-wrap: wrap;
+            overflow-x: auto;
+            padding-bottom: 2px;
         }
-
-        .ios-pill {
+        .tab-btn {
             background: var(--card-subtle);
             border: 1px solid var(--border);
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 12px;
+            color: var(--label-secondary);
+            font-size: 13.5px;
             font-weight: 600;
-            display: inline-flex;
+            cursor: pointer;
+            padding: 10px 18px;
+            border-radius: 30px;
+            transition: transform 0.25s var(--ease-snap), background 0.3s, border-color 0.3s, box-shadow 0.3s, color 0.3s;
+            white-space: nowrap;
+            display: flex;
             align-items: center;
             gap: 6px;
         }
-
-        .goal-banner {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
+        .tab-btn:hover { color: var(--label-primary); border-color: var(--border-bright); transform: translateY(-1px); }
+        .tab-btn:active { transform: scale(0.96); }
+        .tab-btn.active {
+            color: #fff;
+            background: var(--grad-primary);
+            border-color: transparent;
+            box-shadow: 0 4px 18px rgba(10, 132, 255, 0.38);
+            transform: translateY(-1px);
         }
 
-        .goal-headline {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            flex-wrap: wrap;
-            gap: 6px;
+        /* View almashinuvi animatsiyasi */
+        .view-fade { animation: viewFade 0.45s var(--ease-premium); }
+        @keyframes viewFade {
+            from { opacity: 0; transform: translateY(8px) scale(0.99); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        .goal-title {
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(180deg, #FFFFFF 30%, rgba(255,255,255,0.7) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .canvas-track-wrapper {
-            position: relative;
+        /* Universal elementlar */
+        .ios-input {
             width: 100%;
-            height: 75px;
-            border-radius: var(--radius-md);
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid var(--border);
+            color: #fff;
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13.5px;
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+        }
+        .ios-input:focus { border-color: var(--ios-blue); box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.14); background: rgba(0,0,0,0.55); }
+        textarea.ios-input { height: 90px; resize: vertical; }
+
+        .ios-btn {
+            padding: 11px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: transform 0.18s var(--ease-snap), box-shadow 0.25s, filter 0.25s;
+            white-space: nowrap;
+            position: relative;
             overflow: hidden;
         }
-
-        #track-canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
+        .ios-btn::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: var(--grad-sheen);
+            transform: translateX(-120%);
+            transition: transform 0.6s var(--ease-premium);
+            pointer-events: none;
         }
+        .ios-btn:hover::after { transform: translateX(120%); }
+        .ios-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .ios-btn:active { transform: scale(0.96); }
+        .btn-blue { background: var(--grad-primary); color: #fff; box-shadow: 0 4px 14px rgba(10, 132, 255, 0.28); }
+        .btn-green { background: var(--grad-success); color: #04170a; font-weight: 700; box-shadow: 0 4px 14px rgba(48, 209, 88, 0.28); }
+        .btn-orange { background: var(--grad-warm); color: #1a0900; font-weight: 700; box-shadow: 0 4px 14px rgba(255, 159, 10, 0.28); }
+        .btn-red { background: rgba(255, 69, 58, 0.15); color: var(--ios-red); border: 1px solid rgba(255, 69, 58, 0.3); }
+        .btn-gray { background: var(--card-subtle); border: 1px solid var(--border); color: var(--label-secondary); }
+        .btn-gray:hover { border-color: var(--border-bright); color: #fff; }
+        .btn-file { background: rgba(94, 92, 230, 0.2); color: var(--ios-indigo); border: 1px dashed var(--ios-indigo); }
+
+        .ios-pill {
+            display: inline-flex; align-items: center; gap: 4px;
+            background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+            padding: 6px 12px; border-radius: 20px; font-size: 12.5px; font-weight: 700;
+            transition: transform 0.2s var(--ease-snap), border-color 0.3s;
+        }
+        .ios-pill:hover { transform: translateY(-1px); border-color: var(--border-bright); }
+
+        .chunk-sel.active { background: var(--grad-primary) !important; color: #fff !important; border-color: transparent !important; }
+
+        .brand-icon {
+            box-shadow: 0 0 0 rgba(10, 132, 255, 0.5);
+            animation: brandGlow 3.2s ease-in-out infinite;
+        }
+        @keyframes brandGlow {
+            0%, 100% { box-shadow: 0 4px 14px rgba(10, 132, 255, 0.35); }
+            50% { box-shadow: 0 4px 22px rgba(94, 92, 230, 0.55); }
+        }
+
+        /* S-shaklli 3D Roadmap Canvas */
+        .roadmap-container {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            border-radius: var(--radius-md);
+            background: radial-gradient(circle at 50% 50%, #151922 0%, #080b11 100%);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            margin-top: 10px;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.5);
+        }
+        #roadmap-canvas { width: 100%; height: 100%; display: block; }
 
         .metric-widgets-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
+            margin-top: 12px;
         }
-
         .mini-widget {
             background: var(--card-subtle);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
-            padding: 12px 8px;
+            padding: 10px;
             text-align: center;
+            transition: transform 0.25s var(--ease-snap), border-color 0.25s;
+        }
+        .mini-widget:hover { transform: translateY(-2px); border-color: var(--border-bright); }
+        .mini-widget .val { font-size: 16px; font-weight: 800; color: var(--label-primary); transition: color 0.3s; }
+        .mini-widget .sub { font-size: 11px; color: var(--label-secondary); margin-top: 2px; }
+
+        /* Premium Roadmap */
+        .roadmap-container {
+            height: 250px;
+            margin-top: 14px;
+            border-radius: 18px;
+            background:
+                radial-gradient(circle at 18% 28%, rgba(94,92,230,.18), transparent 30%),
+                radial-gradient(circle at 82% 70%, rgba(10,132,255,.14), transparent 32%),
+                linear-gradient(145deg, rgba(10,14,24,.98), rgba(4,6,11,.98));
+            border: 1px solid rgba(255,255,255,.11);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,.06),
+                inset 0 -30px 70px rgba(0,0,0,.34),
+                0 18px 40px rgba(0,0,0,.28);
         }
 
-        .mini-widget .val {
-            font-size: 18px;
-            font-weight: 800;
+        .roadmap-head {
+            display:flex;
+            align-items:flex-end;
+            justify-content:space-between;
+            gap:12px;
         }
 
-        .mini-widget .sub {
-            font-size: 11px;
-            color: var(--label-secondary);
-            margin-top: 2px;
-            font-weight: 500;
+        .roadmap-kicker {
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            font-size:10.5px;
+            font-weight:800;
+            letter-spacing:.08em;
+            text-transform:uppercase;
+            color:var(--ios-teal);
+            margin-bottom:5px;
         }
 
-        .apple-callout {
-            border-radius: var(--radius-md);
-            padding: 12px 14px;
-            font-size: 12.5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            line-height: 1.4;
-            font-weight: 500;
+        .roadmap-progress {
+            min-width:120px;
+            text-align:right;
         }
-        .apple-callout.normal {
-            background: rgba(10, 132, 255, 0.12);
-            border: 1px solid rgba(10, 132, 255, 0.25);
-            color: #d0e6ff;
+
+        .roadmap-progress-track {
+            height:6px;
+            width:120px;
+            margin-top:7px;
+            border-radius:999px;
+            background:rgba(255,255,255,.08);
+            overflow:hidden;
+            border:1px solid rgba(255,255,255,.06);
         }
-        .apple-callout.critical {
-            background: rgba(255, 69, 58, 0.15);
-            border: 1px solid rgba(255, 69, 58, 0.3);
-            color: #ffd2cf;
+
+        .roadmap-progress-fill {
+            height:100%;
+            width:0%;
+            border-radius:inherit;
+            background:linear-gradient(90deg,#5E5CE6,#0A84FF,#30D158);
+            box-shadow:0 0 14px rgba(10,132,255,.45);
+            transition:width .5s var(--ease-premium);
+        }
+
+        /* Standalone Focus Timer */
+        .timer-shell {
+            min-height:430px;
+            display:grid;
+            grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);
+            gap:16px;
+        }
+
+        .timer-hero {
+            min-height:430px;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            text-align:center;
+            position:relative;
+            overflow:hidden;
+            background:
+                radial-gradient(circle at 50% 42%, rgba(94,92,230,.22), transparent 34%),
+                radial-gradient(circle at 50% 100%, rgba(10,132,255,.12), transparent 45%),
+                rgba(18,18,23,.72);
+        }
+
+        .timer-ring {
+            width:min(290px,70vw);
+            aspect-ratio:1;
+            border-radius:50%;
+            display:grid;
+            place-items:center;
+            position:relative;
+            background:conic-gradient(from -90deg, #5E5CE6, #0A84FF, #64D2FF, #5E5CE6);
+            box-shadow:0 0 55px rgba(94,92,230,.22);
+            isolation:isolate;
+        }
+
+        .timer-ring::before {
+            content:"";
+            position:absolute;
+            inset:9px;
+            border-radius:50%;
+            background:radial-gradient(circle at 50% 40%, #11131b, #050609 72%);
+            border:1px solid rgba(255,255,255,.08);
+            z-index:-1;
+        }
+
+        .timer-ring.running {
+            animation:timerGlow 2.2s ease-in-out infinite;
+        }
+
+        @keyframes timerGlow {
+            0%,100% { filter:drop-shadow(0 0 8px rgba(10,132,255,.15)); }
+            50% { filter:drop-shadow(0 0 24px rgba(94,92,230,.38)); }
+        }
+
+        #timer-display {
+            font-size:clamp(46px,8vw,72px);
+            line-height:1;
+            font-weight:800;
+            font-variant-numeric:tabular-nums;
+            letter-spacing:-.04em;
+            text-shadow:0 5px 24px rgba(0,0,0,.55);
+        }
+
+        .timer-status {
+            margin-top:16px;
+            color:var(--label-secondary);
+            font-size:13px;
+        }
+
+        .timer-controls {
+            width:min(520px,100%);
+            display:flex;
+            gap:9px;
+            margin-top:20px;
+        }
+
+        .timer-presets {
+            width:min(520px,100%);
+            display:grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:7px;
+            margin-top:10px;
+        }
+
+        .timer-side {
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+        }
+
+        .timer-side-card {
+            flex:1;
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+        }
+
+        .timer-stat-grid {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:8px;
+        }
+
+        .timer-stat {
+            padding:12px;
+            border-radius:13px;
+            background:rgba(255,255,255,.045);
+            border:1px solid var(--border);
+        }
+
+        .timer-stat strong {
+            display:block;
+            font-size:18px;
+            margin-bottom:2px;
+        }
+
+        .timer-stat span {
+            color:var(--label-secondary);
+            font-size:11px;
+        }
+
+        @media (max-width: 760px) {
+            .timer-shell { grid-template-columns:1fr; }
+            .timer-hero { min-height:390px; }
+        }
+
+        @media (max-width: 520px) {
+            .roadmap-container { height:220px; }
+            .timer-presets { grid-template-columns:repeat(2,1fr); }
+            .timer-controls { flex-wrap:wrap; }
         }
 
         .workspace-grid {
@@ -290,56 +479,8 @@
             grid-template-columns: 1fr;
             gap: 14px;
         }
-
         @media (min-width: 880px) {
-            .workspace-grid {
-                grid-template-columns: 1.15fr 1fr;
-            }
-        }
-
-        .section-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .panel-title {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14.5px;
-            font-weight: 700;
-            letter-spacing: -0.3px;
-        }
-
-        .eval-widget {
-            border-radius: var(--radius-md);
-            padding: 12px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            font-size: 12.5px;
-        }
-        .eval-widget.bad {
-            background: rgba(255, 69, 58, 0.12);
-            border: 1px solid rgba(255, 69, 58, 0.25);
-            color: #ffd2cf;
-        }
-        .eval-widget.med {
-            background: rgba(255, 159, 10, 0.12);
-            border: 1px solid rgba(255, 159, 10, 0.25);
-            color: #ffe0b2;
-        }
-        .eval-widget.good {
-            background: rgba(48, 209, 88, 0.12);
-            border: 1px solid rgba(48, 209, 88, 0.25);
-            color: #c9f7d5;
-        }
-
-        .ios-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            .workspace-grid { grid-template-columns: 1.15fr 1fr; }
         }
 
         .ios-cell {
@@ -351,448 +492,813 @@
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transition: background 0.3s, border-color 0.3s, transform 0.2s var(--ease-snap);
+            animation: cellIn 0.4s var(--ease-premium) backwards;
         }
-
-        .ios-cell:active { transform: scale(0.98); }
-
-        .ios-cell.completed {
-            background: rgba(48, 209, 88, 0.08);
-            border-color: rgba(48, 209, 88, 0.25);
-        }
-
-        .ios-cell.completed .cell-text {
-            text-decoration: line-through;
-            color: var(--label-secondary);
-        }
-
-        .cell-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-        }
-
+        @keyframes cellIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+        .ios-cell:hover { transform: translateX(2px); border-color: var(--border-bright); }
+        .ios-cell.completed { background: rgba(48, 209, 88, 0.08); border-color: rgba(48, 209, 88, 0.25); }
+        .ios-cell.completed .cell-text { text-decoration: line-through; color: var(--label-secondary); }
         .apple-checkbox {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
+            width: 22px; height: 22px; border-radius: 50%;
             border: 1.5px solid var(--label-tertiary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 800;
+            transition: background 0.25s, border-color 0.25s, transform 0.3s var(--ease-snap);
+        }
+        .ios-cell.completed .apple-checkbox { background: var(--ios-green); border-color: var(--ios-green); color: #000; transform: scale(1.1); animation: checkPop 0.35s var(--ease-snap); }
+        @keyframes checkPop { 0% { transform: scale(0.6); } 60% { transform: scale(1.25); } 100% { transform: scale(1.1); } }
+
+        /* Speed Reader Oynasi */
+        .reader-display {
+            height: 160px;
+            background: radial-gradient(circle at 50% 50%, #0c0c0f 0%, #000 100%);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
-            font-weight: 800;
-            color: #fff;
-            flex-shrink: 0;
+            overflow: hidden;
+            box-shadow: inset 0 0 50px rgba(10, 132, 255, 0.06);
+        }
+        .orp-marker {
+            position: absolute; width: 2px; height: 16px; background: var(--ios-red); left: 50%; transform: translateX(-50%);
+            box-shadow: 0 0 8px rgba(255, 69, 58, 0.7);
+        }
+        .orp-top { top: 0; }
+        .orp-bottom { bottom: 0; }
+        #word-screen {
+            font-size: 38px; font-weight: 800; color: #fff; text-align: center; padding: 0 16px;
+            animation: wordPulse 0.22s var(--ease-premium);
+        }
+        @keyframes wordPulse {
+            from { opacity: 0.2; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
         }
 
-        .ios-cell.completed .apple-checkbox {
-            background: var(--ios-green);
-            border-color: var(--ios-green);
+        /* Kitob Javoni (Mutolaa Uslubi) */
+        .shelf-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 18px;
+            perspective: 800px;
+        }
+        .shelf-grid .book-card:nth-child(1) { animation-delay: 0.02s; }
+        .shelf-grid .book-card:nth-child(2) { animation-delay: 0.06s; }
+        .shelf-grid .book-card:nth-child(3) { animation-delay: 0.10s; }
+        .shelf-grid .book-card:nth-child(4) { animation-delay: 0.14s; }
+        .shelf-grid .book-card:nth-child(5) { animation-delay: 0.18s; }
+        .shelf-grid .book-card:nth-child(n+6) { animation-delay: 0.2s; }
+        .book-card { display: flex; flex-direction: column; gap: 8px; cursor: pointer; animation: cellIn 0.45s var(--ease-premium) backwards; }
+        .book-cover {
+            width: 100%; aspect-ratio: 2 / 3; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            overflow: hidden; box-shadow: 0 10px 24px rgba(0,0,0,0.6);
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 14px 12px; transition: transform 0.35s var(--ease-premium), box-shadow 0.35s;
+        }
+        .book-card:hover .book-cover { transform: translateY(-6px) rotateX(4deg) scale(1.02); box-shadow: 0 20px 34px rgba(0,0,0,0.7); }
+        .book-logo-tag { align-self: center; font-size: 10px; color: rgba(255,255,255,0.7); font-weight: 600; text-transform: uppercase; }
+        .book-cover-title { font-size: 15px; font-weight: 800; color: #fff; text-align: center; margin: auto 0; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+        .book-cover-author { font-size: 11px; color: rgba(255,255,255,0.7); text-align: center; }
+        .book-actions-pill {
+            background: rgba(28, 28, 30, 0.7); border: 1px solid var(--border);
+            border-radius: 20px; padding: 6px 12px; display: flex;
+            justify-content: center; align-items: center; gap: 14px;
+            font-size: 12px; color: var(--label-secondary);
         }
 
-        .cell-text {
-            font-size: 13.5px;
-            font-weight: 500;
-            line-height: 1.35;
+        /* Ko'z Trenajyori Stili */
+        .gym-modes-nav { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 12px; }
+        .gym-tab { padding: 6px 14px; font-size: 12.5px; border-radius: 20px; background: var(--card-subtle); border: 1px solid var(--border); color: var(--label-secondary); cursor: pointer; transition: transform 0.2s var(--ease-snap), background 0.3s, color 0.3s; }
+        .gym-tab:hover { color: #fff; }
+        .gym-tab.active { background: var(--grad-primary); color: #fff; border-color: transparent; box-shadow: 0 3px 12px rgba(10, 132, 255, 0.35); transform: translateY(-1px); }
+
+        .schulte-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+            width: 100%; max-width: 360px; aspect-ratio: 1/1; margin: 0 auto;
+        }
+        .schulte-cell {
+            background: var(--card-subtle); border: 1px solid var(--border);
+            border-radius: 8px; display: flex; align-items: center;
+            justify-content: center; font-size: 20px; font-weight: 700; cursor: pointer;
+            transition: transform 0.15s var(--ease-snap), background 0.3s, border-color 0.3s;
+            animation: cellIn 0.35s var(--ease-premium) backwards;
+        }
+        .schulte-cell:hover { transform: scale(1.06); border-color: var(--border-bright); }
+        .schulte-cell.done { background: rgba(48, 209, 88, 0.2); color: var(--ios-green); border-color: var(--ios-green); animation: checkPop 0.3s var(--ease-snap); }
+
+        .motion-box {
+            width: 100%; height: 260px; background: #000;
+            border: 1px solid var(--border); border-radius: var(--radius-md);
+            position: relative; overflow: hidden; display: flex;
+            align-items: center; justify-content: center;
+        }
+        .moving-dot {
+            width: 22px; height: 22px; background: var(--ios-teal);
+            border-radius: 50%; box-shadow: 0 0 16px var(--ios-teal);
+            position: absolute; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .reward-tag {
-            font-size: 11.5px;
-            font-weight: 700;
-            color: var(--ios-orange);
-            background: rgba(255, 159, 10, 0.12);
-            padding: 4px 8px;
-            border-radius: 8px;
+        /* Viktorina Stili */
+        .quiz-card { background: var(--card-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; animation: cellIn 0.4s var(--ease-premium) backwards; }
+        .opt-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 10px; }
+        .opt-btn {
+            background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+            color: #fff; padding: 10px 14px; border-radius: 8px; cursor: pointer;
+            font-size: 13px; text-align: left; transition: background 0.2s, border-color 0.2s, transform 0.15s var(--ease-snap);
+        }
+        .opt-btn:hover { border-color: var(--border-bright); transform: translateX(2px); }
+        .opt-btn.correct { background: var(--ios-green) !important; color: #000; font-weight: 700; animation: checkPop 0.3s var(--ease-snap); }
+        .opt-btn.wrong { background: var(--ios-red) !important; color: #fff; }
+        .ai-eval-badge { font-size: 12px; padding: 6px 10px; border-radius: 6px; margin-top: 8px; line-height: 1.4; }
+
+        .coin-bubble {
+            position: absolute; color: var(--ios-orange); font-weight: 800; font-size: 13px; pointer-events: none;
+            animation: bubbleUp 0.8s ease forwards;
+        }
+        @keyframes bubbleUp {
+            0% { opacity: 1; transform: translateY(0) scale(0.8); }
+            20% { transform: translateY(-4px) scale(1.15); }
+            100% { opacity: 0; transform: translateY(-34px) scale(1); }
+        }
+    
+
+        /* =========================================================
+           PREMIUM VISUAL SKIN — Glass / Aurora / Apple-inspired UI
+           ========================================================= */
+        :root {
+            --bg: #05060a;
+            --card-bg: rgba(15, 17, 24, 0.78);
+            --card-subtle: rgba(255, 255, 255, 0.055);
+            --border: rgba(255,255,255,.095);
+            --border-bright: rgba(255,255,255,.22);
+            --premium-shadow: 0 24px 70px rgba(0,0,0,.42), 0 2px 10px rgba(0,0,0,.28);
+            --premium-glow: 0 0 45px rgba(94,92,230,.13);
         }
 
-        .cell-delete-btn {
-            background: transparent;
-            border: none;
-            color: var(--label-tertiary);
-            cursor: pointer;
-            padding: 4px 6px;
-            font-size: 15px;
-            margin-left: 4px;
+        body {
+            padding: 22px 14px calc(34px + env(safe-area-inset-bottom));
+            background-color:#030409;
+            background-image:
+                radial-gradient(circle at 10% 0%, rgba(94,92,230,.24), transparent 31%),
+                radial-gradient(circle at 100% 15%, rgba(10,132,255,.17), transparent 30%),
+                radial-gradient(circle at 78% 100%, rgba(100,210,255,.10), transparent 32%),
+                linear-gradient(180deg,#06070c 0%,#030409 58%,#05060b 100%);
         }
 
-        .timer-screen {
-            text-align: center;
-            padding: 8px 0;
+        body::before {
+            content:"";
+            position:fixed;
+            inset:0;
+            pointer-events:none;
+            z-index:-1;
+            opacity:.18;
+            background-image:linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+            background-size:48px 48px;
+            mask-image:linear-gradient(to bottom,black,transparent 78%);
         }
 
-        .timer-display {
-            font-size: 50px;
-            font-weight: 800;
-            font-variant-numeric: tabular-nums;
-            letter-spacing: 1px;
-            color: #FFFFFF;
-            margin-bottom: 4px;
+        .container {
+            max-width:1160px;
+            gap:18px;
         }
 
-        .timer-task-active {
-            font-size: 12.5px;
-            color: var(--ios-teal);
-            font-weight: 600;
-            margin-bottom: 12px;
-            background: rgba(100, 210, 255, 0.1);
-            padding: 5px 12px;
-            border-radius: 20px;
-            display: inline-block;
+        .glass-panel {
+            background:
+                linear-gradient(145deg, rgba(255,255,255,.055), transparent 38%),
+                linear-gradient(180deg, rgba(18,20,29,.88), rgba(9,10,15,.78));
+            border:1px solid rgba(255,255,255,.105);
+            border-radius:24px;
+            padding:22px;
+            box-shadow:var(--premium-shadow), inset 0 1px 0 rgba(255,255,255,.055);
+            overflow:hidden;
         }
 
-        .history-card-item {
-            background: var(--card-subtle);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 10px 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+        .glass-panel::before {
+            content:"";
+            position:absolute;
+            left:14%; right:14%; top:0;
+            height:1px;
+            background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);
+            opacity:.65;
+            pointer-events:none;
         }
 
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
+        .glass-panel:hover {
+            border-color:rgba(255,255,255,.14);
+            box-shadow:var(--premium-shadow), var(--premium-glow), inset 0 1px 0 rgba(255,255,255,.065);
         }
 
-        .history-tasks-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 2px;
+        .nav-tabs {
+            position:sticky;
+            top:12px;
+            z-index:50;
+            padding:7px;
+            gap:6px;
+            border:1px solid rgba(255,255,255,.10);
+            border-radius:19px;
+            background:rgba(9,10,16,.72);
+            backdrop-filter:blur(24px) saturate(180%);
+            -webkit-backdrop-filter:blur(24px) saturate(180%);
+            box-shadow:0 16px 45px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.05);
         }
 
-        .task-chip-done {
-            font-size: 10.5px;
-            background: rgba(48, 209, 88, 0.12);
-            color: var(--ios-green);
-            border: 1px solid rgba(48, 209, 88, 0.2);
-            padding: 2px 6px;
-            border-radius: 6px;
-            font-weight: 500;
+        .tab-btn {
+            min-height:42px;
+            padding:10px 15px;
+            border-radius:13px;
+            background:transparent;
+            border-color:transparent;
+            font-size:12.5px;
+            letter-spacing:-.01em;
         }
 
-        .ios-input {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.35);
-            border: 1px solid var(--border);
-            color: #fff;
-            padding: 12px 14px;
-            border-radius: var(--radius-sm);
-            font-size: 13.5px;
-            outline: none;
-            transition: border-color 0.2s ease;
+        .tab-btn:hover {
+            background:rgba(255,255,255,.055);
+            border-color:rgba(255,255,255,.07);
+            transform:none;
         }
 
-        .ios-input:focus {
-            border-color: var(--ios-blue);
+        .tab-btn.active {
+            background:linear-gradient(135deg,rgba(94,92,230,.95),rgba(10,132,255,.92));
+            box-shadow:0 8px 24px rgba(10,132,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
         }
 
         .ios-btn {
-            padding: 12px 16px;
-            border-radius: var(--radius-sm);
-            font-size: 13.5px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: all 0.15s ease;
-            white-space: nowrap;
+            min-height:42px;
+            border-radius:13px;
+            box-shadow:0 8px 20px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.10);
         }
 
-        .ios-btn:active { transform: scale(0.96); }
+        .btn-blue { box-shadow:0 10px 25px rgba(10,132,255,.20), inset 0 1px 0 rgba(255,255,255,.18); }
+        .btn-green { box-shadow:0 10px 25px rgba(48,209,88,.16), inset 0 1px 0 rgba(255,255,255,.16); }
+        .btn-orange { box-shadow:0 10px 25px rgba(255,159,10,.15), inset 0 1px 0 rgba(255,255,255,.16); }
 
-        .btn-blue { background: var(--ios-blue); color: #fff; }
-        .btn-green { background: var(--ios-green); color: #000; font-weight: 700; }
-        .btn-red { background: rgba(255, 69, 58, 0.15); color: var(--ios-red); border: 1px solid rgba(255, 69, 58, 0.3); }
-        .btn-gray { background: var(--card-subtle); border: 1px solid var(--border); color: var(--label-secondary); }
-
-        .coin-bubble {
-            position: absolute;
-            color: var(--ios-orange);
-            font-weight: 800;
-            font-size: 13px;
-            pointer-events: none;
-            animation: bubbleUp 0.8s ease forwards;
+        .ios-input {
+            min-height:44px;
+            border-radius:13px;
+            background:rgba(0,0,0,.30);
+            border-color:rgba(255,255,255,.10);
+            box-shadow:inset 0 1px 8px rgba(0,0,0,.20);
         }
 
-        @keyframes bubbleUp {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-30px) scale(1.15); }
+        .ios-input:hover { border-color:rgba(255,255,255,.16); }
+
+        .ios-pill {
+            border-radius:999px;
+            background:rgba(255,255,255,.055);
+            box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
         }
 
-        canvas#confetti-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 9999;
+        /* Dashboard header */
+        #view-goals > header.glass-panel {
+            padding:18px 20px;
+            background:
+                radial-gradient(circle at 0% 50%,rgba(94,92,230,.13),transparent 30%),
+                linear-gradient(145deg,rgba(22,24,34,.94),rgba(8,10,15,.82));
         }
-    </style>
+
+        .brand-icon {
+            border:1px solid rgba(255,255,255,.18);
+            box-shadow:0 12px 30px rgba(10,132,255,.22), inset 0 1px 0 rgba(255,255,255,.22) !important;
+        }
+
+        /* Roadmap hero */
+        #view-goals > section.glass-panel {
+            padding:22px;
+            background:
+                radial-gradient(circle at 12% 0%,rgba(94,92,230,.10),transparent 30%),
+                linear-gradient(150deg,rgba(17,19,28,.94),rgba(7,9,14,.88));
+        }
+
+        .roadmap-container {
+            height:270px;
+            border-radius:22px;
+            border:1px solid rgba(255,255,255,.12);
+            background:
+                radial-gradient(circle at 20% 20%,rgba(94,92,230,.20),transparent 27%),
+                radial-gradient(circle at 82% 78%,rgba(10,132,255,.17),transparent 30%),
+                linear-gradient(145deg,#0b0f18,#05070c);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,.065),
+                inset 0 -40px 90px rgba(0,0,0,.40),
+                0 22px 50px rgba(0,0,0,.28);
+        }
+
+        .metric-widgets-grid { gap:10px; }
+        .mini-widget {
+            position:relative;
+            padding:13px 11px;
+            border-radius:15px;
+            background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.025));
+            border-color:rgba(255,255,255,.09);
+            box-shadow:inset 0 1px 0 rgba(255,255,255,.045);
+        }
+        .mini-widget::after {
+            content:"";
+            position:absolute;
+            inset:auto 18% 0;
+            height:1px;
+            background:linear-gradient(90deg,transparent,rgba(100,210,255,.30),transparent);
+        }
+        .mini-widget .val { font-size:17px; }
+
+        /* Workspace cards */
+        .workspace-grid > .glass-panel,
+        .timer-side-card,
+        #view-reader,
+        #view-shelf,
+        #view-gym {
+            background:
+                linear-gradient(145deg,rgba(255,255,255,.045),transparent 42%),
+                rgba(12,14,20,.82);
+        }
+
+        /* Premium standalone timer */
+        .timer-shell { gap:18px; }
+        .timer-hero {
+            min-height:520px;
+            border-radius:25px;
+            background:
+                radial-gradient(circle at 50% 38%,rgba(94,92,230,.25),transparent 31%),
+                radial-gradient(circle at 50% 100%,rgba(10,132,255,.15),transparent 45%),
+                linear-gradient(145deg,rgba(19,21,31,.94),rgba(7,9,14,.88));
+        }
+
+        .timer-hero::after {
+            content:"";
+            position:absolute;
+            width:440px;
+            height:440px;
+            border:1px solid rgba(255,255,255,.035);
+            border-radius:50%;
+            pointer-events:none;
+        }
+
+        .timer-ring {
+            width:min(315px,72vw);
+            background:conic-gradient(from -90deg,#7c6cff 0deg,#0a84ff 120deg,#64d2ff 225deg,#30d158 300deg,#7c6cff 360deg);
+            box-shadow:0 0 70px rgba(94,92,230,.22),0 0 140px rgba(10,132,255,.08);
+        }
+
+        .timer-ring::before {
+            inset:10px;
+            background:
+                radial-gradient(circle at 50% 34%,rgba(33,36,51,.96),rgba(4,6,10,.98) 67%),
+                #05060a;
+            box-shadow:inset 0 0 35px rgba(0,0,0,.8);
+        }
+
+        .timer-ring::after {
+            content:"";
+            position:absolute;
+            inset:17px;
+            border-radius:50%;
+            border:1px solid rgba(255,255,255,.045);
+            pointer-events:none;
+        }
+
+        #timer-display {
+            font-size:clamp(52px,8vw,78px);
+            text-shadow:0 0 35px rgba(255,255,255,.10),0 8px 30px rgba(0,0,0,.7);
+        }
+
+        .timer-controls .ios-btn { min-height:46px; }
+        .timer-presets .ios-btn { min-height:40px; }
+
+        .timer-stat {
+            background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.025));
+            border-color:rgba(255,255,255,.085);
+            box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+        }
+
+        /* Reader */
+        .reader-display {
+            height:205px;
+            border-radius:20px;
+            background:
+                radial-gradient(circle at 50% 50%,rgba(20,25,38,.92),#030407 68%),
+                #000;
+            box-shadow:inset 0 0 80px rgba(10,132,255,.08),0 20px 45px rgba(0,0,0,.24);
+        }
+        #word-screen { font-size:clamp(38px,6vw,54px); text-shadow:0 0 28px rgba(100,210,255,.12); }
+
+        /* Books */
+        .book-card { gap:10px; }
+        .book-cover {
+            border-radius:15px;
+            box-shadow:0 16px 34px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.12);
+        }
+        .book-actions-pill { backdrop-filter:blur(14px); }
+
+        /* Eye trainer */
+        .schulte-cell {
+            border-radius:10px;
+            background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.025));
+            box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+        }
+        .motion-box {
+            border-radius:20px;
+            background:radial-gradient(circle at center,rgba(10,132,255,.07),#020307 62%);
+            box-shadow:inset 0 0 70px rgba(10,132,255,.06);
+        }
+
+        @media (max-width:760px) {
+            body { padding:12px 9px calc(24px + env(safe-area-inset-bottom)); }
+            .glass-panel { padding:16px; border-radius:20px; }
+            .nav-tabs { top:7px; border-radius:17px; overflow-x:auto; }
+            .tab-btn { min-height:40px; padding:9px 12px; font-size:12px; }
+            .roadmap-container { height:235px; }
+            .timer-hero { min-height:430px; }
+        }
+
+        @media (max-width:520px) {
+            .metric-widgets-grid { gap:7px; }
+            .mini-widget { padding:11px 7px; }
+            .mini-widget .val { font-size:15px; }
+            .mini-widget .sub { font-size:10px; }
+            .timer-ring { width:255px; }
+            .timer-controls { margin-top:15px; }
+        }
+</style>
+
+<style id="apple-liquid-glass-premium">
+/* Apple-inspired Liquid Glass layer */
+:root{
+  --glass:rgba(255,255,255,.075);
+  --glass-strong:rgba(255,255,255,.105);
+  --glass-border:rgba(255,255,255,.16);
+  --glass-highlight:rgba(255,255,255,.28);
+  --glass-shadow:0 24px 70px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.10);
+  --apple-blue:#0A84FF;
+  --apple-purple:#BF5AF2;
+}
+body{background-color:#020308;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;background:
+ radial-gradient(circle at 12% 18%,rgba(10,132,255,.22),transparent 28%),
+ radial-gradient(circle at 82% 14%,rgba(191,90,242,.18),transparent 25%),
+ radial-gradient(circle at 70% 82%,rgba(48,209,88,.10),transparent 26%),
+ radial-gradient(circle at 20% 82%,rgba(100,210,255,.09),transparent 25%);filter:blur(30px);animation:appleAurora 18s ease-in-out infinite alternate}
+@keyframes appleAurora{0%{transform:translate3d(-1%,0,0) scale(1)}100%{transform:translate3d(1%,2%,0) scale(1.06)}}
+.glass-panel,.nav-tabs,.mini-widget,.ios-cell,.quiz-card,.book-actions-pill,.roadmap-container,.reader-display,.motion-box,.schulte-cell{
+ background:linear-gradient(135deg,rgba(255,255,255,.105),rgba(255,255,255,.035)) !important;
+ border-color:rgba(255,255,255,.14) !important;
+ box-shadow:var(--glass-shadow),inset 0 0 0 1px rgba(255,255,255,.025) !important;
+ backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);
+}
+.glass-panel:after,.nav-tabs:after{content:"";position:absolute;left:12%;right:12%;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.30),transparent);pointer-events:none}
+.nav-tabs{position:relative;padding:7px;border-radius:22px;gap:6px;overflow-x:auto;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.tab-btn{border:1px solid transparent!important;background:transparent!important;border-radius:16px!important;padding:11px 16px!important;color:rgba(235,235,245,.62)!important;box-shadow:none!important}
+.tab-btn:hover{background:rgba(255,255,255,.07)!important;color:#fff!important}
+.tab-btn.active{background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.08))!important;border-color:rgba(255,255,255,.16)!important;box-shadow:0 8px 24px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.18)!important;color:#fff!important}
+.ios-btn{border:1px solid rgba(255,255,255,.12)!important;box-shadow:0 8px 22px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.16)!important}
+.ios-input{background:rgba(0,0,0,.24)!important;border-color:rgba(255,255,255,.13)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 24px rgba(0,0,0,.12)}
+.ios-input:focus{background:rgba(255,255,255,.055)!important;box-shadow:0 0 0 4px rgba(10,132,255,.13),inset 0 1px 0 rgba(255,255,255,.08)!important}
+.mini-widget{transition:transform .35s cubic-bezier(.16,1,.3,1),border-color .35s,box-shadow .35s}
+.mini-widget:hover{transform:translateY(-4px) scale(1.015);box-shadow:0 18px 40px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.14)!important}
+.ios-pill{background:rgba(255,255,255,.065)!important;border-color:rgba(255,255,255,.13)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 18px rgba(0,0,0,.16)}
+.brand-icon{box-shadow:0 12px 35px rgba(10,132,255,.32),inset 0 1px 0 rgba(255,255,255,.30)!important}
+.roadmap-container{box-shadow:inset 0 0 70px rgba(10,132,255,.08),0 18px 50px rgba(0,0,0,.30)!important}
+.book-card:hover .book-cover{box-shadow:0 24px 50px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.10)}
+.book-cover{box-shadow:0 16px 35px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.14)!important}
+/* soft specular sheen */
+.glass-panel,.mini-widget,.ios-cell,.quiz-card,.roadmap-container,.reader-display,.motion-box{overflow:hidden}
+.glass-panel:before,.mini-widget:before,.ios-cell:before,.quiz-card:before,.roadmap-container:before,.reader-display:before,.motion-box:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.055) 45%,transparent 65%);transform:translateX(-100%);animation:glassSheen 9s ease-in-out infinite}
+@keyframes glassSheen{0%,65%,100%{transform:translateX(-100%)}78%{transform:translateX(100%)}}
+@media(max-width:600px){
+ body{padding:10px 8px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+ .container{gap:12px}
+ .glass-panel{border-radius:20px!important;padding:16px!important}
+ .nav-tabs{border-radius:19px}
+ .tab-btn{font-size:12px!important;padding:10px 13px!important}
+ .metric-widgets-grid{gap:7px!important}
+ .mini-widget{border-radius:15px!important;padding:9px 6px!important}
+}
+@media(prefers-reduced-motion:reduce){body:before,.glass-panel:before,.mini-widget:before,.ios-cell:before,.quiz-card:before,.roadmap-container:before,.reader-display:before,.motion-box:before{animation:none}}
+</style>
+
 </head>
 <body>
 
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9999;"></canvas>
 
 <div class="container">
     
     <!-- =========================================================
-         A. BOSQICHMA-BOSQICH RO'YXATDAN O'TISH (ONBOARDING)
+         0. KIRISH VA RO'YXATDAN O'TISH EKRANI (AUTH / ONBOARDING)
          ========================================================= -->
-    <div id="onboarding-screen" class="glass-panel">
-        
+    <div id="auth-screen" class="glass-panel">
         <div class="step-progress-bar">
             <div class="step-indicator active" id="ind-1"></div>
             <div class="step-indicator" id="ind-2"></div>
             <div class="step-indicator" id="ind-3"></div>
         </div>
 
-        <!-- 1-Qadam: Profil Ma'lumotlari -->
+        <!-- 1-Qadam: Ism va Telefon -->
         <div class="wizard-step active-step" id="step-1">
-            <div class="wizard-header">
-                <h2>1-Qadam: Shaxsiy Profil</h2>
-                <p>Xush kelibsiz! Avval o'zingiz haqingizdagi ma'lumotlarni kiriting.</p>
+            <div>
+                <h2 style="font-size: 20px; font-weight: 800;">1-Qadam: Akkaunt Yaratish</h2>
+                <p style="font-size: 13px; color: var(--label-secondary); margin-top: 4px;">Xush kelibsiz! Tizimdan foydalanish uchun profilingizni kiriting.</p>
             </div>
-
             <div style="display: flex; flex-direction: column; gap: 10px;">
-                <input type="text" class="ios-input" id="wiz-name" placeholder="Ism va Familiyangiz">
-                <input type="tel" class="ios-input" id="wiz-phone" placeholder="Telefon raqamingiz (masalan: +998 90 123 45 67)">
+                <input type="text" class="ios-input" id="auth-name" placeholder="Ism va Familiyangiz (majburiy)">
+                <input type="tel" class="ios-input" id="auth-phone" placeholder="Telefon raqamingiz (ixtiyoriy)">
             </div>
-
-            <button type="button" class="ios-btn btn-blue" style="margin-top: 6px;" onclick="goToStep(2)">
-                Davom etish →
-            </button>
+            <button class="ios-btn btn-blue" onclick="goToStep(2)">Davom etish →</button>
         </div>
 
-        <!-- 2-Qadam: Asosiy Maqsad -->
+        <!-- 2-Qadam: Asosiy Maqsad va Muddat -->
         <div class="wizard-step" id="step-2">
-            <div class="wizard-header">
-                <h2>2-Qadam: Bosh Maqsad</h2>
-                <p>Erishmoqchi bo'lgan asosiy maqsadingiz va belgilangan muddatni kiriting.</p>
+            <div>
+                <h2 style="font-size: 20px; font-weight: 800;">2-Qadam: Bosh Maqsad & Sana</h2>
+                <p style="font-size: 13px; color: var(--label-secondary); margin-top: 4px;">Erishmoqchi bo‘lgan asosiy maqsadingiz va belgilangan kunlar soni.</p>
             </div>
-
             <div style="display: flex; flex-direction: column; gap: 10px;">
-                <input type="text" class="ios-input" id="wiz-goal" placeholder="Asosiy maqsad (masalan: Uy va Mashina sotib olish)">
-                <input type="number" class="ios-input" id="wiz-days" placeholder="Rejadagi kunlar soni (masalan: 100 yoki 30)">
+                <input type="text" class="ios-input" id="auth-goal" placeholder="Asosiy maqsad (masalan: Shaxsiy Brend & Biznes)">
+                <input type="number" class="ios-input" id="auth-days" placeholder="Rejadagi jami kunlar soni (masalan: 60 yoki 90)">
             </div>
-
-            <div style="display: flex; gap: 8px; margin-top: 6px;">
-                <button type="button" class="ios-btn btn-gray" style="flex: 1;" onclick="goToStep(1)">← Orqaga</button>
-                <button type="button" class="ios-btn btn-blue" style="flex: 2;" onclick="goToStep(3)">Davom etish →</button>
-            </div>
-        </div>
-
-        <!-- 3-Qadam: Boshlang'ich Vazifalar -->
-        <div class="wizard-step" id="step-3">
-            <div class="wizard-header">
-                <h2>3-Qadam: Kunlik Vazifalar</h2>
-                <p>Ushbu maqsadga erishish uchun har kuni bajaradigan rejalaringizni qo'shing.</p>
-            </div>
-
             <div style="display: flex; gap: 8px;">
-                <input type="text" class="ios-input" id="wiz-task-input" placeholder="Vazifa nomi (masalan: Sport bilan shug'ullanish)">
-                <button type="button" class="ios-btn btn-blue" onclick="addWizardTask()">+</button>
-            </div>
-
-            <div id="wiz-tasks-list" style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px; max-height: 180px; overflow-y: auto;">
-                <p style="color: var(--label-tertiary); font-size: 12.5px; text-align: center; padding: 12px 0;">Kamida 1 ta vazifa kiriting.</p>
-            </div>
-
-            <div style="display: flex; gap: 8px; margin-top: 10px;">
-                <button type="button" class="ios-btn btn-gray" style="flex: 1;" onclick="goToStep(2)">← Orqaga</button>
-                <button type="button" class="ios-btn btn-green" style="flex: 2;" onclick="finishWizard()">🚀 Ilovani Boshlash</button>
+                <button class="ios-btn btn-gray" style="flex: 1;" onclick="goToStep(1)">← Orqaga</button>
+                <button class="ios-btn btn-blue" style="flex: 2;" onclick="goToStep(3)">Davom etish →</button>
             </div>
         </div>
 
+        <!-- 3-Qadam: Ilk Vazifalar -->
+        <div class="wizard-step" id="step-3">
+            <div>
+                <h2 style="font-size: 20px; font-weight: 800;">3-Qadam: Kunlik Rejalar</h2>
+                <p style="font-size: 13px; color: var(--label-secondary); margin-top: 4px;">Maqsad sari har kuni bajaradigan boshlang‘ich vazifalaringizni qo‘shing.</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" class="ios-input" id="auth-task-input" placeholder="Vazifa nomi (masalan: 30 daqiqa kitob o‘qish)">
+                <button class="ios-btn btn-blue" onclick="addAuthTask()">+</button>
+            </div>
+            <div id="auth-tasks-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto;">
+                <p style="color: var(--label-tertiary); font-size: 12.5px; text-align: center; padding: 10px 0;">Kamida 1 ta vazifa qo‘shing.</p>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 6px;">
+                <button class="ios-btn btn-gray" style="flex: 1;" onclick="goToStep(2)">← Orqaga</button>
+                <button class="ios-btn btn-green" style="flex: 2;" onclick="finishAuth()">🚀 Tizimga Kirish</button>
+            </div>
+        </div>
     </div>
 
     <!-- =========================================================
-         B. ASOSIY BOSHQARUV PANELI (MAIN DASHBOARD)
+         ASOSIY ILOVA (RO'YXATDAN O'TGANDAN SO'NG OCHILADI)
          ========================================================= -->
-    <div id="main-dashboard">
+    <div id="main-app" style="display: none; flex-direction: column; gap: 16px;">
         
-        <!-- 1. Header Widget -->
-        <header class="glass-panel header-widget">
-            <div class="user-identity">
-                <div class="avatar-ring" id="txt-avatar">⚡</div>
-                <div class="user-meta">
-                    <h1 id="txt-user-name">Foydalanuvchi</h1>
-                    <p>
-                        <span id="txt-user-role">Shaxsiy Profil</span> • 
-                        <span class="phone-chip" id="txt-user-phone">+998 -- --- -- --</span>
-                    </p>
-                </div>
-            </div>
+        <!-- Yagona Navigatsiya -->
+        <div class="nav-tabs" role="tablist" aria-label="Asosiy navigatsiya">
+            <button class="tab-btn active" type="button" onclick="switchMainTab('goals', this)" role="tab">🎯 Roadmap</button>
+            <button class="tab-btn" type="button" onclick="switchMainTab('timer', this)" role="tab">⏱️ Taymer</button>
+            <button class="tab-btn" type="button" onclick="switchMainTab('reader', this)" role="tab">⚡ Tez O‘qish</button>
+            <button class="tab-btn" type="button" onclick="switchMainTab('shelf', this)" role="tab">📚 Kitob Javoni</button>
+            <button class="tab-btn" type="button" onclick="switchMainTab('gym', this)" role="tab">👁️ Ko‘z Trenajyori</button>
+        </div>
 
-            <div class="status-pills">
-                <div class="ios-pill" style="color: var(--ios-orange);">
-                    <span>🪙</span>
-                    <span id="txt-coins">0 Coins</span>
-                </div>
-                <div class="ios-pill" style="color: var(--ios-blue);" id="txt-level">
-                    ⭐ 1-Daraja
-                </div>
-                <div class="ios-pill" id="txt-streak">
-                    🔥 0 Kunlik Streak
-                </div>
-            </div>
-        </header>
-
-        <!-- 2. Goal Widget -->
-        <section class="glass-panel goal-banner">
-            <div class="goal-headline">
-                <div class="goal-title" id="txt-goal-title">Asosiy Maqsad</div>
-                <div style="font-size: 12.5px; color: var(--label-secondary); font-weight: 600;" id="txt-overall-percent">0% Bajarildi</div>
-            </div>
-
-            <div class="canvas-track-wrapper">
-                <canvas id="track-canvas"></canvas>
-            </div>
-
-            <div class="apple-callout normal" id="urgency-banner">
-                <span id="urgency-icon">🎯</span>
-                <span id="urgency-text">Maqsadingiz sari qat'iy intiling!</span>
-            </div>
-
-            <div class="metric-widgets-grid">
-                <div class="mini-widget">
-                    <div class="val" id="txt-days-left">0</div>
-                    <div class="sub">Qolgan kun</div>
-                </div>
-                <div class="mini-widget">
-                    <div class="val" id="txt-days-done">0</div>
-                    <div class="sub">Yakunlangan</div>
-                </div>
-                <div class="mini-widget">
-                    <div class="val" id="txt-xp">0 XP</div>
-                    <div class="sub">Tajriba bali</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 3. Workspace Grid -->
-        <div class="workspace-grid">
-            
-            <!-- Chap Panel: Vazifalar va Baholash -->
-            <div class="section-panel">
-                
-                <div class="eval-widget bad" id="eval-box">
-                    <div style="display: flex; justify-content: space-between; font-weight: 700;">
-                        <span>Bugungi Natija</span>
-                        <span id="eval-badge">0% — Boshlanmadi</span>
+        <!-- 1. MAQSAD & 3D ROADMAP BO'LIMI -->
+        <div id="view-goals" style="display: flex; flex-direction: column; gap: 16px;">
+            <header class="glass-panel" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="brand-icon" style="width:46px; height:46px; border-radius:14px; background:var(--grad-primary); display:flex; align-items:center; justify-content:center; font-size:20px;">⚡</div>
+                    <div>
+                        <h1 id="txt-user-name" style="font-size: 16px; font-weight: 700;">Foydalanuvchi</h1>
+                        <p style="font-size: 12.5px; color: var(--label-secondary);"><span id="txt-user-phone">Profil</span> • Shaxsiy Intizom</p>
                     </div>
-                    <div id="eval-desc" style="line-height: 1.4;">
-                        Bugungi vazifalar hali boshlanmadi. Kunni g'alaba bilan boshlang!
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <div class="ios-pill" style="color: var(--ios-orange);">🪙 <span id="txt-coins">0 Coins</span></div>
+                    <div class="ios-pill" style="color: var(--ios-blue);" id="txt-level">⭐ 1-Daraja</div>
+                    <div class="ios-pill" id="txt-streak">🔥 0 Kunlik Streak</div>
+                </div>
+            </header>
+
+            <!-- S-Shaklli 3D Isometric Roadmap -->
+            <section class="glass-panel">
+                <div class="roadmap-head">
+                    <div>
+                        <div class="roadmap-kicker">✦ Shaxsiy rivojlanish yo‘li</div>
+                        <div style="font-size: 20px; font-weight: 800;" id="txt-goal-title">Asosiy Maqsad</div>
+                        <div style="font-size: 11.5px; color: var(--label-secondary); margin-top: 4px;">Har bir bajarilgan kun — maqsadga yana bir qadam.</div>
+                    </div>
+                    <div class="roadmap-progress">
+                        <div style="font-size: 13px; color: var(--ios-teal); font-weight: 800;" id="txt-overall-percent">0% Bajarildi</div>
+                        <div class="roadmap-progress-track"><div class="roadmap-progress-fill" id="roadmap-progress-fill"></div></div>
                     </div>
                 </div>
 
-                <div class="glass-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
-                    <div class="panel-title">
-                        <span>Bugungi Reja</span>
-                        <span id="txt-tasks-count" style="font-size: 12.5px; color: var(--ios-blue);">0/0 Bajarildi</span>
+                <div class="roadmap-container">
+                    <canvas id="roadmap-canvas" aria-label="Maqsad roadmap"></canvas>
+                </div>
+
+                <div class="metric-widgets-grid">
+                    <div class="mini-widget"><div class="val" id="txt-days-left">0</div><div class="sub">Qolgan kun</div></div>
+                    <div class="mini-widget"><div class="val" id="txt-days-done">0</div><div class="sub">Yakunlangan</div></div>
+                    <div class="mini-widget"><div class="val" id="txt-xp">0 XP</div><div class="sub">Tajriba bali</div></div>
+                </div>
+            </section>
+
+            <!-- Bugungi vazifalar -->
+            <div class="workspace-grid">
+                <div class="glass-panel" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap:10px; flex-wrap:wrap;">
+                        <div>
+                            <span style="font-size: 15px; font-weight: 800;">Bugungi Vazifalar</span>
+                            <div style="font-size:11.5px; color:var(--label-secondary); margin-top:3px;">Kichik qadamlar katta natijaga olib boradi.</div>
+                        </div>
+                        <span class="ios-pill" style="color: var(--ios-blue);" id="txt-tasks-count">0/0 Bajarildi</span>
                     </div>
 
-                    <div class="ios-list" id="task-list"></div>
+                    <div id="task-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
 
                     <div style="display: flex; gap: 8px;">
-                        <input type="text" class="ios-input" id="input-new-task" placeholder="Yangi vazifa yozing...">
-                        <button type="button" class="ios-btn btn-blue" onclick="addNewDashboardTask()">+</button>
+                        <input type="text" class="ios-input" id="input-new-task" placeholder="Yangi vazifa yozing..." aria-label="Yangi vazifa">
+                        <button type="button" class="ios-btn btn-blue" onclick="addNewTask()" aria-label="Vazifa qo‘shish">+</button>
                     </div>
 
                     <button type="button" class="ios-btn btn-green" style="width: 100%; padding: 13px;" onclick="completeDay()">
-                        Kunni Yakunlash
+                        ✓ Kunni Yakunlash
                     </button>
-                </div>
 
-                <!-- Sozlamalar -->
-                <div class="glass-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 10px;">
-                    <div class="panel-title">
-                        <span>⚙️ Ma'lumotlarni Tahrirlash</span>
-                        <button type="button" class="ios-btn btn-gray" style="padding: 4px 8px; font-size: 11px;" onclick="restartOnboarding()">
-                            🔄 Qaytadan sozlash
-                        </button>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <input type="text" class="ios-input" id="cfg-name" placeholder="Ism va Familiya">
-                        <input type="tel" class="ios-input" id="cfg-phone" placeholder="Telefon raqam">
-                        <input type="text" class="ios-input" id="cfg-goal" placeholder="O'z maqsadingiz nomini kiriting">
-                        <input type="number" class="ios-input" id="cfg-days" placeholder="Jami kunlar soni">
-                        
-                        <button type="button" class="ios-btn btn-blue" style="margin-top: 2px;" onclick="saveSettings()">Saqlash</button>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- O'ng Panel: Aqlli Taymer va Tarix -->
-            <div class="section-panel">
-                
-                <!-- Smart Focus Timer -->
-                <div class="glass-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
-                    <div class="panel-title">
-                        <span>⏱️ Aqlli Taymer (Erkin Sozlash)</span>
-                        <span style="font-size: 11.5px; color: var(--ios-teal);">Avto-bajarish</span>
-                    </div>
-
-                    <div class="timer-screen">
-                        <div class="timer-display" id="timer-display">30:00</div>
-                        <div class="timer-task-active" id="timer-task-label">🎯 Maqsad: 30 daqiqa mashg'ulot</div>
-                        
-                        <div style="display: flex; justify-content: center; gap: 8px; margin-top: 4px;">
-                            <button type="button" class="ios-btn btn-blue" id="btn-timer" onclick="toggleTimer()">Boshlash</button>
-                            <button type="button" class="ios-btn btn-gray" onclick="resetTimer()">Qayta o'rnatish</button>
+                    <div style="border-top: 1px solid var(--border); padding-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap:8px; flex-wrap:wrap;">
+                            <div>
+                                <span style="font-size: 12.5px; color: var(--label-secondary); font-weight: 700;">Maqsad sozlamalari</span>
+                                <div style="font-size:11px; color:var(--label-tertiary); margin-top:2px;">Roadmap muddatini va nomini yangilang.</div>
+                            </div>
+                            <button class="ios-btn btn-gray" style="padding: 5px 9px; font-size: 11px;" onclick="restartOnboarding()">🔄 Profilni yangilash</button>
                         </div>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <label style="font-size: 11.5px; color: var(--label-secondary); font-weight: 600;">Taymer vaqtini kiriting (daqiqa):</label>
-                        
+                        <input type="text" class="ios-input" id="cfg-goal" placeholder="Asosiy maqsad nomi">
                         <div style="display: flex; gap: 8px;">
-                            <input type="number" class="ios-input" id="inp-custom-minutes" placeholder="Daqiqa (masalan: 20, 35, 90)" min="1" max="720">
-                            <button type="button" class="ios-btn btn-blue" onclick="applyCustomMinutes()">O'rnatish</button>
-                        </div>
-
-                        <input type="text" class="ios-input" id="timer-custom-task" placeholder="Nima qilasiz? (masalan: 30 daqiqa yugurish)">
-                        
-                        <div style="display: flex; gap: 6px;">
-                            <button type="button" class="ios-btn btn-gray" style="flex:1; font-size:11.5px; padding:7px;" onclick="setTimerDuration(15)">15 daq</button>
-                            <button type="button" class="ios-btn btn-gray" style="flex:1; font-size:11.5px; padding:7px;" onclick="setTimerDuration(30)">30 daq</button>
-                            <button type="button" class="ios-btn btn-gray" style="flex:1; font-size:11.5px; padding:7px;" onclick="setTimerDuration(45)">45 daq</button>
-                            <button type="button" class="ios-btn btn-gray" style="flex:1; font-size:11.5px; padding:7px;" onclick="setTimerDuration(60)">60 daq</button>
+                            <input type="number" class="ios-input" id="cfg-days" placeholder="Jami kunlar soni" min="1">
+                            <button class="ios-btn btn-blue" onclick="saveGoalSettings()">Saqlash</button>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Detailed History -->
-                <div class="glass-panel" style="padding: 16px; display: flex; flex-direction: column; gap: 10px;">
-                    <div class="panel-title">
-                        <span>📊 Bajarilgan Vazifalar Tarixi</span>
-                        <button type="button" class="ios-btn btn-red" style="padding: 4px 8px; font-size: 11px;" onclick="clearHistory()">
-                            🗑️ Tarixni tozalash
-                        </button>
-                    </div>
-
-                    <div id="history-container" style="display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto; padding-right: 2px;"></div>
-
-                    <div style="display: flex; gap: 8px; margin-top: 2px;">
-                        <button type="button" class="ios-btn btn-gray" style="flex: 1; font-size: 11.5px;" onclick="exportData()">💾 Zaxiralash (JSON)</button>
-                        <button type="button" class="ios-btn btn-gray" style="flex: 1; font-size: 11.5px;" onclick="document.getElementById('file-input').click()">📥 Tiklash</button>
-                        <input type="file" id="file-input" style="display: none;" onchange="importData(event)">
+        <!-- 2. SMART FOKUS TAYMERI -->
+        <div id="view-timer" class="timer-shell" style="display:none;">
+            <section class="glass-panel timer-hero">
+                <div class="roadmap-kicker">✦ Fokus rejimi</div>
+                <div class="timer-ring" id="timer-ring">
+                    <div>
+                        <div id="timer-display">25:00</div>
+                        <div id="timer-task-label" style="font-size:12px; color:var(--label-secondary); margin-top:9px;">🎯 25 daqiqa fokus</div>
                     </div>
                 </div>
+                <div class="timer-status" id="timer-status">Boshlashga tayyor</div>
 
+                <div class="timer-controls">
+                    <button class="ios-btn btn-blue" style="flex:2;" id="btn-timer" onclick="toggleTimer()">▶ Boshlash</button>
+                    <button class="ios-btn btn-gray" style="flex:1;" onclick="resetTimer()">↻ Qayta</button>
+                </div>
+
+                <div class="timer-presets">
+                    <button class="ios-btn btn-gray" onclick="setTimerDuration(15)">15 daq</button>
+                    <button class="ios-btn btn-gray" onclick="setTimerDuration(25)">25 daq</button>
+                    <button class="ios-btn btn-gray" onclick="setTimerDuration(45)">45 daq</button>
+                    <button class="ios-btn btn-gray" onclick="setTimerDuration(60)">60 daq</button>
+                </div>
+            </section>
+
+            <aside class="timer-side">
+                <section class="glass-panel timer-side-card">
+                    <div>
+                        <div style="font-size:15px; font-weight:800;">⏱️ Maxsus vaqt</div>
+                        <div style="font-size:11.5px; color:var(--label-secondary); margin-top:3px;">1–600 daqiqa oralig‘ida fokus vaqtini tanlang.</div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <input type="number" class="ios-input" id="inp-custom-timer" placeholder="Masalan: 35" min="1" max="600" inputmode="numeric">
+                        <button class="ios-btn btn-blue" onclick="applyCustomTimer()">O‘rnatish</button>
+                    </div>
+                    <div class="timer-stat-grid">
+                        <div class="timer-stat"><strong id="timer-session-minutes">25</strong><span>Tanlangan daqiqa</span></div>
+                        <div class="timer-stat"><strong id="timer-reward-preview">38 XP</strong><span>Tugaganda mukofot</span></div>
+                    </div>
+                </section>
+
+                <section class="glass-panel timer-side-card">
+                    <div style="font-size:14px; font-weight:800;">💡 Fokus qoidasi</div>
+                    <div style="font-size:12px; line-height:1.6; color:var(--label-secondary);">
+                        Taymerni boshlaganingizda bitta vazifaga e’tibor qarating. Vaqt tugagach, natija avtomatik saqlanadi va mukofot beriladi.
+                    </div>
+                    <div style="margin-top:auto; padding:11px 12px; border-radius:12px; background:rgba(10,132,255,.08); border:1px solid rgba(10,132,255,.18); font-size:11.5px; color:var(--label-secondary);">
+                        🪙 Mukofot: kamida <strong style="color:var(--ios-orange);">20</strong> tanga + XP
+                    </div>
+                </section>
+            </aside>
+        </div>
+
+        <!-- 2. SPEED READING BO'LIMI -->
+        <div id="view-reader" class="glass-panel" style="display: none; flex-direction: column; gap: 14px;">
+            <div class="reader-display">
+                <div class="orp-marker orp-top"></div>
+                <div id="word-screen">Tayyormisiz?</div>
+                <div class="orp-marker orp-bottom"></div>
             </div>
 
+            <div style="height: 5px; background: var(--border); border-radius: 3px; overflow: hidden;">
+                <div id="reader-progress" style="width: 0%; height: 100%; background: var(--grad-primary); transition: width 0.1s linear; box-shadow: 0 0 10px rgba(10,132,255,0.6);"></div>
+            </div>
+
+            <div class="metric-widgets-grid" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="mini-widget"><div class="val" id="val-progress">0 / 0</div><div class="sub">O‘qilgan so‘z</div></div>
+                <div class="mini-widget"><div class="val" id="val-total-time">0 son</div><div class="sub">Kutilgan vaqt</div></div>
+                <div class="mini-widget"><div class="val" id="val-left-time">0 son</div><div class="sub">Qolgan vaqt</div></div>
+                <div class="mini-widget"><div class="val" id="val-spent-time">00:00</div><div class="sub">O‘tgan vaqt</div></div>
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" id="book-title" class="ios-input" placeholder="Kitob sarlavhasi (masalan: Hayotga Muhabbat)" style="flex: 2;">
+                <input type="text" id="book-author" class="ios-input" placeholder="Muallif (masalan: Jek London)" style="flex: 1.2;">
+                <label class="ios-btn btn-file" style="cursor: pointer;">
+                    📄 PDF Yuklash
+                    <input type="file" id="pdf-upload" accept="application/pdf" style="display: none;">
+                </label>
+            </div>
+
+            <textarea id="book-content" class="ios-input" placeholder="Matnni bu yerga joylang yoki PDF yuklang..."></textarea>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <label style="font-size: 13px; color: var(--label-secondary);">Tezlik: <strong id="wpm-text" style="color:var(--ios-blue);">300</strong> WPM</label>
+                    <input type="range" id="wpm-range" min="100" max="900" step="25" value="300" style="accent-color: var(--ios-blue);">
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <button class="ios-btn btn-gray chunk-sel active" data-chunk="1">1 ta so‘z</button>
+                    <button class="ios-btn btn-gray chunk-sel" data-chunk="2">2 ta</button>
+                    <button class="ios-btn btn-gray chunk-sel" data-chunk="3">3 ta</button>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="ios-btn btn-blue" id="btn-start" style="flex: 2;">▶ O‘qishni Boshlash</button>
+                <button class="ios-btn btn-orange" id="btn-pause" style="flex: 1;">⏸ To‘xtatish</button>
+                <button class="ios-btn btn-gray" id="btn-reset">🔄 Qayta</button>
+            </div>
+
+            <!-- Mantiqiy Savol-Javob va Sun'iy Intellekt Tahlil Bloki -->
+            <div id="quiz-block" style="display: none; border-top: 1px solid var(--border); padding-top: 14px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="font-size: 15px; font-weight: 700; color: var(--ios-teal);">🧠 Matn Mohiyati va Tushunish Sinovi</span>
+                    <span id="quiz-badge" style="font-size: 12px; color: var(--label-secondary);"></span>
+                </div>
+                <p style="font-size: 12.5px; color: var(--label-secondary); margin-bottom: 12px;">O‘qilgan qism hajmiga qarab tuzilgan savollar va ochiq tahlil:</p>
+                <div id="quiz-cards-container"></div>
+            </div>
+        </div>
+
+        <!-- 3. KITOB JAVONI (MUTOLAA USLUBI) -->
+        <div id="view-shelf" class="glass-panel" style="display: none; flex-direction: column; gap: 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2 style="font-size: 20px; font-weight: 800;">Mening Kitob Javonim</h2>
+                    <p style="font-size: 12.5px; color: var(--label-secondary);">O‘qib tugatilgan kitoblar kolleksiyasi</p>
+                </div>
+                <span class="ios-pill" style="color:var(--ios-green);" id="shelf-count-pill">0 ta kitob</span>
+            </div>
+            <div class="shelf-grid" id="shelf-books-grid"></div>
+        </div>
+
+        <!-- 4. KO'Z TRENAJYORI (4 TA MASHQ) -->
+        <div id="view-gym" class="glass-panel" style="display: none; flex-direction: column; gap: 14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="font-size: 18px; font-weight: 800; color:var(--ios-blue);">👁️ Professional Ko‘z Trenajyori</h2>
+                <span style="font-size:12px; color:var(--label-secondary);">4 xil mashq</span>
+            </div>
+
+            <div class="gym-modes-nav">
+                <button class="gym-tab active" id="gtab-schulte" onclick="switchGymExercise('schulte', this)">1. Schulte (5x5)</button>
+                <button class="gym-tab" id="gtab-saccade" onclick="switchGymExercise('saccade', this)">2. Sakrash (Gorizontal/Vertikal)</button>
+                <button class="gym-tab" id="gtab-infinity" onclick="switchGymExercise('infinity', this)">3. Cheksizlik (∞)</button>
+                <button class="gym-tab" id="gtab-focus" onclick="switchGymExercise('focus', this)">4. Fokus Chuqurligi (Yaqin-Uzoq)</button>
+            </div>
+
+            <div id="gym-schulte-box" style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display:flex; justify-content:space-between; max-width:360px; margin:0 auto; width:100%; font-size:14px; font-weight:600;">
+                    <span>Qidirilayotgan son: <strong id="schulte-val" style="color:var(--ios-blue); font-size:18px;">1</strong></span>
+                    <span>Vaqt: <strong id="schulte-timer" style="color:var(--ios-orange);">0.0s</strong></span>
+                </div>
+                <div class="schulte-grid" id="schulte-cells"></div>
+                <button class="ios-btn btn-blue" style="max-width:360px; margin:0 auto; width:100%;" onclick="initSchulteTable()">🔄 Qaytadan Boshlash</button>
+            </div>
+
+            <div id="gym-motion-box" style="display: none; flex-direction: column; gap: 12px; align-items: center;">
+                <div class="motion-box" id="motion-arena">
+                    <div class="moving-dot" id="gym-dot"></div>
+                </div>
+                <p id="gym-instruction" style="font-size: 13px; color: var(--label-secondary); text-align: center;">Boshni qimirlatmasdan, faqat nigohingiz bilan nuqtani kuzating.</p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="ios-btn btn-blue" id="btn-motion-start" onclick="startMotionExercise()">Boshlash</button>
+                    <button class="ios-btn btn-gray" onclick="stopMotionExercise()">To‘xtatish</button>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -800,418 +1306,427 @@
 </div>
 
 <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
     /* ==========================================
-       1. STORAGE & SAFE INITIALIZATION
+       A. AUTH & STORAGE BOSHQARUVI
        ========================================== */
-    const defaultData = {
-        onboardingComplete: false,
-        user: {
-            name: "",
-            phone: "",
-            role: "Shaxsiy Profil",
-            avatar: "⚡"
-        },
+    const appState = {
+        isLoggedIn: false,
+        user: { name: "", phone: "", coins: 0, xp: 0, streak: 0 },
         goalTitle: "",
         totalDays: 30,
         daysCompleted: 0,
-        streak: 0,
-        coins: 0,
-        xp: 0,
-        tasks: [],
-        history: []
+        tasks: []
     };
 
-    let appState = defaultData;
-    let wizardTempTasks = [];
+    let tempWizardTasks = [];
 
     function loadState() {
         try {
-            const saved = localStorage.getItem('habits_wizard_state_v1');
+            const saved = localStorage.getItem('unified_app_state_v3');
             if (saved) {
-                appState = JSON.parse(saved);
+                Object.assign(appState, JSON.parse(saved));
             }
-        } catch (e) {
-            console.warn("Storage restricted, using in-memory state:", e);
-        }
+        } catch(e) {}
     }
 
     function saveState() {
         try {
-            localStorage.setItem('habits_wizard_state_v1', JSON.stringify(appState));
-        } catch (e) {
-            console.warn("Storage save error:", e);
-        }
-        renderApp();
+            localStorage.setItem('unified_app_state_v3', JSON.stringify(appState));
+        } catch(e) {}
+        renderGoalsDashboard();
     }
 
-    /* ==========================================
-       2. WIZARD / STEPPER LOGIC
-       ========================================== */
-    function goToStep(stepNum) {
-        if (stepNum === 2) {
-            const name = document.getElementById('wiz-name').value.trim();
-            const phone = document.getElementById('wiz-phone').value.trim();
+    /* Onboarding / Wizard Mantig'i */
+    function goToStep(step) {
+        if (step === 2) {
+            const name = document.getElementById('auth-name').value.trim();
             if (!name) {
                 alert("Iltimos, ism va familiyangizni kiriting!");
                 return;
             }
             appState.user.name = name;
-            appState.user.phone = phone || "+998 -- --- -- --";
+            appState.user.phone = document.getElementById('auth-phone').value.trim() || "Kiritilmagan";
         }
 
-        if (stepNum === 3) {
-            const goal = document.getElementById('wiz-goal').value.trim();
-            const days = parseInt(document.getElementById('wiz-days').value);
+        if (step === 3) {
+            const goal = document.getElementById('auth-goal').value.trim();
+            const days = parseInt(document.getElementById('auth-days').value, 10);
             if (!goal) {
                 alert("Iltimos, asosiy maqsadingizni kiriting!");
                 return;
             }
             if (!days || days <= 0) {
-                alert("Iltimos, maqsadga erishish uchun to'g'ri kunlar sonini kiriting!");
+                alert("Iltimos, maqsadga erishish uchun to‘g‘ri kunlar sonini kiriting!");
                 return;
             }
             appState.goalTitle = goal;
             appState.totalDays = days;
         }
 
-        // Switch active step
         document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active-step'));
-        document.getElementById(`step-${stepNum}`).classList.add('active-step');
+        document.getElementById(`step-${step}`).classList.add('active-step');
 
-        // Update progress indicators
         for (let i = 1; i <= 3; i++) {
             const ind = document.getElementById(`ind-${i}`);
-            if (i <= stepNum) ind.classList.add('active');
+            if (i <= step) ind.classList.add('active');
             else ind.classList.remove('active');
         }
     }
 
-    function addWizardTask() {
-        const inp = document.getElementById('wiz-task-input');
+    function addAuthTask() {
+        const inp = document.getElementById('auth-task-input');
         const val = inp.value.trim();
         if (!val) return;
-
-        wizardTempTasks.push({
-            id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-            text: val,
-            reward: 30,
-            done: false
-        });
-
+        tempWizardTasks.push({ id: 't_' + Date.now(), text: val, reward: 30, done: false });
         inp.value = '';
-        renderWizardTasksList();
+        renderAuthTasks();
     }
 
-    function removeWizardTask(index) {
-        wizardTempTasks.splice(index, 1);
-        renderWizardTasksList();
+    function removeAuthTask(idx) {
+        tempWizardTasks.splice(idx, 1);
+        renderAuthTasks();
     }
 
-    function renderWizardTasksList() {
-        const container = document.getElementById('wiz-tasks-list');
-        if (wizardTempTasks.length === 0) {
-            container.innerHTML = `<p style="color: var(--label-tertiary); font-size: 12.5px; text-align: center; padding: 12px 0;">Kamida 1 ta vazifa kiriting.</p>`;
+    function renderAuthTasks() {
+        const box = document.getElementById('auth-tasks-list');
+        if (tempWizardTasks.length === 0) {
+            box.innerHTML = `<p style="color: var(--label-tertiary); font-size: 12.5px; text-align: center; padding: 10px 0;">Kamida 1 ta vazifa qo‘shing.</p>`;
             return;
         }
-
-        container.innerHTML = wizardTempTasks.map((t, idx) => `
-            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-subtle); padding:10px 12px; border-radius:var(--radius-sm); border:1px solid var(--border);">
-                <span style="font-size:13px; font-weight:500;">✓ ${t.text}</span>
-                <button type="button" style="background:transparent; border:none; color:var(--ios-red); font-size:14px; cursor:pointer;" onclick="removeWizardTask(${idx})">✕</button>
+        box.innerHTML = tempWizardTasks.map((t, i) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card-subtle); padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border);">
+                <span style="font-size:13px;">✓ ${t.text}</span>
+                <button style="background:transparent; border:none; color:var(--ios-red); font-size:13px; cursor:pointer;" onclick="removeAuthTask(${i})">✕</button>
             </div>
         `).join('');
     }
 
-    function finishWizard() {
-        if (wizardTempTasks.length === 0) {
-            alert("Iltimos, ilovani boshlashdan avval kamida 1 ta vazifa qo'shing!");
+    function finishAuth() {
+        if (tempWizardTasks.length === 0) {
+            alert("Iltimos, kamida bitta rejalashtirilgan vazifa kiriting!");
             return;
         }
-
-        appState.tasks = wizardTempTasks;
-        appState.onboardingComplete = true;
+        appState.tasks = [...tempWizardTasks];
+        appState.isLoggedIn = true;
         saveState();
-
-        // Reveal Main Dashboard
-        document.getElementById('onboarding-screen').style.display = 'none';
-        document.getElementById('main-dashboard').style.display = 'flex';
-        
-        resizeCanvas();
-        playChime(true);
+        checkAuthView();
         triggerConfetti();
     }
 
+    function checkAuthView() {
+        if (appState.isLoggedIn) {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+            renderGoalsDashboard();
+            setTimeout(resizeRoadmapCanvas, 60);
+        } else {
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('main-app').style.display = 'none';
+        }
+    }
+
     function restartOnboarding() {
-        if (confirm("Barcha ma'lumotlarni qaytadan kiritishni xohlaysizmi?")) {
-            appState.onboardingComplete = false;
-            wizardTempTasks = [];
-            document.getElementById('wiz-name').value = appState.user.name;
-            document.getElementById('wiz-phone').value = appState.user.phone;
-            document.getElementById('wiz-goal').value = appState.goalTitle;
-            document.getElementById('wiz-days').value = appState.totalDays;
-            renderWizardTasksList();
+        if (confirm("Profilingiz va maqsadlarni qaytadan sozlashni xohlaysizmi?")) {
+            appState.isLoggedIn = false;
+            tempWizardTasks = [];
+            document.getElementById('auth-name').value = appState.user.name;
+            document.getElementById('auth-phone').value = appState.user.phone !== "Kiritilmagan" ? appState.user.phone : "";
+            document.getElementById('auth-goal').value = appState.goalTitle;
+            document.getElementById('auth-days').value = appState.totalDays;
+            renderAuthTasks();
             goToStep(1);
-
-            document.getElementById('main-dashboard').style.display = 'none';
-            document.getElementById('onboarding-screen').style.display = 'flex';
+            checkAuthView();
         }
     }
 
-    /* ==========================================
-       3. AUDIO ENGINE (Safe Web Audio API)
-       ========================================== */
-    let audioCtx = null;
-    function initAudio() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+    function switchMainTab(tab, button) {
+        document.querySelectorAll('.nav-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+        if (button) button.classList.add('active');
+
+        ['goals', 'timer', 'reader', 'shelf', 'gym'].forEach(view => {
+            const el = document.getElementById(`view-${view}`);
+            if (el) el.style.display = view === tab ? (view === 'goals' || view === 'reader' || view === 'shelf' || view === 'gym' ? 'flex' : 'grid') : 'none';
+        });
+
+        const activeView = document.getElementById(`view-${tab}`);
+        if (activeView) {
+            activeView.classList.remove('view-fade');
+            void activeView.offsetWidth;
+            activeView.classList.add('view-fade');
+        }
+
+        if (tab === 'shelf') renderShelf();
+        if (tab === 'gym') initSchulteTable();
+        if (tab === 'goals') setTimeout(resizeRoadmapCanvas, 50);
+        if (tab === 'timer') updateTimerUI();
     }
 
-    function playChime(success = false) {
-        try {
-            initAudio();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            
-            if (success) {
-                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.25);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.4);
-            } else {
-                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.08);
-                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.15);
-            }
-        } catch (e) {
-            console.warn("Audio unavailable:", e);
+    /* ==========================================
+       B. 3D ISOMETRIC S-SHAKLLI ROADMAP CANVAS
+       ========================================== */
+    const rCanvas = document.getElementById('roadmap-canvas');
+    const rCtx = rCanvas.getContext('2d');
+    let targetProgressPercent = 0;
+    let animProgress = 0;
+
+    function resizeRoadmapCanvas() {
+        if (!rCanvas || !rCanvas.offsetWidth) return;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        rCanvas.width = Math.round(rCanvas.offsetWidth * dpr);
+        rCanvas.height = Math.round(rCanvas.offsetHeight * dpr);
+        rCtx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+    window.addEventListener('resize', resizeRoadmapCanvas);
+
+    function getSplinePoint(t, w, h) {
+        const pad = Math.max(34 * window.devicePixelRatio, w * 0.055);
+        const p0 = { x: pad, y: h * 0.76 };
+        const p1 = { x: w * 0.18, y: h * 0.91 };
+        const p2 = { x: w * 0.30, y: h * 0.14 };
+        const p3 = { x: w * 0.58, y: h * 0.16 };
+        const p4 = { x: w * 0.70, y: h * 0.84 };
+        const p5 = { x: w - pad, y: h * 0.25 };
+
+        const cubic = (a, b, c, d, u) => ({
+            x: a.x * Math.pow(1-u,3) + 3*b.x*Math.pow(1-u,2)*u + 3*c.x*(1-u)*u*u + d.x*u*u*u,
+            y: a.y * Math.pow(1-u,3) + 3*b.y*Math.pow(1-u,2)*u + 3*c.y*(1-u)*u*u + d.y*u*u*u
+        });
+
+        return t <= 0.5
+            ? cubic(p0, p1, p2, p3, t * 2)
+            : cubic(p3, p4, p4, p5, (t - 0.5) * 2);
+    }
+
+    function buildRoadPath(ctx, w, h, offsetY = 0) {
+        ctx.beginPath();
+        for (let i = 0; i <= 160; i++) {
+            const pt = getSplinePoint(i / 160, w, h);
+            if (i === 0) ctx.moveTo(pt.x, pt.y + offsetY);
+            else ctx.lineTo(pt.x, pt.y + offsetY);
         }
     }
 
-    /* ==========================================
-       4. 60FPS ROADMAP CANVAS ENGINE
-       ========================================== */
-    const canvas = document.getElementById('track-canvas');
-    const ctx = canvas.getContext('2d');
-    let carProgress = 0;
-    let targetProgress = 0;
-
-    function resizeCanvas() {
-        if (!canvas.offsetWidth) return;
-        canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-        canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-    }
-    window.addEventListener('resize', resizeCanvas);
-
-    function animateTrack() {
-        const w = canvas.width;
-        const h = canvas.height;
-        ctx.clearRect(0, 0, w, h);
+    function draw3DRoadmap() {
+        const w = rCanvas.width, h = rCanvas.height;
+        rCtx.clearRect(0, 0, w, h);
 
         if (w > 0 && h > 0) {
-            carProgress += (targetProgress - carProgress) * 0.08;
+            const dpr = window.devicePixelRatio || 1;
+            animProgress += (targetProgressPercent - animProgress) * 0.055;
 
-            const startX = 30 * window.devicePixelRatio;
-            const endX = w - 30 * window.devicePixelRatio;
-            const trackY = h * 0.52;
-            const currentX = startX + (endX - startX) * carProgress;
+            // Fon teksturasi
+            const bg = rCtx.createRadialGradient(w * .5, h * .45, 0, w * .5, h * .45, Math.max(w,h) * .65);
+            bg.addColorStop(0, 'rgba(35,42,58,.34)');
+            bg.addColorStop(1, 'rgba(2,4,8,0)');
+            rCtx.fillStyle = bg;
+            rCtx.fillRect(0, 0, w, h);
 
-            // Track background line
-            ctx.beginPath();
-            ctx.moveTo(startX, trackY);
-            ctx.lineTo(endX, trackY);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-            ctx.lineWidth = 5 * window.devicePixelRatio;
-            ctx.lineCap = 'round';
-            ctx.stroke();
+            // Mayda "yulduzcha" nuqtalar — har kadrda bir xil joyda
+            rCtx.fillStyle = 'rgba(255,255,255,.14)';
+            for (let i = 0; i < 32; i++) {
+                const x = ((i * 97) % 1000) / 1000 * w;
+                const y = ((i * 53 + 17) % 1000) / 1000 * h;
+                rCtx.beginPath();
+                rCtx.arc(x, y, (i % 3 === 0 ? 1.2 : .7) * dpr, 0, Math.PI * 2);
+                rCtx.fill();
+            }
 
-            // Progress active line
-            const grad = ctx.createLinearGradient(startX, 0, currentX, 0);
-            grad.addColorStop(0, '#0A84FF');
-            grad.addColorStop(1, '#30D158');
+            // 3D pastki soya
+            buildRoadPath(rCtx, w, h, 10 * dpr);
+            rCtx.strokeStyle = 'rgba(0,0,0,.62)';
+            rCtx.lineWidth = 42 * dpr;
+            rCtx.lineCap = 'round';
+            rCtx.lineJoin = 'round';
+            rCtx.stroke();
 
-            ctx.beginPath();
-            ctx.moveTo(startX, trackY);
-            ctx.lineTo(currentX, trackY);
-            ctx.strokeStyle = grad;
-            ctx.lineWidth = 5 * window.devicePixelRatio;
-            ctx.stroke();
+            // Yo‘l cheti
+            buildRoadPath(rCtx, w, h, 4 * dpr);
+            rCtx.strokeStyle = '#0b1322';
+            rCtx.lineWidth = 38 * dpr;
+            rCtx.stroke();
 
-            // Goal destination flag
-            ctx.font = `${14 * window.devicePixelRatio}px sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('🏁', endX, trackY);
+            // Yo‘lning o‘zi
+            buildRoadPath(rCtx, w, h);
+            const roadGrad = rCtx.createLinearGradient(0, 0, w, h);
+            roadGrad.addColorStop(0, '#263247');
+            roadGrad.addColorStop(.5, '#151e2d');
+            roadGrad.addColorStop(1, '#0e1624');
+            rCtx.strokeStyle = roadGrad;
+            rCtx.lineWidth = 31 * dpr;
+            rCtx.stroke();
 
-            // Cruiser Avatar
-            ctx.font = `${14 * window.devicePixelRatio}px sans-serif`;
-            ctx.fillText('🚀', currentX, trackY);
+            // Yo‘l chetidagi yumshoq yaltirash
+            buildRoadPath(rCtx, w, h);
+            rCtx.strokeStyle = 'rgba(100,210,255,.10)';
+            rCtx.lineWidth = 35 * dpr;
+            rCtx.stroke();
+
+            // O‘tilgan qism
+            if (animProgress > 0.002) {
+                rCtx.beginPath();
+                const currentSteps = Math.max(1, Math.floor(animProgress * 160));
+                for (let i = 0; i <= currentSteps; i++) {
+                    const pt = getSplinePoint(i / 160, w, h);
+                    if (i === 0) rCtx.moveTo(pt.x, pt.y);
+                    else rCtx.lineTo(pt.x, pt.y);
+                }
+                const progressGrad = rCtx.createLinearGradient(0, 0, w, 0);
+                progressGrad.addColorStop(0, '#5E5CE6');
+                progressGrad.addColorStop(.52, '#0A84FF');
+                progressGrad.addColorStop(1, '#30D158');
+                rCtx.strokeStyle = progressGrad;
+                rCtx.lineWidth = 31 * dpr;
+                rCtx.lineCap = 'round';
+                rCtx.shadowColor = 'rgba(10,132,255,.38)';
+                rCtx.shadowBlur = 15 * dpr;
+                rCtx.stroke();
+                rCtx.shadowBlur = 0;
+            }
+
+            // Markaziy yo‘l chizig‘i
+            buildRoadPath(rCtx, w, h);
+            rCtx.strokeStyle = 'rgba(255,255,255,.72)';
+            rCtx.lineWidth = 2.2 * dpr;
+            rCtx.setLineDash([10 * dpr, 8 * dpr]);
+            rCtx.stroke();
+            rCtx.setLineDash([]);
+
+            const milestones = [
+                { t: 0.00, color: '#38bdf8', label: 'START', align: 'left' },
+                { t: 0.25, color: '#ef4444', label: '25%', align: 'center' },
+                { t: 0.50, color: '#a855f7', label: '50%', align: 'center' },
+                { t: 0.75, color: '#f59e0b', label: '75%', align: 'center' },
+                { t: 1.00, color: '#10b981', label: 'MAQSAD', align: 'right' }
+            ];
+
+            milestones.forEach((m, idx) => {
+                const pos = getSplinePoint(m.t, w, h);
+                const isReached = animProgress >= m.t - 0.015;
+                const pinY = pos.y - 18 * dpr;
+
+                // Pin soyasi
+                rCtx.fillStyle = 'rgba(0,0,0,.35)';
+                rCtx.beginPath();
+                rCtx.ellipse(pos.x, pos.y + 4*dpr, 12*dpr, 4*dpr, 0, 0, Math.PI*2);
+                rCtx.fill();
+
+                // Pin tayoqchasi
+                rCtx.strokeStyle = m.color;
+                rCtx.lineWidth = 3 * dpr;
+                rCtx.beginPath();
+                rCtx.moveTo(pos.x, pinY + 7*dpr);
+                rCtx.lineTo(pos.x, pos.y);
+                rCtx.stroke();
+
+                // Pin
+                rCtx.fillStyle = isReached ? m.color : '#1d2636';
+                rCtx.strokeStyle = isReached ? '#fff' : 'rgba(255,255,255,.32)';
+                rCtx.lineWidth = 2 * dpr;
+                rCtx.beginPath();
+                rCtx.arc(pos.x, pinY, 8*dpr, 0, Math.PI*2);
+                rCtx.fill();
+                rCtx.stroke();
+
+                // Label
+                rCtx.font = `800 ${10*dpr}px Manrope, sans-serif`;
+                rCtx.textBaseline = 'middle';
+                rCtx.textAlign = m.align;
+                const labelX = pos.x + (idx === 0 ? 13 : idx === milestones.length-1 ? -13 : 0) * dpr;
+                const labelY = Math.max(16*dpr, pinY - 17*dpr);
+                const labelW = (m.label.length * 6 + 16) * dpr;
+                let rectX = labelX - labelW/2;
+                if (m.align === 'left') rectX = labelX;
+                if (m.align === 'right') rectX = labelX - labelW;
+                rCtx.fillStyle = 'rgba(3,5,10,.84)';
+                rCtx.strokeStyle = 'rgba(255,255,255,.09)';
+                rCtx.lineWidth = 1 * dpr;
+                rCtx.beginPath();
+                const radius = 7*dpr;
+                rCtx.roundRect(rectX, labelY - 8*dpr, labelW, 16*dpr, radius);
+                rCtx.fill();
+                rCtx.stroke();
+                rCtx.fillStyle = isReached ? '#fff' : 'rgba(235,235,245,.58)';
+                rCtx.fillText(m.label, labelX, labelY);
+            });
+
+            // Progress traveler
+            const currentPos = getSplinePoint(Math.min(1, Math.max(0, animProgress)), w, h);
+            rCtx.save();
+            rCtx.translate(currentPos.x, currentPos.y - 7*dpr);
+            rCtx.rotate(-0.25);
+            rCtx.font = `${24*dpr}px sans-serif`;
+            rCtx.textAlign = 'center';
+            rCtx.textBaseline = 'middle';
+            rCtx.shadowColor = 'rgba(10,132,255,.65)';
+            rCtx.shadowBlur = 12*dpr;
+            rCtx.fillText('🚀', 0, 0);
+            rCtx.restore();
         }
 
-        requestAnimationFrame(animateTrack);
+        requestAnimationFrame(draw3DRoadmap);
     }
 
-    /* ==========================================
-       5. DASHBOARD RENDER & LOGIC
-       ========================================== */
-    function renderApp() {
-        if (!appState.onboardingComplete) {
-            document.getElementById('onboarding-screen').style.display = 'flex';
-            document.getElementById('main-dashboard').style.display = 'none';
-            return;
-        }
-
-        document.getElementById('onboarding-screen').style.display = 'none';
-        document.getElementById('main-dashboard').style.display = 'flex';
+    function renderGoalsDashboard() {
+        if (!appState.isLoggedIn) return;
 
         const daysLeft = Math.max(0, appState.totalDays - appState.daysCompleted);
-        const overallPercent = appState.totalDays > 0 
-            ? Math.min(100, Math.round((appState.daysCompleted / appState.totalDays) * 100)) 
-            : 0;
+        const overallPercent = appState.totalDays > 0 ? Math.min(100, Math.round((appState.daysCompleted / appState.totalDays) * 100)) : 0;
+        targetProgressPercent = overallPercent / 100;
 
-        targetProgress = overallPercent / 100;
-
-        document.getElementById('txt-user-name').innerText = appState.user.name;
-        document.getElementById('txt-user-phone').innerText = appState.user.phone;
-        document.getElementById('txt-user-role').innerText = appState.user.role;
-        document.getElementById('txt-avatar').innerText = appState.user.avatar;
-
-        document.getElementById('txt-coins').innerText = `${appState.coins} Coins`;
-        document.getElementById('txt-level').innerText = `⭐ ${Math.floor(appState.xp / 150) + 1}-Daraja`;
-        document.getElementById('txt-streak').innerText = `🔥 ${appState.streak} Kunlik Streak`;
-
-        document.getElementById('txt-goal-title').innerText = appState.goalTitle;
+        document.getElementById('txt-user-name').innerText = appState.user.name || "Foydalanuvchi";
+        document.getElementById('txt-user-phone').innerText = appState.user.phone || "Profil";
+        document.getElementById('txt-coins').innerText = `${appState.user.coins} Coins`;
+        document.getElementById('txt-level').innerText = `⭐ ${Math.floor(appState.user.xp / 150) + 1}-Daraja`;
+        document.getElementById('txt-streak').innerText = `🔥 ${appState.user.streak} Kunlik Streak`;
+        document.getElementById('txt-goal-title').innerText = appState.goalTitle || "Asosiy Maqsad";
         document.getElementById('txt-overall-percent').innerText = `${overallPercent}% Bajarildi`;
-
+        const roadmapFill = document.getElementById('roadmap-progress-fill');
+        if (roadmapFill) roadmapFill.style.width = `${overallPercent}%`;
         document.getElementById('txt-days-left').innerText = daysLeft;
         document.getElementById('txt-days-done').innerText = appState.daysCompleted;
-        document.getElementById('txt-xp').innerText = `${appState.xp} XP`;
+        document.getElementById('txt-xp').innerText = `${appState.user.xp} XP`;
 
-        updateUrgencyBanner(daysLeft);
-
-        // Render Task List
         const list = document.getElementById('task-list');
         list.innerHTML = '';
         let doneCount = 0;
 
-        if (appState.tasks.length === 0) {
-            list.innerHTML = `<div style="text-align:center; padding:18px; color:var(--label-tertiary); font-size:13px; border:1px dashed var(--border); border-radius:var(--radius-md);">Hozircha vazifalar yo'q.</div>`;
-        } else {
-            appState.tasks.forEach(t => {
-                if (t.done) doneCount++;
-                const cell = document.createElement('div');
-                cell.className = `ios-cell ${t.done ? 'completed' : ''}`;
-                cell.innerHTML = `
-                    <div class="cell-left" onclick="toggleTask('${t.id}', event)">
-                        <div class="apple-checkbox">${t.done ? '✓' : ''}</div>
-                        <span class="cell-text">${t.text}</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span class="reward-tag">+${t.reward} 🪙</span>
-                        <button type="button" class="cell-delete-btn" onclick="deleteTask('${t.id}')">✕</button>
-                    </div>
-                `;
-                list.appendChild(cell);
-            });
-        }
+        appState.tasks.forEach(t => {
+            if (t.done) doneCount++;
+            const cell = document.createElement('div');
+            cell.className = `ios-cell ${t.done ? 'completed' : ''}`;
+            cell.innerHTML = `
+                <div style="display:flex; align-items:center; gap:12px; flex:1;" onclick="toggleTask('${String(t.id).replace(/'/g, "\\'")}', event)">
+                    <div class="apple-checkbox">${t.done ? '✓' : ''}</div>
+                    <span class="cell-text" style="font-size:13.5px; font-weight:500;"></span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:11.5px; font-weight:700; color:var(--ios-orange); background:rgba(255,159,10,0.12); padding:4px 8px; border-radius:8px;">+${Number(t.reward) || 0} 🪙</span>
+                    <button style="background:transparent; border:none; color:var(--label-tertiary); cursor:pointer; font-size:14px;" onclick="deleteTask('${String(t.id).replace(/'/g, "\\'")}')" aria-label="Vazifani o‘chirish">✕</button>
+                </div>
+            `;
+            cell.querySelector('.cell-text').textContent = t.text;
+            list.appendChild(cell);
+        });
 
-        const total = appState.tasks.length;
-        document.getElementById('txt-tasks-count').innerText = `${doneCount}/${total} Bajarildi`;
-
-        updateEvaluationWidget(doneCount, total);
-        renderHistoryList();
-
-        // Populate settings fields
-        document.getElementById('cfg-name').value = appState.user.name;
-        document.getElementById('cfg-phone').value = appState.user.phone;
+        document.getElementById('txt-tasks-count').innerText = `${doneCount}/${appState.tasks.length} Bajarildi`;
         document.getElementById('cfg-goal').value = appState.goalTitle;
         document.getElementById('cfg-days').value = appState.totalDays;
-    }
-
-    function updateEvaluationWidget(done, total) {
-        const box = document.getElementById('eval-box');
-        const badge = document.getElementById('eval-badge');
-        const desc = document.getElementById('eval-desc');
-
-        if (total === 0) {
-            box.className = 'eval-widget bad';
-            badge.innerText = '0%';
-            desc.innerText = "Hozircha vazifalar belgilanmagan. O'z rejangizni qo'shing.";
-            return;
-        }
-
-        const percent = Math.round((done / total) * 100);
-
-        if (percent === 0) {
-            box.className = 'eval-widget bad';
-            badge.innerText = `0% — Boshlanmadi`;
-            desc.innerHTML = `Bugungi ${total} ta vazifadan hali birortasi bajarilmadi. Qat'iyat bilan harakatni boshlang!`;
-        } else if (percent < 50) {
-            box.className = 'eval-widget bad';
-            badge.innerText = `${percent}% — Qoniqarsiz ⚠️`;
-            desc.innerHTML = `<b>Qoniqarsiz natija.</b> Rejalashtirilgan ${total} ta vazifadan atigi ${done} tasini (${percent}%) bajardingiz. Maqsad sari sur'atni oshiring.`;
-        } else if (percent < 80) {
-            box.className = 'eval-widget med';
-            badge.innerText = `${percent}% — O'rtacha ⏳`;
-            desc.innerHTML = `<b>O'rtacha ko'rsatkich.</b> Bugungi rejaning ${percent}% qismi bajarildi. Kunni to'liq g'alaba bilan yakunlashga intiling.`;
-        } else {
-            box.className = 'eval-widget good';
-            badge.innerText = `${percent}% — A'lo 💎`;
-            desc.innerHTML = `<b>Mukammal intizom!</b> Bugungi barcha vazifalar to'liq (${percent}%) bajarildi. Maqsadingiz sari dadil qadam tashladingiz!`;
-        }
-    }
-
-    function updateUrgencyBanner(daysLeft) {
-        const banner = document.getElementById('urgency-banner');
-        const icon = document.getElementById('urgency-icon');
-        const text = document.getElementById('urgency-text');
-
-        banner.className = 'apple-callout';
-
-        if (daysLeft === 0) {
-            banner.classList.add('critical');
-            icon.innerText = '🏆';
-            text.innerHTML = `<b>Muddat yakunlandi!</b> Barcha belgilangan kunlar bosib o'tildi.`;
-        } else if (daysLeft === 1) {
-            banner.classList.add('critical');
-            icon.innerText = '🚨';
-            text.innerHTML = `<b>Diqqat: Bor-yo'g'i 1 kun qoldi!</b> Bugun bor kuchingiz bilan harakat qiling.`;
-        } else if (daysLeft <= 3) {
-            banner.classList.add('critical');
-            icon.innerText = '⚡';
-            text.innerHTML = `<b>Shoshiling: Atigi ${daysLeft} kun qoldi!</b> Marra chizig'iga sanoqli qadamlar qoldi.`;
-        } else {
-            banner.classList.add('normal');
-            icon.innerText = '🎯';
-            text.innerText = `Maqsadga erishish uchun oldinda ${daysLeft} kunlik intizomli mehnat turibdi.`;
-        }
     }
 
     function toggleTask(id, event) {
         const t = appState.tasks.find(x => x.id === id);
         if (!t) return;
-
         t.done = !t.done;
-
         if (t.done) {
-            appState.coins += t.reward;
-            appState.xp += t.reward;
-            playChime(false);
+            appState.user.coins += t.reward;
+            appState.user.xp += t.reward;
             spawnBubble(event, `+${t.reward} 🪙`);
         } else {
-            appState.coins = Math.max(0, appState.coins - t.reward);
-            appState.xp = Math.max(0, appState.xp - t.reward);
+            appState.user.coins = Math.max(0, appState.user.coins - t.reward);
+            appState.user.xp = Math.max(0, appState.user.xp - t.reward);
         }
-
         saveState();
     }
 
@@ -1227,17 +1742,12 @@
         setTimeout(() => span.remove(), 800);
     }
 
-    function addNewDashboardTask() {
-        const input = document.getElementById('input-new-task');
-        const v = input.value.trim();
+    function addNewTask() {
+        const inp = document.getElementById('input-new-task');
+        const v = inp.value.trim();
         if (v) {
-            appState.tasks.push({
-                id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-                text: v,
-                reward: 30,
-                done: false
-            });
-            input.value = '';
+            appState.tasks.push({ id: 't_' + Date.now(), text: v, reward: 30, done: false });
+            inp.value = '';
             saveState();
         }
     }
@@ -1248,258 +1758,603 @@
     }
 
     function completeDay() {
+        const done = appState.tasks.filter(t => t.done).length;
         const total = appState.tasks.length;
-        if (total === 0) {
-            alert("Avval kamida bitta vazifa qo'shing!");
-            return;
-        }
+        if (total === 0) return alert("Avval kamida bitta vazifa kiriting!");
 
-        const completedTasks = appState.tasks.filter(t => t.done);
-        const completedCount = completedTasks.length;
-        const percent = Math.round((completedCount / total) * 100);
-        let status = "Qoniqarsiz";
-
-        if (percent < 50) {
-            alert(`⚠️ Qoniqarsiz natija!\n\nBugun ${total} ta vazifadan faqat ${completedCount} tasini (${percent}%) bajardingiz.`);
-            appState.streak = 0;
-            status = "Qoniqarsiz";
-        } else if (percent < 80) {
-            alert(`⏳ O'rtacha natija!\n\nBugun ${percent}% natija ko'rsatdingiz.`);
-            status = "O'rtacha";
-        } else {
-            appState.streak += 1;
-            appState.coins += 100;
-            appState.xp += 100;
+        const percent = Math.round((done / total) * 100);
+        if (percent >= 70) {
+            appState.user.streak++;
+            appState.user.coins += 100;
+            appState.user.xp += 100;
+            if (appState.daysCompleted < appState.totalDays) appState.daysCompleted++;
             triggerConfetti();
-            alert(`🎉 A'lo natija!\n\nBugungi rejangiz ${percent}% bajarildi! +100 bonus tanga!`);
-            status = percent === 100 ? "A'lo" : "Yaxshi";
+            alert(`🎉 A'lo natija!\n\nRejangiz ${percent}% bajarildi! +100 bonus tanga berildi!`);
+        } else {
+            alert(`⚠️ Qoniqarsiz natija (${percent}%).\n\nRejani to'liq bajarishga intiling!`);
         }
-
-        if (appState.daysCompleted < appState.totalDays) {
-            appState.daysCompleted += 1;
-        }
-
-        const today = new Date().toLocaleDateString('uz-UZ', { weekday: 'short', day: 'numeric', month: 'short' });
-        const timeNow = new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
-        
-        appState.history.push({
-            id: Date.now(),
-            date: today,
-            time: timeNow,
-            percent: percent,
-            status: status,
-            tasksList: completedTasks.map(t => t.text)
-        });
-
         appState.tasks.forEach(t => t.done = false);
         saveState();
     }
 
-    function renderHistoryList() {
-        const container = document.getElementById('history-container');
-        if (!appState.history || appState.history.length === 0) {
-            container.innerHTML = `<p style="color: var(--label-tertiary); font-size: 12px; text-align: center; padding: 12px 0;">Hozircha yakunlangan kunlar tarixi yo'q.</p>`;
-            return;
-        }
-
-        container.innerHTML = appState.history.slice().reverse().map(item => `
-            <div class="history-card-item">
-                <div class="history-header">
-                    <span style="font-weight: 700; color: #fff;">📅 ${item.date} <small style="color:var(--label-tertiary);">(${item.time || ''})</small></span>
-                    <span style="color:${item.percent >= 70 ? 'var(--ios-green)' : 'var(--ios-red)'}; font-weight:700;">
-                        ${item.percent}% • ${item.status}
-                    </span>
-                </div>
-                ${item.tasksList && item.tasksList.length > 0 ? `
-                    <div class="history-tasks-tags">
-                        ${item.tasksList.map(taskName => `<span class="task-chip-done">✓ ${taskName}</span>`).join('')}
-                    </div>
-                ` : `<span style="font-size: 11px; color: var(--label-tertiary);">Birorta ham vazifa bajarilmagan</span>`}
-            </div>
-        `).join('');
-    }
-
-    function clearHistory() {
-        if (!appState.history || appState.history.length === 0) {
-            alert("Tarix allaqachon bo'sh!");
-            return;
-        }
-        if (confirm("Haqiqatan ham barcha bajarilgan ishlar tarixini o'chirib tashlamoqchimisiz?")) {
-            appState.history = [];
-            saveState();
-            alert("Tarix muvaffaqiyatli tozalandi!");
-        }
-    }
-
-    function saveSettings() {
-        const name = document.getElementById('cfg-name').value.trim();
-        const phone = document.getElementById('cfg-phone').value.trim();
-        const goal = document.getElementById('cfg-goal').value.trim();
-        const days = parseInt(document.getElementById('cfg-days').value);
-
-        if (name) appState.user.name = name;
-        if (phone) appState.user.phone = phone;
-        if (goal) appState.goalTitle = goal;
-        if (days && days > 0) {
-            appState.totalDays = days;
-            appState.daysCompleted = 0;
-        }
-
+    function saveGoalSettings() {
+        const g = document.getElementById('cfg-goal').value.trim();
+        const d = parseInt(document.getElementById('cfg-days').value, 10);
+        if (g) appState.goalTitle = g;
+        if (d && d > 0) appState.totalDays = d;
         saveState();
-        alert("Sozlamalar saqlandi!");
+        alert("Maqsad sozlamalari yangilandi!");
     }
 
     /* ==========================================
-       6. SMART FOCUS TIMER
+       C. SMART FOKUS TAYMER
        ========================================== */
-    let timerDurationMins = 30;
-    let timerTargetTimestamp = null;
-    let timerRemainingSeconds = 30 * 60;
-    let timerInterval = null;
-    let isTimerRunning = false;
+    let timerDuration = 25;
+    let timerSec = 25 * 60;
+    let timerInt = null;
+    let timerRunning = false;
+    let timerStartedAt = null;
 
-    function formatTimerDisplay(sec) {
-        const m = Math.floor(sec / 60).toString().padStart(2, '0');
-        const s = (sec % 60).toString().padStart(2, '0');
-        return `${m}:${s}`;
+    function getTimerReward() {
+        return Math.max(20, Math.floor(timerDuration * 1.5));
+    }
+
+    function updateTimerUI() {
+        const display = document.getElementById('timer-display');
+        const btn = document.getElementById('btn-timer');
+        const label = document.getElementById('timer-task-label');
+        const status = document.getElementById('timer-status');
+        const ring = document.getElementById('timer-ring');
+        const minutes = document.getElementById('timer-session-minutes');
+        const reward = document.getElementById('timer-reward-preview');
+
+        if (!display || !btn) return;
+
+        const safeSec = Math.max(0, timerSec);
+        const m = Math.floor(safeSec / 60).toString().padStart(2, '0');
+        const s = (safeSec % 60).toString().padStart(2, '0');
+        display.innerText = `${m}:${s}`;
+        if (label) label.innerText = `🎯 ${timerDuration} daqiqa fokus`;
+        if (minutes) minutes.innerText = timerDuration;
+        if (reward) reward.innerText = `${getTimerReward()} XP`;
+
+        btn.innerText = timerRunning ? "⏸ To‘xtatish" : (timerSec < timerDuration * 60 ? "▶ Davom ettirish" : "▶ Boshlash");
+        if (status) status.innerText = timerRunning ? "Fokus davom etmoqda…" : (timerSec === 0 ? "Sessiya tugadi 🎉" : "Boshlashga tayyor");
+        if (ring) ring.classList.toggle('running', timerRunning);
+    }
+
+    function applyCustomTimer() {
+        const input = document.getElementById('inp-custom-timer');
+        const val = parseInt(input?.value, 10);
+
+        if (!Number.isFinite(val) || val < 1 || val > 600) {
+            alert("Iltimos, 1 dan 600 daqiqagacha bo‘lgan vaqtni kiriting.");
+            return;
+        }
+
+        setTimerDuration(val);
+        if (input) input.value = '';
     }
 
     function setTimerDuration(mins) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        isTimerRunning = false;
-        timerDurationMins = mins;
-        timerRemainingSeconds = mins * 60;
-        document.getElementById('timer-display').innerText = formatTimerDisplay(timerRemainingSeconds);
-        document.getElementById('btn-timer').innerText = "Boshlash";
-        document.getElementById('inp-custom-minutes').value = mins;
-        updateTimerTaskLabel();
-    }
+        const value = Number(mins);
+        if (!Number.isFinite(value) || value < 1 || value > 600) return;
 
-    function applyCustomMinutes() {
-        const inputVal = parseInt(document.getElementById('inp-custom-minutes').value);
-        if (inputVal && inputVal > 0) {
-            setTimerDuration(inputVal);
-        } else {
-            alert("Iltimos, to'g'ri daqiqa kiriting (masalan: 20 yoki 45)!");
-        }
-    }
-
-    function updateTimerTaskLabel() {
-        const customInput = document.getElementById('timer-custom-task').value.trim();
-        const taskName = customInput || `${timerDurationMins} daqiqa mashg'ulot / fokus`;
-        document.getElementById('timer-task-label').innerText = `🎯 Maqsad: ${taskName}`;
-    }
-
-    document.getElementById('timer-custom-task').addEventListener('input', updateTimerTaskLabel);
-
-    function toggleTimer() {
-        initAudio();
-        const btn = document.getElementById('btn-timer');
-
-        if (isTimerRunning) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            isTimerRunning = false;
-            btn.innerText = "Davom ettirish";
-        } else {
-            timerTargetTimestamp = Date.now() + (timerRemainingSeconds * 1000);
-            isTimerRunning = true;
-            btn.innerText = "To'xtatish";
-            updateTimerTaskLabel();
-            
-            timerInterval = setInterval(() => {
-                const now = Date.now();
-                const diff = Math.max(0, Math.ceil((timerTargetTimestamp - now) / 1000));
-                timerRemainingSeconds = diff;
-                document.getElementById('timer-display').innerText = formatTimerDisplay(timerRemainingSeconds);
-
-                if (diff <= 0) {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                    isTimerRunning = false;
-                    btn.innerText = "Boshlash";
-                    handleTimerAutoCompletion();
-                }
-            }, 400);
-        }
+        clearInterval(timerInt);
+        timerInt = null;
+        timerRunning = false;
+        timerStartedAt = null;
+        timerDuration = Math.floor(value);
+        timerSec = timerDuration * 60;
+        updateTimerUI();
     }
 
     function resetTimer() {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        isTimerRunning = false;
-        timerRemainingSeconds = timerDurationMins * 60;
-        document.getElementById('timer-display').innerText = formatTimerDisplay(timerRemainingSeconds);
-        document.getElementById('btn-timer').innerText = "Boshlash";
+        setTimerDuration(timerDuration);
     }
 
-    function handleTimerAutoCompletion() {
-        const customTask = document.getElementById('timer-custom-task').value.trim();
-        const taskName = customTask || `${timerDurationMins} daqiqa mashg'ulot`;
+    function finishTimer() {
+        clearInterval(timerInt);
+        timerInt = null;
+        timerRunning = false;
+        timerSec = 0;
+        updateTimerUI();
 
-        let matched = appState.tasks.find(t => t.text.toLowerCase().includes(taskName.toLowerCase()) || taskName.toLowerCase().includes(t.text.toLowerCase()));
+        const reward = getTimerReward();
+        appState.user.coins += reward;
+        appState.user.xp += reward;
+        saveState();
+        triggerConfetti();
+        alert(`🎉 Vaqt tugadi!\n\n${timerDuration} daqiqalik fokus uchun +${reward} tanga va +${reward} XP berildi.`);
+    }
 
-        if (matched) {
-            matched.done = true;
-        } else {
-            appState.tasks.push({
-                id: 'task_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-                text: taskName,
-                reward: 35,
-                done: true
-            });
+    function toggleTimer() {
+        if (timerRunning) {
+            clearInterval(timerInt);
+            timerInt = null;
+            timerRunning = false;
+            updateTimerUI();
+            return;
         }
 
-        appState.coins += 35;
-        appState.xp += 35;
-        playChime(true);
-        triggerConfetti();
+        if (timerSec <= 0) {
+            timerSec = timerDuration * 60;
+        }
 
-        saveState();
-        alert(`🎉 VAQT TUGADI!\n\n"${taskName}" vazifasi muvaffaqiyatli yakunlandi va AVTOMATIK TARZDA BAJARILDI deb belgilandi!\n+35 Coins & +35 XP berildi.`);
+        timerRunning = true;
+        timerStartedAt = Date.now();
+        updateTimerUI();
+
+        timerInt = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - timerStartedAt) / 1000);
+            timerSec = Math.max(0, timerDuration * 60 - elapsed);
+            updateTimerUI();
+
+            if (timerSec <= 0) finishTimer();
+        }, 250);
     }
 
-    function exportData() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
-        const dl = document.createElement('a');
-        dl.setAttribute("href", dataStr);
-        dl.setAttribute("download", `intizom_backup_${Date.now()}.json`);
-        dl.click();
+    /* ==========================================
+       D. SPEED READING & MANTIQIY SAVOLLAR
+       ========================================== */
+    let allWords = [], chunks = [], currentIndex = 0;
+    let rTimer = null, rElapsedTimer = null;
+    let rRunning = false, chunkSize = 1, rElapsedSec = 0;
+
+    const wordScreen = document.getElementById("word-screen");
+    const bookContent = document.getElementById("book-content");
+    const bookTitle = document.getElementById("book-title");
+    const bookAuthor = document.getElementById("book-author");
+    const readerProgress = document.getElementById("reader-progress");
+    const valProgress = document.getElementById("val-progress");
+    const valTotalTime = document.getElementById("val-total-time");
+    const valLeftTime = document.getElementById("val-left-time");
+    const valSpentTime = document.getElementById("val-spent-time");
+    const wpmRange = document.getElementById("wpm-range");
+    const wpmText = document.getElementById("wpm-text");
+    const quizBlock = document.getElementById("quiz-block");
+    const quizContainer = document.getElementById("quiz-cards-container");
+    const quizBadge = document.getElementById("quiz-badge");
+    const shelfGrid = document.getElementById("shelf-books-grid");
+
+    function formatTime(sec) {
+        if (!sec || sec <= 0) return "0 son";
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return m > 0 ? `${m} daq ${s > 0 ? s + ' son' : ''}` : `${s} son`;
     }
 
-    function importData(e) {
+    function calculateTime() {
+        const wpm = parseInt(wpmRange.value, 10);
+        if (allWords.length === 0 || wpm === 0) return;
+        valTotalTime.textContent = formatTime((allWords.length / wpm) * 60);
+        valLeftTime.textContent = formatTime((Math.max(0, allWords.length - (currentIndex * chunkSize)) / wpm) * 60);
+    }
+
+    function prepareReaderText() {
+        const txt = bookContent.value.trim();
+        if (!txt) { chunks = []; allWords = []; return; }
+        allWords = txt.split(/\s+/).filter(w => w.length > 0);
+        chunks = [];
+        for (let i = 0; i < allWords.length; i += chunkSize) {
+            chunks.push(allWords.slice(i, i + chunkSize).join(" "));
+        }
+        calculateTime();
+    }
+
+    bookContent.addEventListener("input", prepareReaderText);
+    wpmRange.oninput = (e) => {
+        wpmText.textContent = e.target.value;
+        calculateTime();
+        if (rRunning) { clearInterval(rTimer); startReadingLoop(); }
+    };
+
+    document.querySelectorAll(".chunk-sel").forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll(".chunk-sel").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            chunkSize = parseInt(btn.dataset.chunk, 10);
+            prepareReaderText();
+            updateScreen();
+        };
+    });
+
+    function updateScreen() {
+        if (chunks.length > 0 && currentIndex < chunks.length) {
+            wordScreen.textContent = chunks[currentIndex];
+            wordScreen.style.animation = "none";
+            void wordScreen.offsetWidth;
+            wordScreen.style.animation = "";
+            const p = Math.round(((currentIndex + 1) / chunks.length) * 100);
+            readerProgress.style.width = p + "%";
+            valProgress.textContent = `${Math.min((currentIndex + 1) * chunkSize, allWords.length)} / ${allWords.length}`;
+            calculateTime();
+        }
+    }
+
+    function startReadingLoop() {
+        const wpm = parseInt(wpmRange.value, 10);
+        const ms = (60 / wpm) * 1000 * chunkSize;
+
+        rTimer = setInterval(() => {
+            if (currentIndex < chunks.length) {
+                updateScreen();
+                currentIndex++;
+            } else {
+                clearInterval(rTimer);
+                clearInterval(rElapsedTimer);
+                rRunning = false;
+                wordScreen.textContent = "Kitob Tugadi! 🎉";
+                saveToBookshelf();
+                triggerSemanticQuiz();
+            }
+        }, ms);
+
+        if (!rElapsedTimer) {
+            rElapsedTimer = setInterval(() => {
+                rElapsedSec++;
+                const m = Math.floor(rElapsedSec / 60).toString().padStart(2, '0');
+                const s = (rElapsedSec % 60).toString().padStart(2, '0');
+                valSpentTime.textContent = `${m}:${s}`;
+            }, 1000);
+        }
+    }
+
+    document.getElementById("btn-start").onclick = () => {
+        if (!rRunning) {
+            prepareReaderText();
+            if (chunks.length === 0) return alert("Iltimos, matn kiriting yoki PDF yuklang!");
+            quizBlock.style.display = "none";
+            rRunning = true;
+            startReadingLoop();
+        }
+    };
+
+    document.getElementById("btn-pause").onclick = () => {
+        if (rRunning) {
+            clearInterval(rTimer);
+            clearInterval(rElapsedTimer);
+            rElapsedTimer = null;
+            rRunning = false;
+            triggerSemanticQuiz();
+        }
+    };
+
+    document.getElementById("btn-reset").onclick = () => {
+        clearInterval(rTimer);
+        clearInterval(rElapsedTimer);
+        rElapsedTimer = null;
+        rRunning = false;
+        currentIndex = 0;
+        rElapsedSec = 0;
+        readerProgress.style.width = "0%";
+        valProgress.textContent = "0 / 0";
+        valSpentTime.textContent = "00:00";
+        wordScreen.textContent = "Tayyormisiz?";
+        quizBlock.style.display = "none";
+        calculateTime();
+    };
+
+    document.getElementById("pdf-upload").onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-            try {
-                const parsed = JSON.parse(evt.target.result);
-                if (parsed && parsed.tasks) {
-                    appState = parsed;
-                    saveState();
-                    alert("Ma'lumotlar tiklandi!");
-                }
-            } catch (err) {
-                alert("Fayl formati mos kelmadi!");
+        bookTitle.value = file.name.replace(/\.[^/.]+$/, "");
+        bookContent.value = "PDF sahifalari yuklanmoqda...";
+        try {
+            const buffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+            let fullText = "";
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                fullText += content.items.map(s => s.str).join(" ") + " ";
             }
-        };
-        reader.readAsText(file);
+            bookContent.value = fullText.trim();
+            prepareReaderText();
+            currentIndex = 0;
+            updateScreen();
+        } catch (err) {
+            alert("PDF faylni o'qishda xatolik: " + err.message);
+        }
+    };
+
+    /* 3 tadan 10 tagacha Mantiqiy Savollar & AI Semantik Tahlil */
+    function triggerSemanticQuiz() {
+        const readWordsCount = Math.min((currentIndex + 1) * chunkSize, allWords.length);
+        if (readWordsCount < 30) return;
+
+        const readText = allWords.slice(0, readWordsCount).join(" ");
+        const sentences = readText.match(/[^.!?]+[.!?]+/g) || [readText];
+        const validSentences = sentences.map(s => s.trim()).filter(s => s.split(" ").length >= 6);
+        if (validSentences.length < 2) return;
+
+        let qCount = Math.floor(readWordsCount / 90);
+        qCount = Math.max(3, Math.min(10, qCount));
+        qCount = Math.min(qCount, validSentences.length);
+
+        quizBadge.textContent = `${qCount} ta savol`;
+        quizContainer.innerHTML = "";
+
+        const shuffledSentences = [...validSentences].sort(() => 0.5 - Math.random()).slice(0, qCount);
+
+        shuffledSentences.forEach((sentence, idx) => {
+            const card = document.createElement("div");
+            card.className = "quiz-card";
+
+            if (idx === qCount - 1) {
+                const keyTerms = sentence.split(/\s+/).filter(w => w.length > 4).slice(0, 4);
+                card.innerHTML = `
+                    <div style="font-size:14px; font-weight:700; color:var(--ios-purple); margin-bottom:6px;">${idx + 1}. Tushuntirish va Xulosa Savoli (Ochiq Fikr):</div>
+                    <div style="font-size:13px; color:#fff; line-height:1.4; margin-bottom:8px;">Ushbu o'qilgan qismning mohiyatini o'z so'zlaringiz bilan yozing:<br><em style="color:var(--label-secondary);">"${sentence}"</em></div>
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <textarea class="ios-input" id="ai-user-answer" style="height:65px;" placeholder="O'z fikringiz va tushunganingizni yozing..."></textarea>
+                        <button class="ios-btn btn-blue" id="btn-eval-ai">🤖 Sun'iy Intellekt Bilan Tekshirish</button>
+                        <div id="ai-eval-result" class="ai-eval-badge" style="display:none;"></div>
+                    </div>
+                `;
+
+                setTimeout(() => {
+                    document.getElementById('btn-eval-ai').onclick = () => {
+                        const userAns = document.getElementById('ai-user-answer').value.trim();
+                        if (!userAns) return alert("Iltimos, avval o'z fikringizni yozing!");
+
+                        const resBox = document.getElementById('ai-eval-result');
+                        let matches = 0;
+                        keyTerms.forEach(term => {
+                            if (userAns.toLowerCase().includes(term.toLowerCase().substring(0, 4))) matches++;
+                        });
+
+                        const score = Math.min(100, Math.round(((matches / Math.max(1, keyTerms.length)) * 60) + (userAns.length > 20 ? 40 : 20)));
+
+                        resBox.style.display = "block";
+                        if (score >= 60) {
+                            resBox.style.background = "rgba(48, 209, 88, 0.15)";
+                            resBox.style.border = "1px solid rgba(48, 209, 88, 0.3)";
+                            resBox.style.color = "var(--ios-green)";
+                            resBox.innerHTML = `<b>To'g'ri tushunildi (${score}% aniqlik):</b> Siz matnning asosiy g'oyasini to'g'ri anglab, asosiy tushunchalarni bayon qildingiz! 🎉`;
+                            appState.user.coins += 20;
+                            saveState();
+                        } else {
+                            resBox.style.background = "rgba(255, 159, 10, 0.15)";
+                            resBox.style.border = "1px solid rgba(255, 159, 10, 0.3)";
+                            resBox.style.color = "var(--ios-orange)";
+                            resBox.innerHTML = `<b>Qisman mos keldi (${score}%):</b> Fikringiz qiziq, ammo asl matndagi asosiy tushunchalarni biroz chuqurroq yoritsangiz yanada aniq bo'ladi.`;
+                        }
+                    };
+                }, 50);
+
+            } else {
+                const correctStatement = `Ushbu qismda asosan "${sentence.substring(0, 50)}..." mazmuni ifodalangan.`;
+                const wrong1 = `Ushbu qism mutlaqo boshqa voqealar va zid fikrlar haqida.`;
+                const wrong2 = `Bu yerda asar qahramonlarining xatti-harakatlari tanqid ostiga olingan.`;
+                const wrong3 = `Matn mazmuni keltirilgan fikrga qarama-qarshi mulohaza yuritadi.`;
+
+                const options = [
+                    { text: correctStatement, isCorrect: true },
+                    { text: wrong1, isCorrect: false },
+                    { text: wrong2, isCorrect: false },
+                    { text: wrong3, isCorrect: false }
+                ].sort(() => 0.5 - Math.random());
+
+                card.innerHTML = `
+                    <div style="font-size:13.5px; font-weight:700; color:#fff; margin-bottom:6px;">${idx + 1}-Savol: Matn mazmuni bo'yicha to'g'ri xulosani tanlang:</div>
+                    <div style="font-size:12.5px; color:var(--label-secondary); margin-bottom:8px;"><em>"${sentence}"</em></div>
+                `;
+
+                const grid = document.createElement("div");
+                grid.className = "opt-grid";
+
+                options.forEach(opt => {
+                    const btn = document.createElement("button");
+                    btn.className = "opt-btn";
+                    btn.textContent = opt.text;
+                    btn.onclick = () => {
+                        grid.querySelectorAll("button").forEach(b => b.disabled = true);
+                        if (opt.isCorrect) {
+                            btn.classList.add("correct");
+                            appState.user.coins += 5;
+                            saveState();
+                        } else {
+                            btn.classList.add("wrong");
+                            grid.querySelectorAll("button").forEach(b => {
+                                if (b.textContent === correctStatement) b.classList.add("correct");
+                            });
+                        }
+                    };
+                    grid.appendChild(btn);
+                });
+
+                card.appendChild(grid);
+            }
+
+            quizContainer.appendChild(card);
+        });
+
+        quizBlock.style.display = "block";
     }
 
+    /* ==========================================
+       E. KITOB JAVONI (MUTOLAA USLUBI)
+       ========================================== */
+    const coverGradients = [
+        "linear-gradient(145deg, #1e3a8a, #0f172a)",
+        "linear-gradient(145deg, #701a75, #18181b)",
+        "linear-gradient(145deg, #854d0e, #1c1917)",
+        "linear-gradient(145deg, #14532d, #052e16)",
+        "linear-gradient(145deg, #374151, #111827)"
+    ];
+
+    function saveToBookshelf() {
+        const shelf = JSON.parse(localStorage.getItem("unified_shelf_v3") || "[]");
+        const title = bookTitle.value.trim() || "Nomsiz Asar";
+        const author = bookAuthor.value.trim() || "Muallif noma'lum";
+
+        const bookObj = {
+            id: Date.now(),
+            title: title,
+            author: author,
+            words: allWords.length,
+            timeSpent: formatTime(rElapsedSec),
+            date: new Date().toLocaleDateString('uz-UZ'),
+            bgGrad: coverGradients[Math.floor(Math.random() * coverGradients.length)]
+        };
+
+        const existIdx = shelf.findIndex(b => b.title.toLowerCase() === title.toLowerCase());
+        if (existIdx > -1) shelf[existIdx] = bookObj;
+        else shelf.unshift(bookObj);
+
+        localStorage.setItem("unified_shelf_v3", JSON.stringify(shelf));
+    }
+
+    function renderShelf() {
+        const shelf = JSON.parse(localStorage.getItem("unified_shelf_v3") || "[]");
+        shelfGrid.innerHTML = "";
+        document.getElementById("shelf-count-pill").textContent = `${shelf.length} ta kitob`;
+
+        if (shelf.length === 0) {
+            shelfGrid.innerHTML = `<p style="color:var(--label-tertiary); grid-column:1/-1; text-align:center; padding:30px;">Hozircha o‘qib tugatilgan kitoblar mavjud emas.</p>`;
+            return;
+        }
+
+        shelf.forEach(b => {
+            const card = document.createElement("div");
+            card.className = "book-card";
+            card.innerHTML = `
+                <div class="book-cover" style="background: ${b.bgGrad};">
+                    <div class="book-logo-tag">📖 Mutolaa</div>
+                    <div class="book-cover-title">${b.title}</div>
+                    <div class="book-cover-author">${b.author}</div>
+                </div>
+                <div class="book-actions-pill">
+                    <span>🎧 Audio</span>
+                    <span>📖 ${b.words} so‘z</span>
+                </div>
+                <div style="font-size:11px; color:var(--label-tertiary); text-align:center;">⏱ ${b.timeSpent} • 📅 ${b.date}</div>
+            `;
+            shelfGrid.appendChild(card);
+        });
+    }
+
+    /* ==========================================
+       F. KO'Z MASHQLARI (4 TA TRENAJYOR)
+       ========================================== */
+    let currentGymMode = 'schulte';
+    let gMotionTimer = null;
+    let gAngle = 0;
+    const gDot = document.getElementById('gym-dot');
+    const gArena = document.getElementById('motion-arena');
+    const gInstruction = document.getElementById('gym-instruction');
+
+    function switchGymExercise(mode, button) {
+        currentGymMode = mode;
+        stopMotionExercise();
+        document.querySelectorAll('.gym-tab').forEach(t => t.classList.remove('active'));
+        if (button) button.classList.add('active');
+
+        document.getElementById('gym-schulte-box').style.display = mode === 'schulte' ? 'flex' : 'none';
+        document.getElementById('gym-motion-box').style.display = mode !== 'schulte' ? 'flex' : 'none';
+
+        if (mode === 'schulte') {
+            initSchulteTable();
+        } else if (mode === 'saccade') {
+            gInstruction.innerText = "Sakkadik Sakrash: Nuqta burchakdan-burchakka sakraydi. Faqat ko'z bilan tezkor kuzating.";
+        } else if (mode === 'infinity') {
+            gInstruction.innerText = "Cheksizlik (∞): Ko'z mushaklarini bo'shashtirib, 8-shaklidagi silliq harakatni kuzating.";
+        } else if (mode === 'focus') {
+            gInstruction.innerText = "Fokus Chuqurligi: Nuqta yaqinlashadi va uzoqlashadi. Nigohni doimiy aniqlikda ushlang.";
+        }
+    }
+
+    function startMotionExercise() {
+        stopMotionExercise();
+        let step = 0;
+        const w = (gArena.clientWidth - 40) / 2;
+        const h = (gArena.clientHeight - 40) / 2;
+
+        if (currentGymMode === 'saccade') {
+            const points = [
+                {x: -w, y: 0}, {x: w, y: 0}, {x: 0, y: -h}, {x: 0, y: h},
+                {x: -w, y: -h}, {x: w, y: h}, {x: -w, y: h}, {x: w, y: -h}
+            ];
+            gMotionTimer = setInterval(() => {
+                const pt = points[step % points.length];
+                gDot.style.transform = `translate(${pt.x}px, ${pt.y}px) scale(1)`;
+                step++;
+            }, 750);
+        } else if (currentGymMode === 'infinity') {
+            gMotionTimer = setInterval(() => {
+                gAngle += 0.05;
+                const x = Math.sin(gAngle) * (w * 0.85);
+                const y = Math.sin(gAngle * 2) * (h * 0.65);
+                gDot.style.transform = `translate(${x}px, ${y}px) scale(1)`;
+            }, 30);
+        } else if (currentGymMode === 'focus') {
+            gMotionTimer = setInterval(() => {
+                gAngle += 0.04;
+                const scale = 0.5 + (Math.sin(gAngle) + 1) * 1.2;
+                gDot.style.transform = `translate(0px, 0px) scale(${scale})`;
+            }, 30);
+        }
+    }
+
+    function stopMotionExercise() {
+        if (gMotionTimer) { clearInterval(gMotionTimer); gMotionTimer = null; }
+        gDot.style.transform = 'translate(0px, 0px) scale(1)';
+    }
+
+    // Schulte Table
+    let sTarget = 1, sTimer = null, sStart = 0;
+    function initSchulteTable() {
+        sTarget = 1;
+        document.getElementById("schulte-val").textContent = "1";
+        document.getElementById("schulte-timer").textContent = "0.0s";
+        clearInterval(sTimer);
+        sStart = 0;
+        const box = document.getElementById("schulte-cells");
+        box.innerHTML = "";
+
+        const nums = Array.from({length: 25}, (_, i) => i + 1).sort(() => 0.5 - Math.random());
+        nums.forEach(n => {
+            const cell = document.createElement("div");
+            cell.className = "schulte-cell";
+            cell.textContent = n;
+            cell.onclick = () => {
+                if (sStart === 0) {
+                    sStart = Date.now();
+                    sTimer = setInterval(() => {
+                        document.getElementById("schulte-timer").textContent = ((Date.now() - sStart) / 1000).toFixed(1) + "s";
+                    }, 100);
+                }
+                if (n === sTarget) {
+                    cell.classList.add("done");
+                    sTarget++;
+                    if (sTarget <= 25) {
+                        document.getElementById("schulte-val").textContent = sTarget;
+                    } else {
+                        clearInterval(sTimer);
+                        document.getElementById("schulte-val").textContent = "G‘alaba! 🎉";
+                        triggerConfetti();
+                    }
+                }
+            };
+            box.appendChild(cell);
+        });
+    }
+
+    /* ==========================================
+       G. EFFECT (CONFETTI)
+       ========================================== */
     function triggerConfetti() {
         const c = document.getElementById('confetti-canvas');
         const cx = c.getContext('2d');
         c.width = window.innerWidth;
         c.height = window.innerHeight;
-
         const pieces = [];
         const colors = ['#0A84FF', '#30D158', '#FF9F0A', '#BF5AF2', '#FF453A'];
 
-        for (let i = 0; i < 75; i++) {
+        for (let i = 0; i < 70; i++) {
             pieces.push({
-                x: c.width / 2,
-                y: c.height / 2,
+                x: c.width / 2, y: c.height / 2,
                 w: 7, h: 7,
                 vx: (Math.random() - 0.5) * 14,
                 vy: (Math.random() - 0.7) * 14,
@@ -1511,32 +2366,30 @@
         function draw() {
             cx.clearRect(0, 0, c.width, c.height);
             let active = false;
-
             pieces.forEach(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-                p.vy += 0.38;
-                p.opacity -= 0.015;
-
+                p.x += p.vx; p.y += p.vy;
+                p.vy += 0.38; p.opacity -= 0.015;
                 if (p.opacity > 0) {
                     active = true;
                     cx.fillStyle = p.color;
                     cx.fillRect(p.x, p.y, p.w, p.h);
                 }
             });
-
             if (active) requestAnimationFrame(draw);
             else cx.clearRect(0, 0, c.width, c.height);
         }
         draw();
     }
 
-    // Initialize View on Load
+    // Yuklanish
     window.addEventListener('DOMContentLoaded', () => {
         loadState();
-        renderApp();
-        setTimeout(resizeCanvas, 100);
-        requestAnimationFrame(animateTrack);
+        checkAuthView();
+        updateTimerUI();
+        requestAnimationFrame(() => {
+            resizeRoadmapCanvas();
+            draw3DRoadmap();
+        });
     });
 </script>
 
