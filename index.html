@@ -1454,6 +1454,16 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
         appState.goalTitle = "";
         appState.tasks = [];
         try { localStorage.removeItem('unified_app_state_v3'); } catch(e) {}
+
+        // Ro'yxatdan o'tish formasini ham toza 1-qadamga qaytaramiz —
+        // aks holda eski vazifalar/qadam ko'rinishida osilib qolar edi.
+        tempWizardTasks = [];
+        document.getElementById('auth-name').value = "";
+        document.getElementById('auth-phone').value = "";
+        document.getElementById('auth-goal').value = "";
+        document.getElementById('auth-days').value = "";
+        renderAuthTasks();
+        goToStep(1);
         checkAuthView();
     }
 
@@ -1473,15 +1483,14 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
             console.warn("Bulutdan yuklashda xatolik, ro'yxatdan o'tish davom etadi:", e);
         }
 
-        // Yangi foydalanuvchi — ismi/emailini Google profilidan to'ldirib,
-        // qolgan ro'yxatdan o'tish qadamlarini (maqsad, vazifalar) davom ettiramiz.
+        // Yangi foydalanuvchi — ismini Google profilidan to'ldiramiz.
+        // Email raqamni "telefon" maydoniga yozmaymiz — bu ikkisi boshqa-boshqa narsa;
+        // telefon raqamini foydalanuvchi xohlasa o'zi kiritadi.
         appState.googleUid = user.uid;
         appState.user.name = user.displayName || "";
-        appState.user.phone = user.email || "Kiritilmagan";
+        appState.user.email = user.email || "";
         const nameInput = document.getElementById('auth-name');
-        const phoneInput = document.getElementById('auth-phone');
         if (nameInput) nameInput.value = appState.user.name;
-        if (phoneInput) phoneInput.value = user.email || "";
         goToStep(2);
     }
 
@@ -1832,7 +1841,10 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
         targetProgressPercent = overallPercent / 100;
 
         document.getElementById('txt-user-name').innerText = appState.user.name || "Foydalanuvchi";
-        document.getElementById('txt-user-phone').innerText = appState.user.phone || "Profil";
+        const subtitleContact = (appState.user.phone && appState.user.phone !== "Kiritilmagan")
+            ? appState.user.phone
+            : (appState.user.email || "Profil");
+        document.getElementById('txt-user-phone').innerText = subtitleContact;
         document.getElementById('txt-coins').innerText = `${appState.user.coins} Coins`;
         document.getElementById('txt-level').innerText = `⭐ ${Math.floor(appState.user.xp / 150) + 1}-Daraja`;
         document.getElementById('txt-streak').innerText = `🔥 ${appState.user.streak} Kunlik Streak`;
