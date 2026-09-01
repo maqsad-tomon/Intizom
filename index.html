@@ -1021,6 +1021,7 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <input type="text" class="ios-input" id="auth-name" placeholder="Ism va Familiyangiz (majburiy)">
                 <input type="tel" class="ios-input" id="auth-phone" placeholder="Telefon raqamingiz (ixtiyoriy)">
+                <input type="email" class="ios-input" id="auth-email" placeholder="Email manzilingiz (ixtiyoriy)">
             </div>
             <button class="ios-btn btn-blue" onclick="goToStep(2)">Davom etish →</button>
 
@@ -1170,6 +1171,31 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
                         <div style="display: flex; gap: 8px;">
                             <input type="number" class="ios-input" id="cfg-days" placeholder="Jami kunlar soni" min="1">
                             <button class="ios-btn btn-blue" onclick="saveGoalSettings()">Saqlash</button>
+                        </div>
+                    </div>
+
+                    <!-- Hisob va kirish sozlamalari -->
+                    <div style="border-top: 1px solid var(--border); padding-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                        <div>
+                            <span style="font-size: 12.5px; color: var(--label-secondary); font-weight: 700;">Hisob va kirish</span>
+                            <div style="font-size:11px; color:var(--label-tertiary); margin-top:2px;">Email qo‘shing/o‘zgartiring yoki Google hisobingizni boshqaring — ikkalasi ham ixtiyoriy.</div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="email" class="ios-input" id="cfg-email" placeholder="Email manzilingiz (ixtiyoriy)">
+                            <button class="ios-btn btn-blue" onclick="saveEmailSettings()">Saqlash</button>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button type="button" class="ios-btn" id="btn-google-connect" style="display:none; background:#fff; color:#1f1f1f; font-weight:700; align-items:center; justify-content:center; gap:8px; flex:1; min-width:180px;" onclick="signInWithGoogle()">
+                                <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
+                                    <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.3-.4-3.5z"/>
+                                    <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 6.1 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+                                    <path fill="#4CAF50" d="M24 44c5.3 0 10.1-1.8 13.8-5.1l-6.4-5.2C29.3 35.5 26.8 36.3 24 36.3c-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.5 39.5 16.2 44 24 44z"/>
+                                    <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.3 5.6l6.4 5.2C40.6 36.2 44 30.6 44 24c0-1.2-.1-2.3-.4-3.5z"/>
+                                </svg>
+                                Google hisobini ulash
+                            </button>
+                            <button type="button" class="ios-btn btn-gray" id="btn-google-switch" style="display:none; flex:1; min-width:150px;" onclick="switchGoogleAccount()">🔄 Google hisobini almashtirish</button>
+                            <button type="button" class="ios-btn btn-gray" id="btn-google-disconnect" style="display:none; flex:1; min-width:150px;" onclick="disconnectGoogleAccount()">🔗 Google hisobini uzish</button>
                         </div>
                     </div>
                 </div>
@@ -1461,6 +1487,9 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
         }
 
         const provider = new firebase.auth.GoogleAuthProvider();
+        // Har safar hisob tanlash oynasi chiqishi uchun — shu jumladan
+        // "Google hisobini almashtirish" tugmasi bosilganda ham foydali.
+        provider.setCustomParameters({ prompt: 'select_account' });
         setGoogleButtonLoading(true);
 
         // Popup/redirect javob bermay qolgan taqdirda foydalanuvchi abadiy
@@ -1512,11 +1541,46 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
         tempWizardTasks = [];
         document.getElementById('auth-name').value = "";
         document.getElementById('auth-phone').value = "";
+        document.getElementById('auth-email').value = "";
         document.getElementById('auth-goal').value = "";
         document.getElementById('auth-days').value = "";
         renderAuthTasks();
         goToStep(1);
         checkAuthView();
+    }
+
+    // Faqat Google hisobini profildan uzadi — mahalliy ma'lumotlar
+    // (vazifalar, maqsad va h.k.) shu qurilmada saqlanib qoladi.
+    function disconnectGoogleAccount() {
+        if (!confirm("Google hisobini profilingizdan uzmoqchimisiz?\n\nMa'lumotlaringiz shu qurilmada saqlanib qoladi, lekin endi bulutga avtomatik sinxronlanmaydi.")) return;
+        if (fbAuth) fbAuth.signOut();
+        appState.googleUid = null;
+        saveState();
+        checkAuthView();
+    }
+
+    // Joriy Google hisobidan chiqib, boshqa hisobni tanlash imkonini beradi.
+    // Tanlangan yangi hisob bilan avval ma'lumot saqlangan bo'lsa, o'sha
+    // bulutdagi ma'lumotlar yuklanadi (handleGoogleLogin orqali).
+    function switchGoogleAccount() {
+        if (!firebaseReady) {
+            alert("Google orqali kirish hali sozlanmagan.\n\nIlova egasi index.html faylidagi firebaseConfig qiymatlarini o'zining Firebase loyihasiga almashtirishi kerak.");
+            return;
+        }
+        if (fbAuth) {
+            fbAuth.signOut().finally(() => signInWithGoogle());
+        } else {
+            signInWithGoogle();
+        }
+    }
+
+    // Profil bo'limidan email qo'shish yoki o'zgartirish uchun — Google
+    // hisobisiz ham ishlaydi, chunki email/Google ikkalasi ham ixtiyoriy.
+    function saveEmailSettings() {
+        const email = document.getElementById('cfg-email').value.trim();
+        appState.user.email = email;
+        saveState();
+        alert(email ? "Email saqlandi." : "Email tozalandi.");
     }
 
     async function handleGoogleLogin(user) {
@@ -1543,6 +1607,14 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
         appState.user.email = user.email || "";
         const nameInput = document.getElementById('auth-name');
         if (nameInput) nameInput.value = appState.user.name;
+        const emailInput = document.getElementById('auth-email');
+        if (emailInput) emailInput.value = appState.user.email;
+
+        // Bu yangi Google hisobi uchun bulutda profil topilmadi — onboarding
+        // formasini to'ldirish kerak (masalan, "hisob almashtirish" orqali
+        // birinchi marta ulangan yangi hisob bo'lsa).
+        appState.isLoggedIn = false;
+        checkAuthView();
         goToStep(2);
     }
 
@@ -1552,6 +1624,18 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
         const connected = !!appState.googleUid;
         if (statusPill) statusPill.style.display = connected ? 'flex' : 'none';
         if (signoutBtn) signoutBtn.style.display = connected ? 'inline-flex' : 'none';
+
+        // "Hisob va kirish" bo'limidagi Google tugmalari: ulanmagan bo'lsa
+        // faqat "ulash" tugmasi, ulangan bo'lsa "almashtirish"/"uzish" tugmalari.
+        const connectBtn = document.getElementById('btn-google-connect');
+        const switchBtn = document.getElementById('btn-google-switch');
+        const disconnectBtn = document.getElementById('btn-google-disconnect');
+        if (connectBtn) connectBtn.style.display = connected ? 'none' : 'flex';
+        if (switchBtn) switchBtn.style.display = connected ? 'inline-flex' : 'none';
+        if (disconnectBtn) disconnectBtn.style.display = connected ? 'inline-flex' : 'none';
+
+        const cfgEmail = document.getElementById('cfg-email');
+        if (cfgEmail && document.activeElement !== cfgEmail) cfgEmail.value = appState.user.email || "";
     }
 
     /* Onboarding / Wizard Mantig'i */
@@ -1564,6 +1648,7 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
             }
             appState.user.name = name;
             appState.user.phone = document.getElementById('auth-phone').value.trim() || "Kiritilmagan";
+            appState.user.email = document.getElementById('auth-email').value.trim() || "";
         }
 
         if (step === 3) {
@@ -1650,6 +1735,7 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
             tempWizardTasks = [];
             document.getElementById('auth-name').value = appState.user.name;
             document.getElementById('auth-phone').value = appState.user.phone !== "Kiritilmagan" ? appState.user.phone : "";
+            document.getElementById('auth-email').value = appState.user.email || "";
             document.getElementById('auth-goal').value = appState.goalTitle;
             document.getElementById('auth-days').value = appState.totalDays;
             renderAuthTasks();
