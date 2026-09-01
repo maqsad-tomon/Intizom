@@ -1031,13 +1031,13 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
             </div>
 
             <button type="button" class="ios-btn" id="btn-google-signin" style="background:#fff; color:#1f1f1f; display:flex; align-items:center; justify-content:center; gap:10px; font-weight:700;" onclick="signInWithGoogle()">
-                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                <svg id="google-g-icon" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
                     <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.3-.4-3.5z"/>
                     <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 6.1 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
                     <path fill="#4CAF50" d="M24 44c5.3 0 10.1-1.8 13.8-5.1l-6.4-5.2C29.3 35.5 26.8 36.3 24 36.3c-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.5 39.5 16.2 44 24 44z"/>
                     <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.3 5.6l6.4 5.2C40.6 36.2 44 30.6 44 24c0-1.2-.1-2.3-.4-3.5z"/>
                 </svg>
-                Google orqali davom etish
+                <span id="google-btn-label">Google orqali davom etish</span>
             </button>
             <p style="font-size:10.5px; color:var(--label-tertiary); text-align:center; margin-top:-4px;">Google bilan kirsangiz, ma'lumotlaringiz bulutda saqlanadi va istalgan qurilmadan kirishingiz mumkin bo'ladi.</p>
         </div>
@@ -1429,20 +1429,72 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
         console.warn("Firebase sozlanmagan yoki xato:", e);
     }
 
+    // Telefonlarda (ayniqsa ichki brauzerlarda) signInWithPopup ko'pincha
+    // ochilmay qoladi yoki abadiy "yuklanmoqda" holatida osilib qoladi.
+    // Shu sabab telefonda "redirect" usuli, kompyuterda esa "popup" ishlatiladi.
+    function isMobileDevice() {
+        return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent || "");
+    }
+
+    function setGoogleButtonLoading(isLoading) {
+        const btn = document.getElementById('btn-google-signin');
+        const label = document.getElementById('google-btn-label');
+        if (!btn || !label) return;
+        btn.disabled = isLoading;
+        btn.style.opacity = isLoading ? '0.65' : '1';
+        btn.style.pointerEvents = isLoading ? 'none' : 'auto';
+        label.textContent = isLoading ? "Ulanmoqda..." : "Google orqali davom etish";
+    }
+
     function signInWithGoogle() {
         if (!firebaseReady) {
             alert("Google orqali kirish hali sozlanmagan.\n\nIlova egasi index.html faylidagi firebaseConfig qiymatlarini o'zining Firebase loyihasiga almashtirishi kerak (kod ichida A0-bo'limga izoh sifatida qoldirilgan).");
             return;
         }
+
+        // Fayl to'g'ridan-to'g'ri "file://" orqali ochilgan bo'lsa, Google
+        // kirish hech qachon ishlamaydi — buni darhol va aniq aytib beramiz,
+        // aks holda tugma cheksiz "yuklanmoqda" holatida osilib qolganday tuyuladi.
+        if (location.protocol === 'file:') {
+            alert("Google orqali kirish faqat ilova https:// (yoki localhost) manzilidan ochilganda ishlaydi.\n\nHozir fayl to'g'ridan-to'g'ri diskdan (file://) ochilgan — shuning uchun kirish tugmasi javob bermaydi. Ilovani veb-serverga (masalan Firebase Hosting, Netlify yoki oddiy http-server) joylashtirib qayta urinib ko'ring.");
+            return;
+        }
+
         const provider = new firebase.auth.GoogleAuthProvider();
-        fbAuth.signInWithPopup(provider)
-            .then(result => handleGoogleLogin(result.user))
-            .catch(err => {
+        setGoogleButtonLoading(true);
+
+        // Popup/redirect javob bermay qolgan taqdirda foydalanuvchi abadiy
+        // kutib qolmasligi uchun ehtiyot chorasi sifatida taymer qo'yamiz.
+        const stuckTimer = setTimeout(() => {
+            setGoogleButtonLoading(false);
+            alert("Google bilan bog'lanish juda uzoq davom etyapti.\n\nInternet aloqangizni tekshirib qayta urinib ko'ring, yoki brauzeringiz sozlamalarida pop-up/uchinchi tomon oynalar bloklanmaganini tekshiring.");
+        }, 15000);
+
+        if (isMobileDevice()) {
+            fbAuth.signInWithRedirect(provider).catch(err => {
+                clearTimeout(stuckTimer);
+                setGoogleButtonLoading(false);
                 console.error(err);
-                if (err && err.code !== 'auth/popup-closed-by-user') {
-                    alert("Google bilan kirishda xatolik yuz berdi. Qaytadan urinib ko'ring.");
-                }
+                alert("Google bilan kirishda xatolik yuz berdi. Qaytadan urinib ko'ring.");
             });
+            // Muvaffaqiyatli bo'lsa sahifa Google'ga o'tib, qaytib kelganda
+            // getRedirectResult() orqali handleGoogleLogin() chaqiriladi (pastga qarang).
+        } else {
+            fbAuth.signInWithPopup(provider)
+                .then(result => {
+                    clearTimeout(stuckTimer);
+                    setGoogleButtonLoading(false);
+                    handleGoogleLogin(result.user);
+                })
+                .catch(err => {
+                    clearTimeout(stuckTimer);
+                    setGoogleButtonLoading(false);
+                    console.error(err);
+                    if (err && err.code !== 'auth/popup-closed-by-user') {
+                        alert("Google bilan kirishda xatolik yuz berdi. Qaytadan urinib ko'ring.");
+                    }
+                });
+        }
     }
 
     function signOutGoogle() {
@@ -2590,7 +2642,8 @@ FAQAT quyidagi JSON obyekt formatida javob qaytar, boshqa hech narsa yozma:
             const card = document.createElement("div");
             card.className = "book-card";
             card.innerHTML = `
-                <div class="book-cover" style="background: ${b.bgGrad};">
+                <div class="book-cover" style="background: ${b.bgGrad}; position:relative;">
+                    <button type="button" class="book-delete-btn" title="Kitobni javondan o‘chirish" onclick="event.stopPropagation(); deleteFromBookshelf(${b.id});" style="position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:50%; border:1px solid rgba(255,255,255,0.25); background:rgba(0,0,0,0.45); color:#fff; font-size:13px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;">✕</button>
                     <div class="book-logo-tag">📖 Mutolaa</div>
                     <div class="book-cover-title">${b.title}</div>
                     <div class="book-cover-author">${b.author}</div>
@@ -2603,6 +2656,14 @@ FAQAT quyidagi JSON obyekt formatida javob qaytar, boshqa hech narsa yozma:
             `;
             shelfGrid.appendChild(card);
         });
+    }
+
+    function deleteFromBookshelf(bookId) {
+        if (!confirm("Bu kitobni javondan o‘chirmoqchimisiz? Bu amalni orqaga qaytarib bo‘lmaydi.")) return;
+        const shelf = JSON.parse(localStorage.getItem("unified_shelf_v3") || "[]");
+        const updated = shelf.filter(b => b.id !== bookId);
+        localStorage.setItem("unified_shelf_v3", JSON.stringify(updated));
+        renderShelf();
     }
 
     /* ==========================================
@@ -2765,6 +2826,21 @@ FAQAT quyidagi JSON obyekt formatida javob qaytar, boshqa hech narsa yozma:
         // Google orqali avval kirilgan bo'lsa, qurilma/brauzer almashtirilgan
         // taqdirda ham hisobni avtomatik tanib, bulutdagi ma'lumotlarni tiklaydi.
         if (firebaseReady) {
+            // Telefonda signInWithRedirect() ishlatilgani uchun, foydalanuvchi
+            // Google'dan qaytib kelganda natija shu yerda qayta ishlanadi.
+            setGoogleButtonLoading(true);
+            fbAuth.getRedirectResult()
+                .then(result => {
+                    setGoogleButtonLoading(false);
+                    if (result && result.user) {
+                        handleGoogleLogin(result.user);
+                    }
+                })
+                .catch(err => {
+                    setGoogleButtonLoading(false);
+                    console.error("Redirect natijasini olishda xatolik:", err);
+                });
+
             fbAuth.onAuthStateChanged(user => {
                 if (user && !appState.isLoggedIn) {
                     handleGoogleLogin(user);
