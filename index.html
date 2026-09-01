@@ -1584,6 +1584,12 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
     }
 
     async function handleGoogleLogin(user) {
+        // Google tugmasi bosilishidan OLDIN foydalanuvchi allaqachon tizimga
+        // kirgan bo'lsa (masalan, sozlamalardan "Google hisobini ulash" yoki
+        // "almashtirish" bosilgan bo'lsa), buni eslab qolamiz — chunki bu holda
+        // mavjud lokal ma'lumotlarni (maqsad, vazifalar) yo'qotib qo'ymasligimiz kerak.
+        const wasAlreadyLoggedIn = appState.isLoggedIn;
+
         try {
             const doc = await fbDb.collection('users').doc(user.uid).get();
             if (doc.exists) {
@@ -1599,9 +1605,24 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
             console.warn("Bulutdan yuklashda xatolik, ro'yxatdan o'tish davom etadi:", e);
         }
 
-        // Yangi foydalanuvchi — ismini Google profilidan to'ldiramiz.
-        // Email raqamni "telefon" maydoniga yozmaymiz — bu ikkisi boshqa-boshqa narsa;
-        // telefon raqamini foydalanuvchi xohlasa o'zi kiritadi.
+        // Bu Google hisobi uchun bulutda hali hech qanday ma'lumot topilmadi.
+        if (wasAlreadyLoggedIn) {
+            // Foydalanuvchi mavjud (lokal) profili bilan tizimda edi va shunchaki
+            // Google hisobini shu profilga BOG'LAMOQCHI — onboardingga qaytarmaymiz,
+            // aksincha mavjud ism/maqsad/vazifalarni saqlab, faqat Google hisobini
+            // ulaymiz va darhol bulutga zaxira sifatida yuklaymiz.
+            appState.googleUid = user.uid;
+            if (!appState.user.email) appState.user.email = user.email || "";
+            saveState();
+            checkAuthView();
+            alert("Google hisobi muvaffaqiyatli ulandi. Ma'lumotlaringiz endi bulutga ham saqlanadi.");
+            return;
+        }
+
+        // Haqiqatan ham yangi foydalanuvchi (hali tizimga kirmagan) — ismini
+        // Google profilidan to'ldiramiz. Email raqamni "telefon" maydoniga
+        // yozmaymiz — bu ikkisi boshqa-boshqa narsa; telefon raqamini
+        // foydalanuvchi xohlasa o'zi kiritadi.
         appState.googleUid = user.uid;
         appState.user.name = user.displayName || "";
         appState.user.email = user.email || "";
@@ -1610,9 +1631,6 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
         const emailInput = document.getElementById('auth-email');
         if (emailInput) emailInput.value = appState.user.email;
 
-        // Bu yangi Google hisobi uchun bulutda profil topilmadi — onboarding
-        // formasini to'ldirish kerak (masalan, "hisob almashtirish" orqali
-        // birinchi marta ulangan yangi hisob bo'lsa).
         appState.isLoggedIn = false;
         checkAuthView();
         goToStep(2);
