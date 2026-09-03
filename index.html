@@ -536,12 +536,12 @@
         .orp-top { top: 0; }
         .orp-bottom { bottom: 0; }
         #word-screen {
-            font-size: 38px; font-weight: 800; color: #fff; text-align: center; padding: 0 16px;
+            font-size: 38px; font-weight: 800; color: #ECECEC; text-align: center; padding: 0 16px;
             animation: wordPulse 0.22s var(--ease-premium);
             white-space: nowrap;
             max-width: 100%;
             display: block;
-            transition: font-size 0.12s var(--ease-premium);
+            transition: font-size 0.12s var(--ease-premium), color 0.3s;
         }
         .reader-font-ctrl {
             display: flex; align-items: center; gap: 8px;
@@ -909,6 +909,44 @@
         }
         #word-screen { text-shadow:0 0 28px rgba(100,210,255,.12); white-space:nowrap; }
 
+        /* Ko'z charchamasligi uchun O'qish Rejimlari (Reading Themes) */
+        .reader-theme-ctrl {
+            display: flex; align-items: center; gap: 6px;
+            background: var(--card-subtle);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 4px;
+        }
+        .reader-theme-btn {
+            border: none; background: transparent; cursor: pointer;
+            font-size: 11.5px; font-weight: 700; color: var(--label-secondary);
+            padding: 7px 12px; border-radius: 20px;
+            display: flex; align-items: center; gap: 5px;
+            transition: background 0.25s, color 0.25s, transform 0.15s var(--ease-snap);
+            white-space: nowrap;
+        }
+        .reader-theme-btn:hover { color: var(--label-primary); }
+        .reader-theme-btn:active { transform: scale(0.95); }
+        .reader-theme-btn.active { background: var(--grad-primary); color: #fff; box-shadow: 0 3px 12px rgba(10,132,255,.35); }
+
+        .reader-display[data-rtheme="dark"] #word-screen { color: #ECECEC; }
+
+        .reader-display[data-rtheme="sepia"] {
+            background: radial-gradient(circle at 50% 50%, #2c2115 0%, #17110a 75%) !important;
+            box-shadow: inset 0 0 60px rgba(210,160,80,.08), 0 20px 45px rgba(0,0,0,.24) !important;
+        }
+        .reader-display[data-rtheme="sepia"] #word-screen { color: #F0DAA6; text-shadow: 0 0 22px rgba(240,218,166,.14); }
+        .reader-display[data-rtheme="sepia"] .orp-marker { background: #E8A33D; box-shadow: 0 0 8px rgba(232,163,61,.6); }
+
+        .reader-display[data-rtheme="light"] {
+            background: radial-gradient(circle at 50% 50%, #FBF8F1 0%, #EFE9DA 100%) !important;
+            box-shadow: inset 0 0 40px rgba(0,0,0,.05), 0 20px 45px rgba(0,0,0,.18) !important;
+            border-color: rgba(0,0,0,.08) !important;
+        }
+        .reader-display[data-rtheme="light"] #word-screen { color: #2A2622; text-shadow: none; }
+        .reader-display[data-rtheme="light"] .orp-marker { background: #C2410C; box-shadow: 0 0 8px rgba(194,65,12,.5); }
+
+
         /* Books */
         .book-card { gap:10px; }
         .book-cover {
@@ -995,8 +1033,158 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
 }
 </style>
 
+<style id="app-color-themes">
+/* =========================================================
+   RANG REJIMLARI (foydalanuvchi o'zi tanlaydi)
+   body[data-theme="..."] ga qarab butun ilova rangi almashadi.
+   Umumiy (tema-neytral) animatsiya sozlamalari:
+   ========================================================= */
+body{ animation-duration:46s !important; }
+body:before, body::before{ filter:blur(38px) !important; animation-duration:32s !important; }
+@keyframes appleAurora{0%{transform:translate3d(-1%,0,0) scale(1)}100%{transform:translate3d(1%,1%,0) scale(1.03)}}
+.ios-btn:hover{ filter:brightness(1.04) !important; }
+@keyframes brandGlow{
+  0%,100%{ box-shadow:0 4px 12px rgba(10,132,255,.20); }
+  50%{ box-shadow:0 4px 16px rgba(94,92,230,.28); }
+}
+
+/* ---------- 1) TUN (yumshoq qorong'i) — standart rejim ---------- */
+body[data-theme="dark"]{
+  --bg:#15161c !important;
+  --card-bg:rgba(27,29,35,.94) !important;
+  --card-subtle:rgba(255,255,255,.05) !important;
+  --border:rgba(255,255,255,.09) !important;
+  --border-bright:rgba(255,255,255,.18) !important;
+  --label-primary:#E7E7EA !important;
+  --label-secondary:rgba(222,222,228,.62) !important;
+  --label-tertiary:rgba(222,222,228,.38) !important;
+  --premium-shadow:0 18px 44px rgba(0,0,0,.30), 0 2px 8px rgba(0,0,0,.20) !important;
+  --premium-glow:0 0 30px rgba(94,92,230,.09) !important;
+  background-color:#101116 !important;
+  background-image:
+      radial-gradient(at 12% 8%, rgba(94,92,230,.12) 0px, transparent 52%),
+      radial-gradient(at 88% 92%, rgba(10,132,255,.10) 0px, transparent 52%),
+      radial-gradient(at 85% 15%, rgba(100,210,255,.06) 0px, transparent 45%),
+      radial-gradient(at 8% 90%, rgba(191,90,242,.06) 0px, transparent 45%),
+      linear-gradient(180deg,#121319 0%,#101116 58%,#121319 100%) !important;
+}
+body[data-theme="dark"] .glass-panel{
+  background:linear-gradient(145deg, rgba(255,255,255,.035), transparent 38%), linear-gradient(180deg, rgba(33,35,42,.90), rgba(24,26,32,.88)) !important;
+  border-color:rgba(255,255,255,.09) !important;
+}
+body[data-theme="dark"] .nav-tabs{ background:rgba(26,27,33,.95) !important; }
+body[data-theme="dark"] .ios-input{ background:rgba(255,255,255,.045) !important; color:#E7E7EA !important; }
+body[data-theme="dark"] .ios-input:focus{ background:rgba(255,255,255,.065) !important; }
+body[data-theme="dark"] .motion-box{ background:radial-gradient(circle at center, rgba(10,132,255,.05), #14161c 62%) !important; }
+body[data-theme="dark"] .roadmap-container{ background:radial-gradient(circle at 50% 50%, #191c24 0%, #121419 100%) !important; }
+body[data-theme="dark"] .tab-btn.active{ box-shadow:0 6px 16px rgba(10,132,255,.16), inset 0 1px 0 rgba(255,255,255,.14) !important; }
+
+/* ---------- 2) SEPIYA (iliq, kitob uslubi) ---------- */
+body[data-theme="sepia"]{
+  --bg:#1c150d !important;
+  --card-bg:rgba(45,36,24,.94) !important;
+  --card-subtle:rgba(255,224,175,.06) !important;
+  --border:rgba(255,224,175,.10) !important;
+  --border-bright:rgba(255,224,175,.20) !important;
+  --label-primary:#F0DAA6 !important;
+  --label-secondary:rgba(240,218,166,.65) !important;
+  --label-tertiary:rgba(240,218,166,.38) !important;
+  --premium-shadow:0 18px 44px rgba(0,0,0,.34), 0 2px 8px rgba(0,0,0,.22) !important;
+  --premium-glow:0 0 30px rgba(232,163,61,.12) !important;
+  background-color:#150f08 !important;
+  background-image:
+      radial-gradient(at 12% 8%, rgba(232,163,61,.14) 0px, transparent 52%),
+      radial-gradient(at 88% 92%, rgba(200,120,40,.10) 0px, transparent 52%),
+      radial-gradient(at 85% 15%, rgba(240,200,140,.06) 0px, transparent 45%),
+      linear-gradient(180deg,#1a130b 0%,#150f08 58%,#1a130b 100%) !important;
+}
+body[data-theme="sepia"] .glass-panel{
+  background:linear-gradient(145deg, rgba(255,224,175,.045), transparent 38%), linear-gradient(180deg, rgba(48,38,25,.90), rgba(32,25,16,.88)) !important;
+  border-color:rgba(255,224,175,.10) !important;
+}
+body[data-theme="sepia"] .nav-tabs{ background:rgba(38,29,18,.95) !important; }
+body[data-theme="sepia"] .ios-input{ background:rgba(255,224,175,.05) !important; color:#F0DAA6 !important; }
+body[data-theme="sepia"] .ios-input:focus{ background:rgba(255,224,175,.08) !important; }
+body[data-theme="sepia"] .motion-box{ background:radial-gradient(circle at center, rgba(232,163,61,.06), #1c150d 62%) !important; }
+body[data-theme="sepia"] .roadmap-container{ background:radial-gradient(circle at 50% 50%, #251c11 0%, #170f08 100%) !important; }
+body[data-theme="sepia"] .tab-btn.active{ background:linear-gradient(135deg,#a05a1e,#c47a1f) !important; box-shadow:0 6px 16px rgba(196,122,31,.28), inset 0 1px 0 rgba(255,255,255,.14) !important; }
+body[data-theme="sepia"] .grad-primary, body[data-theme="sepia"] .btn-blue{ background:linear-gradient(135deg,#a05a1e,#c47a1f) !important; }
+
+/* ---------- 3) YENGIL (och/kunduzgi) ---------- */
+body[data-theme="light"]{
+  --bg:#F3EFE6 !important;
+  --card-bg:rgba(255,255,255,.90) !important;
+  --card-subtle:rgba(20,20,25,.045) !important;
+  --border:rgba(20,20,25,.10) !important;
+  --border-bright:rgba(20,20,25,.20) !important;
+  --label-primary:#26241F !important;
+  --label-secondary:rgba(38,36,31,.68) !important;
+  --label-tertiary:rgba(38,36,31,.42) !important;
+  --premium-shadow:0 12px 30px rgba(60,50,30,.12), 0 2px 6px rgba(60,50,30,.08) !important;
+  --premium-glow:0 0 24px rgba(10,132,255,.10) !important;
+  /* Ba'zi pastel rang (teal/purple) och fonda o'qilmay qolmasligi uchun to'qroq qilib qayta belgilanadi */
+  --ios-teal:#0B7285 !important;
+  --ios-purple:#8B2FC9 !important;
+  background-color:#F3EFE6 !important;
+  background-image:
+      radial-gradient(at 12% 8%, rgba(94,92,230,.07) 0px, transparent 52%),
+      radial-gradient(at 88% 92%, rgba(10,132,255,.06) 0px, transparent 52%),
+      radial-gradient(at 85% 15%, rgba(191,90,242,.05) 0px, transparent 45%),
+      linear-gradient(180deg,#F7F4EC 0%,#F1EDE2 58%,#F7F4EC 100%) !important;
+}
+body[data-theme="light"]:before, body[data-theme="light"]::before{ opacity:.06 !important; }
+body[data-theme="light"] .glass-panel{
+  background:linear-gradient(145deg, rgba(255,255,255,.6), transparent 38%), linear-gradient(180deg, rgba(255,255,255,.92), rgba(250,247,240,.88)) !important;
+  border-color:rgba(20,20,25,.09) !important;
+  box-shadow:0 12px 30px rgba(60,50,30,.10), inset 0 1px 0 rgba(255,255,255,.5) !important;
+}
+body[data-theme="light"] .nav-tabs{ background:rgba(255,255,255,.75) !important; box-shadow:0 10px 26px rgba(60,50,30,.10), inset 0 1px 0 rgba(255,255,255,.6) !important; }
+body[data-theme="light"] .tab-btn{ color:rgba(38,36,31,.65) !important; }
+body[data-theme="light"] .tab-btn:hover{ background:rgba(20,20,25,.05) !important; color:#26241F !important; }
+body[data-theme="light"] .ios-input{ background:rgba(20,20,25,.035) !important; color:#26241F !important; border-color:rgba(20,20,25,.12) !important; }
+body[data-theme="light"] .ios-input::placeholder{ color:rgba(38,36,31,.42) !important; }
+body[data-theme="light"] .ios-input:focus{ background:rgba(20,20,25,.055) !important; }
+body[data-theme="light"] .mini-widget, body[data-theme="light"] .quiz-card, body[data-theme="light"] .schulte-cell, body[data-theme="light"] .book-actions-pill{
+  background:rgba(20,20,25,.04) !important; border-color:rgba(20,20,25,.09) !important;
+}
+body[data-theme="light"] .motion-box{ background:radial-gradient(circle at center, rgba(10,132,255,.06), #EFEAE0 62%) !important; }
+body[data-theme="light"] .roadmap-container{ background:radial-gradient(circle at 50% 50%, #EFEAE0 0%, #E7E1D3 100%) !important; }
+body[data-theme="light"] .opt-btn{ background:rgba(20,20,25,.05) !important; color:#26241F !important; border-color:rgba(20,20,25,.10) !important; }
+body[data-theme="light"] .btn-gray{ background:rgba(20,20,25,.05) !important; color:#26241F !important; }
+body[data-theme="light"] .tab-btn.active{ background:linear-gradient(135deg,#0A84FF,#5E5CE6) !important; color:#fff !important; box-shadow:0 6px 16px rgba(10,132,255,.28), inset 0 1px 0 rgba(255,255,255,.25) !important; }
+body[data-theme="light"] ::-webkit-scrollbar-thumb{ background:rgba(20,20,25,.16) !important; }
+body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) !important; }
+
+/* Rang tanlash paneli */
+.theme-picker-row{ display:flex; gap:8px; flex-wrap:wrap; }
+.theme-swatch-btn{
+  display:flex; align-items:center; gap:7px;
+  padding:8px 13px; border-radius:20px; cursor:pointer;
+  background:var(--card-subtle); border:1px solid var(--border); color:var(--label-secondary);
+  font-size:12.5px; font-weight:700; transition:transform .2s var(--ease-snap), border-color .3s, color .3s;
+}
+.theme-swatch-btn:hover{ color:var(--label-primary); border-color:var(--border-bright); }
+.theme-swatch-btn.active{ color:#fff; background:var(--grad-primary); border-color:transparent; box-shadow:0 4px 14px rgba(10,132,255,.30); }
+.theme-swatch-dot{ width:14px; height:14px; border-radius:50%; flex-shrink:0; border:1px solid rgba(255,255,255,.25); }
+
+/* Kitob muqovasi doim o'zining rangli foniga ega (tema-neytral) — shuning uchun
+   uning matni har doim och (oq) rangda qoladi, aks holda yorug' rejimda ham
+   muqova qorong'i qolib, matn o'qib bo'lmay qoladi. */
+.book-cover-title{ color:#fff !important; }
+.book-cover-author, .book-logo-tag{ color:rgba(255,255,255,0.75) !important; }
+</style>
+
 </head>
-<body>
+<body data-theme="dark">
+<script>
+    // Sahifa chizilishidan oldin saqlangan rangni tezda qo'llash (miltillashni oldini olish uchun)
+    try {
+        var __savedTheme = localStorage.getItem('app_color_theme');
+        if (__savedTheme === 'dark' || __savedTheme === 'sepia' || __savedTheme === 'light') {
+            document.body.setAttribute('data-theme', __savedTheme);
+        }
+    } catch(e) {}
+</script>
 
 <canvas id="confetti-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9999;"></canvas>
 
@@ -1006,6 +1194,19 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
          0. KIRISH VA RO'YXATDAN O'TISH EKRANI (AUTH / ONBOARDING)
          ========================================================= -->
     <div id="auth-screen" class="glass-panel">
+        <div style="display:flex; justify-content:flex-end;">
+            <div class="theme-picker-row" style="gap:6px;">
+                <button type="button" class="theme-swatch-btn" data-theme-btn="dark" onclick="applyAppTheme('dark', this)" title="Tun rejimi" style="padding:6px 10px; font-size:11px;">
+                    <span class="theme-swatch-dot" style="width:11px; height:11px; background:#101116;"></span>🌙
+                </button>
+                <button type="button" class="theme-swatch-btn" data-theme-btn="sepia" onclick="applyAppTheme('sepia', this)" title="Sepiya rejimi" style="padding:6px 10px; font-size:11px;">
+                    <span class="theme-swatch-dot" style="width:11px; height:11px; background:#2c2115;"></span>📜
+                </button>
+                <button type="button" class="theme-swatch-btn" data-theme-btn="light" onclick="applyAppTheme('light', this)" title="Yengil rejim" style="padding:6px 10px; font-size:11px;">
+                    <span class="theme-swatch-dot" style="width:11px; height:11px; background:#F3EFE6;"></span>☀️
+                </button>
+            </div>
+        </div>
         <div class="step-progress-bar">
             <div class="step-indicator active" id="ind-1"></div>
             <div class="step-indicator" id="ind-2"></div>
@@ -1021,7 +1222,6 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <input type="text" class="ios-input" id="auth-name" placeholder="Ism va Familiyangiz (majburiy)">
                 <input type="tel" class="ios-input" id="auth-phone" placeholder="Telefon raqamingiz (ixtiyoriy)">
-                <input type="email" class="ios-input" id="auth-email" placeholder="Email manzilingiz (ixtiyoriy)">
             </div>
             <button class="ios-btn btn-blue" onclick="goToStep(2)">Davom etish →</button>
 
@@ -1091,6 +1291,26 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
             <button class="tab-btn" type="button" onclick="switchMainTab('reader', this)" role="tab">⚡ Tez O‘qish</button>
             <button class="tab-btn" type="button" onclick="switchMainTab('shelf', this)" role="tab">📚 Kitob Javoni</button>
             <button class="tab-btn" type="button" onclick="switchMainTab('gym', this)" role="tab">👁️ Ko‘z Trenajyori</button>
+            <button class="tab-btn" type="button" onclick="toggleThemePanel()" role="button" title="Ilova rangini o‘zgartirish" id="theme-toggle-tab">🎨 Rang</button>
+        </div>
+
+        <!-- Rang Tanlash Paneli (ko'z uchun qulay rangni foydalanuvchi o'zi tanlaydi) -->
+        <div id="theme-picker-panel" class="glass-panel" style="display:none; flex-direction:column; gap:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="font-size:13.5px;">🎨 Ilova rangini tanlang</strong>
+                <span style="font-size:11px; color:var(--label-tertiary);">Ko‘zingizga eng qulay tusni tanlang</span>
+            </div>
+            <div class="theme-picker-row">
+                <button type="button" class="theme-swatch-btn" data-theme-btn="dark" onclick="applyAppTheme('dark', this)">
+                    <span class="theme-swatch-dot" style="background:#101116;"></span> 🌙 Tun
+                </button>
+                <button type="button" class="theme-swatch-btn" data-theme-btn="sepia" onclick="applyAppTheme('sepia', this)">
+                    <span class="theme-swatch-dot" style="background:#2c2115;"></span> 📜 Sepiya
+                </button>
+                <button type="button" class="theme-swatch-btn" data-theme-btn="light" onclick="applyAppTheme('light', this)">
+                    <span class="theme-swatch-dot" style="background:#F3EFE6;"></span> ☀️ Yengil
+                </button>
+            </div>
         </div>
 
         <!-- 1. MAQSAD & 3D ROADMAP BO'LIMI -->
@@ -1173,31 +1393,6 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
                             <button class="ios-btn btn-blue" onclick="saveGoalSettings()">Saqlash</button>
                         </div>
                     </div>
-
-                    <!-- Hisob va kirish sozlamalari -->
-                    <div style="border-top: 1px solid var(--border); padding-top: 12px; display: flex; flex-direction: column; gap: 8px;">
-                        <div>
-                            <span style="font-size: 12.5px; color: var(--label-secondary); font-weight: 700;">Hisob va kirish</span>
-                            <div style="font-size:11px; color:var(--label-tertiary); margin-top:2px;">Email qo‘shing/o‘zgartiring yoki Google hisobingizni boshqaring — ikkalasi ham ixtiyoriy.</div>
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <input type="email" class="ios-input" id="cfg-email" placeholder="Email manzilingiz (ixtiyoriy)">
-                            <button class="ios-btn btn-blue" onclick="saveEmailSettings()">Saqlash</button>
-                        </div>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button type="button" class="ios-btn" id="btn-google-connect" style="display:none; background:#fff; color:#1f1f1f; font-weight:700; align-items:center; justify-content:center; gap:8px; flex:1; min-width:180px;" onclick="signInWithGoogle()">
-                                <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
-                                    <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.3-.4-3.5z"/>
-                                    <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 6.1 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
-                                    <path fill="#4CAF50" d="M24 44c5.3 0 10.1-1.8 13.8-5.1l-6.4-5.2C29.3 35.5 26.8 36.3 24 36.3c-5.3 0-9.7-3.4-11.3-8.1l-6.5 5C9.5 39.5 16.2 44 24 44z"/>
-                                    <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.3 5.6l6.4 5.2C40.6 36.2 44 30.6 44 24c0-1.2-.1-2.3-.4-3.5z"/>
-                                </svg>
-                                Google hisobini ulash
-                            </button>
-                            <button type="button" class="ios-btn btn-gray" id="btn-google-switch" style="display:none; flex:1; min-width:150px;" onclick="switchGoogleAccount()">🔄 Google hisobini almashtirish</button>
-                            <button type="button" class="ios-btn btn-gray" id="btn-google-disconnect" style="display:none; flex:1; min-width:150px;" onclick="disconnectGoogleAccount()">🔗 Google hisobini uzish</button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -1257,10 +1452,18 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
 
         <!-- 2. SPEED READING BO'LIMI -->
         <div id="view-reader" class="glass-panel" style="display: none; flex-direction: column; gap: 14px;">
-            <div class="reader-display">
+            <div class="reader-display" id="reader-display-box" data-rtheme="dark" style="transition: background 0.3s;">
                 <div class="orp-marker orp-top"></div>
                 <div id="word-screen">Tayyormisiz?</div>
                 <div class="orp-marker orp-bottom"></div>
+            </div>
+
+            <div style="display:flex; justify-content:center;">
+                <div class="reader-theme-ctrl" role="group" aria-label="O‘qish rejimi (ko‘z uchun qulay ranglar)">
+                    <button type="button" class="reader-theme-btn active" data-theme="dark" onclick="applyReaderTheme('dark', this)">🌙 Tun</button>
+                    <button type="button" class="reader-theme-btn" data-theme="sepia" onclick="applyReaderTheme('sepia', this)">📜 Sepiya</button>
+                    <button type="button" class="reader-theme-btn" data-theme="light" onclick="applyReaderTheme('light', this)">☀️ Yorug‘</button>
+                </div>
             </div>
 
             <div style="height: 5px; background: var(--border); border-radius: 3px; overflow: hidden;">
@@ -1487,9 +1690,6 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
         }
 
         const provider = new firebase.auth.GoogleAuthProvider();
-        // Har safar hisob tanlash oynasi chiqishi uchun — shu jumladan
-        // "Google hisobini almashtirish" tugmasi bosilganda ham foydali.
-        provider.setCustomParameters({ prompt: 'select_account' });
         setGoogleButtonLoading(true);
 
         // Popup/redirect javob bermay qolgan taqdirda foydalanuvchi abadiy
@@ -1541,7 +1741,6 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
         tempWizardTasks = [];
         document.getElementById('auth-name').value = "";
         document.getElementById('auth-phone').value = "";
-        document.getElementById('auth-email').value = "";
         document.getElementById('auth-goal').value = "";
         document.getElementById('auth-days').value = "";
         renderAuthTasks();
@@ -1549,47 +1748,7 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
         checkAuthView();
     }
 
-    // Faqat Google hisobini profildan uzadi — mahalliy ma'lumotlar
-    // (vazifalar, maqsad va h.k.) shu qurilmada saqlanib qoladi.
-    function disconnectGoogleAccount() {
-        if (!confirm("Google hisobini profilingizdan uzmoqchimisiz?\n\nMa'lumotlaringiz shu qurilmada saqlanib qoladi, lekin endi bulutga avtomatik sinxronlanmaydi.")) return;
-        if (fbAuth) fbAuth.signOut();
-        appState.googleUid = null;
-        saveState();
-        checkAuthView();
-    }
-
-    // Joriy Google hisobidan chiqib, boshqa hisobni tanlash imkonini beradi.
-    // Tanlangan yangi hisob bilan avval ma'lumot saqlangan bo'lsa, o'sha
-    // bulutdagi ma'lumotlar yuklanadi (handleGoogleLogin orqali).
-    function switchGoogleAccount() {
-        if (!firebaseReady) {
-            alert("Google orqali kirish hali sozlanmagan.\n\nIlova egasi index.html faylidagi firebaseConfig qiymatlarini o'zining Firebase loyihasiga almashtirishi kerak.");
-            return;
-        }
-        if (fbAuth) {
-            fbAuth.signOut().finally(() => signInWithGoogle());
-        } else {
-            signInWithGoogle();
-        }
-    }
-
-    // Profil bo'limidan email qo'shish yoki o'zgartirish uchun — Google
-    // hisobisiz ham ishlaydi, chunki email/Google ikkalasi ham ixtiyoriy.
-    function saveEmailSettings() {
-        const email = document.getElementById('cfg-email').value.trim();
-        appState.user.email = email;
-        saveState();
-        alert(email ? "Email saqlandi." : "Email tozalandi.");
-    }
-
     async function handleGoogleLogin(user) {
-        // Google tugmasi bosilishidan OLDIN foydalanuvchi allaqachon tizimga
-        // kirgan bo'lsa (masalan, sozlamalardan "Google hisobini ulash" yoki
-        // "almashtirish" bosilgan bo'lsa), buni eslab qolamiz — chunki bu holda
-        // mavjud lokal ma'lumotlarni (maqsad, vazifalar) yo'qotib qo'ymasligimiz kerak.
-        const wasAlreadyLoggedIn = appState.isLoggedIn;
-
         try {
             const doc = await fbDb.collection('users').doc(user.uid).get();
             if (doc.exists) {
@@ -1605,34 +1764,14 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
             console.warn("Bulutdan yuklashda xatolik, ro'yxatdan o'tish davom etadi:", e);
         }
 
-        // Bu Google hisobi uchun bulutda hali hech qanday ma'lumot topilmadi.
-        if (wasAlreadyLoggedIn) {
-            // Foydalanuvchi mavjud (lokal) profili bilan tizimda edi va shunchaki
-            // Google hisobini shu profilga BOG'LAMOQCHI — onboardingga qaytarmaymiz,
-            // aksincha mavjud ism/maqsad/vazifalarni saqlab, faqat Google hisobini
-            // ulaymiz va darhol bulutga zaxira sifatida yuklaymiz.
-            appState.googleUid = user.uid;
-            if (!appState.user.email) appState.user.email = user.email || "";
-            saveState();
-            checkAuthView();
-            alert("Google hisobi muvaffaqiyatli ulandi. Ma'lumotlaringiz endi bulutga ham saqlanadi.");
-            return;
-        }
-
-        // Haqiqatan ham yangi foydalanuvchi (hali tizimga kirmagan) — ismini
-        // Google profilidan to'ldiramiz. Email raqamni "telefon" maydoniga
-        // yozmaymiz — bu ikkisi boshqa-boshqa narsa; telefon raqamini
-        // foydalanuvchi xohlasa o'zi kiritadi.
+        // Yangi foydalanuvchi — ismini Google profilidan to'ldiramiz.
+        // Email raqamni "telefon" maydoniga yozmaymiz — bu ikkisi boshqa-boshqa narsa;
+        // telefon raqamini foydalanuvchi xohlasa o'zi kiritadi.
         appState.googleUid = user.uid;
         appState.user.name = user.displayName || "";
         appState.user.email = user.email || "";
         const nameInput = document.getElementById('auth-name');
         if (nameInput) nameInput.value = appState.user.name;
-        const emailInput = document.getElementById('auth-email');
-        if (emailInput) emailInput.value = appState.user.email;
-
-        appState.isLoggedIn = false;
-        checkAuthView();
         goToStep(2);
     }
 
@@ -1642,18 +1781,6 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
         const connected = !!appState.googleUid;
         if (statusPill) statusPill.style.display = connected ? 'flex' : 'none';
         if (signoutBtn) signoutBtn.style.display = connected ? 'inline-flex' : 'none';
-
-        // "Hisob va kirish" bo'limidagi Google tugmalari: ulanmagan bo'lsa
-        // faqat "ulash" tugmasi, ulangan bo'lsa "almashtirish"/"uzish" tugmalari.
-        const connectBtn = document.getElementById('btn-google-connect');
-        const switchBtn = document.getElementById('btn-google-switch');
-        const disconnectBtn = document.getElementById('btn-google-disconnect');
-        if (connectBtn) connectBtn.style.display = connected ? 'none' : 'flex';
-        if (switchBtn) switchBtn.style.display = connected ? 'inline-flex' : 'none';
-        if (disconnectBtn) disconnectBtn.style.display = connected ? 'inline-flex' : 'none';
-
-        const cfgEmail = document.getElementById('cfg-email');
-        if (cfgEmail && document.activeElement !== cfgEmail) cfgEmail.value = appState.user.email || "";
     }
 
     /* Onboarding / Wizard Mantig'i */
@@ -1666,7 +1793,6 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
             }
             appState.user.name = name;
             appState.user.phone = document.getElementById('auth-phone').value.trim() || "Kiritilmagan";
-            appState.user.email = document.getElementById('auth-email').value.trim() || "";
         }
 
         if (step === 3) {
@@ -1753,7 +1879,6 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
             tempWizardTasks = [];
             document.getElementById('auth-name').value = appState.user.name;
             document.getElementById('auth-phone').value = appState.user.phone !== "Kiritilmagan" ? appState.user.phone : "";
-            document.getElementById('auth-email').value = appState.user.email || "";
             document.getElementById('auth-goal').value = appState.goalTitle;
             document.getElementById('auth-days').value = appState.totalDays;
             renderAuthTasks();
@@ -2227,6 +2352,51 @@ body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;
     let rRunning = false, chunkSize = 1, rElapsedSec = 0;
     let readerFontScale = parseFloat(localStorage.getItem("reader_font_scale")) || 1;
 
+    /* ==========================================
+       UMUMIY ILOVA RANG REJIMI (foydalanuvchi tanlaydi)
+       ========================================== */
+    function applyAppTheme(theme, btn) {
+        document.body.setAttribute('data-theme', theme);
+        document.querySelectorAll('.theme-swatch-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-theme-btn') === theme);
+        });
+        try { localStorage.setItem('app_color_theme', theme); } catch(e) {}
+        // Fon rangi keskin o'zgargani uchun kanvaslarni (roadmap va h.k.) qayta chizamiz
+        setTimeout(() => {
+            if (typeof draw3DRoadmap === 'function') draw3DRoadmap();
+        }, 60);
+    }
+
+    function toggleThemePanel() {
+        const panel = document.getElementById('theme-picker-panel');
+        if (!panel) return;
+        panel.style.display = (panel.style.display === 'none' || !panel.style.display) ? 'flex' : 'none';
+    }
+
+    (function initAppTheme() {
+        let saved = 'dark';
+        try { saved = localStorage.getItem('app_color_theme') || 'dark'; } catch(e) {}
+        applyAppTheme(saved);
+    })();
+
+    /* Ko'z charchamasligi uchun o'qish rejimi (Tun / Sepiya / Yorug') */
+    function applyReaderTheme(theme, btn) {
+        const box = document.getElementById('reader-display-box');
+        if (box) box.setAttribute('data-rtheme', theme);
+        document.querySelectorAll('.reader-theme-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        else {
+            const match = document.querySelector(`.reader-theme-btn[data-theme="${theme}"]`);
+            if (match) match.classList.add('active');
+        }
+        try { localStorage.setItem('reader_theme', theme); } catch(e) {}
+    }
+    (function initReaderTheme() {
+        const saved = localStorage.getItem('reader_theme') || 'dark';
+        applyReaderTheme(saved);
+    })();
+
+
     const wordScreen = document.getElementById("word-screen");
     const bookContent = document.getElementById("book-content");
     const bookTitle = document.getElementById("book-title");
@@ -2594,7 +2764,7 @@ Qat'iy qoidalar:
             if (q.type === "open") {
                 card.innerHTML = `
                     <div style="font-size:14px; font-weight:700; color:var(--ios-purple); margin-bottom:6px;">${idx + 1}. Tushuntirish va Xulosa Savoli (Ochiq Fikr):</div>
-                    <div style="font-size:13px; color:#fff; line-height:1.4; margin-bottom:8px;">${q.question}</div>
+                    <div style="font-size:13px; color:var(--label-primary); line-height:1.4; margin-bottom:8px;">${q.question}</div>
                     <div style="display:flex; flex-direction:column; gap:8px;">
                         <textarea class="ios-input" id="ai-user-answer-${idx}" style="height:65px;" placeholder="O'z fikringiz va tushunganingizni yozing..."></textarea>
                         <button class="ios-btn btn-blue" id="btn-eval-ai-${idx}">🤖 Sun'iy Intellekt Bilan Tekshirish</button>
@@ -2657,7 +2827,7 @@ FAQAT quyidagi JSON obyekt formatida javob qaytar, boshqa hech narsa yozma:
 
             } else {
                 card.innerHTML = `
-                    <div style="font-size:13.5px; font-weight:700; color:#fff; margin-bottom:8px;">${idx + 1}-Savol: ${q.question}</div>
+                    <div style="font-size:13.5px; font-weight:700; color:var(--label-primary); margin-bottom:8px;">${idx + 1}-Savol: ${q.question}</div>
                 `;
 
                 const grid = document.createElement("div");
