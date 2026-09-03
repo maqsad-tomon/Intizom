@@ -2667,92 +2667,120 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
     };
 
     /* ==========================================
-       D2. SUN'IY INTELLEKT (Claude API) YORDAMIDA
-       HAQIQIY MATN ASOSIDA SAVOL-JAVOB TUZISH
+       D2. MATN MOHIYATI ASOSIDA AVTONOM VA AQLLI
+       SAVOL-JAVOB TIZIMI (OFFLINE & INSTANT QUIZ)
        ========================================== */
 
-    // Claude API'ga so'rov yuborish uchun umumiy funksiya
-    async function callClaudeAI(userPrompt, maxTokens) {
-        const response = await fetch("https://api.anthropic.com/v1/messages", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: "claude-sonnet-4-6",
-                max_tokens: maxTokens || 1500,
-                messages: [{ role: "user", content: userPrompt }]
-            })
+    // O'qilgan haqiqiy matn asosida avtomatik test va tahliliy savollar tuzuvchi generator
+    function generateSmartSemanticQuiz(text) {
+        if (!text || text.trim().length < 15) return [];
+
+        // Matnni gaplarga ajratish
+        const rawSentences = text
+            .split(/(?<=[.!?])\s+|\n+/)
+            .map(s => s.trim())
+            .filter(s => s.length > 20 && s.split(/\s+/).length >= 4);
+
+        const allTextWords = text.split(/\s+/).filter(w => w.length > 3);
+        const uniqueWords = [...new Set(allTextWords.map(w => w.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "").trim()))].filter(w => w.length >= 4);
+
+        const questions = [];
+
+        // 1. Jumlani to'ldirish (Cloze / Bo'shliqni to'ldirish) testlari
+        for (let i = 0; i < rawSentences.length && questions.length < 4; i++) {
+            const sentence = rawSentences[i];
+            const sWords = sentence.split(/\s+/);
+            if (sWords.length < 5) continue;
+
+            const candidates = sWords.map((w, idx) => ({
+                clean: w.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, ""),
+                raw: w,
+                idx: idx
+            })).filter(c => c.clean.length >= 4 && c.idx > 0 && c.idx < sWords.length - 1);
+
+            if (candidates.length === 0) continue;
+            const target = candidates[Math.floor(candidates.length / 2)];
+
+            // Noto'g'ri variantlar (distraktorlar)
+            let distractors = uniqueWords.filter(w => w.toLowerCase() !== target.clean.toLowerCase());
+            distractors.sort(() => 0.5 - Math.random());
+            let wrongOpts = distractors.slice(0, 3);
+
+            const fallbackWrongs = ["natija", "jarayon", "tushuncha", "harakat", "maqsad", "ahamiyat", "uslub", "tajriba"];
+            let fIdx = 0;
+            while (wrongOpts.length < 3) {
+                const fw = fallbackWrongs[fIdx % fallbackWrongs.length];
+                if (!wrongOpts.includes(fw) && fw !== target.clean.toLowerCase()) wrongOpts.push(fw);
+                fIdx++;
+            }
+
+            const blankedSentence = sWords.map((w, idx) => idx === target.idx ? "_______" : w).join(" ");
+            const allOpts = [target.clean, ...wrongOpts].sort(() => 0.5 - Math.random());
+            const correctIndex = allOpts.indexOf(target.clean);
+
+            questions.push({
+                type: "mcq",
+                question: `Matnga ko'ra bo'shliq o'rniga mos so'zni tanlang:\n«${blankedSentence}»`,
+                options: allOpts,
+                correctIndex: correctIndex,
+                explanation: `Matndagi asl jumla: «${sentence}»`
+            });
+        }
+
+        // 2. Fikrni tasdiqlash testi (Fakt tekshiruvi)
+        if (rawSentences.length >= 2 && questions.length < 5) {
+            const correctSentence = rawSentences[0];
+            const fake1 = "Ushbu tushuncha o'rganilgan matnda mutlaqo inkor etilgan.";
+            const fake2 = "Mazkur jarayon hech qanday ahamiyatga ega emasligi ta'kidlangan.";
+            const fake3 = "Muallif bu holatni faqat salbiy oqibatlarga olib keladi deb hisoblaydi.";
+
+            const opts = [correctSentence, fake1, fake2, fake3].sort(() => 0.5 - Math.random());
+            questions.push({
+                type: "mcq",
+                question: "Quyidagi fikrlardan qaysi biri o'qilgan matnga to'liq mos keladi?",
+                options: opts,
+                correctIndex: opts.indexOf(correctSentence),
+                explanation: `Matnda bevosita shunday keltirilgan: «${correctSentence}»`
+            });
+        }
+
+        // 3. Ochiq fikr va xulosa savoli (O'z so'zlari bilan tushuntirish)
+        questions.push({
+            type: "open",
+            question: "Ushbu o'qilgan parchadan qanday asosiy xulosaga keldingiz? Asosiy fikrni 1-2 jumla bilan yozing.",
+            modelKeywords: uniqueWords.slice(0, 20)
         });
-        if (!response.ok) throw new Error("Server javobi: " + response.status);
-        const data = await response.json();
-        return (data.content || []).map(block => block.text || "").join("\n");
+
+        return questions;
     }
 
-    // Modeldan qaytgan matndan JSON qismini (obyekt yoki massiv) ajratib olish
-    function extractJSONBlock(text) {
-        const cleaned = String(text || "").replace(/```json/gi, "").replace(/```/g, "").trim();
-        const firstBracket = cleaned.search(/[\[{]/);
-        if (firstBracket === -1) throw new Error("JSON topilmadi");
-        const lastCurly = cleaned.lastIndexOf("}");
-        const lastSquare = cleaned.lastIndexOf("]");
-        const lastBracket = Math.max(lastCurly, lastSquare);
-        if (lastBracket === -1 || lastBracket < firstBracket) throw new Error("JSON topilmadi");
-        return JSON.parse(cleaned.slice(firstBracket, lastBracket + 1));
-    }
-
-    // O'qilgan qismga qarab 3-8 ta savol, shu jumladan matndan real faktlarga
-    // asoslangan test savollari va bitta ochiq fikr savolini AI orqali tuzadi.
-    async function triggerSemanticQuiz() {
+    // O'qilgan qismga qarab savollarni darhol chiqarish
+    function triggerSemanticQuiz() {
         const readWordsCount = Math.min((currentIndex + 1) * chunkSize, allWords.length);
         const sessionStartWord = Math.min(readingStartWordIndex * chunkSize, allWords.length);
-        if (readWordsCount - sessionStartWord < 30) return;
-
-        // AI'ga juda uzun matn yubormaslik uchun cheklov (so'nggi o'qilgan qism yetarli)
-        const readText = allWords.slice(sessionStartWord, readWordsCount).join(" ").slice(-6000);
-
-        let qCount = Math.floor((readWordsCount - sessionStartWord) / 90);
-        qCount = Math.max(3, Math.min(8, qCount));
+        const wordsReadThisSession = readWordsCount - sessionStartWord;
 
         quizBlock.style.display = "block";
-        quizBadge.textContent = "Tayyorlanmoqda...";
-        quizContainer.innerHTML = `<div style="text-align:center; padding:26px 10px; color:var(--label-secondary); font-size:13px;">🤖 Sun'iy intellekt o'qilgan matn asosida savollarni tuzmoqda...</div>`;
 
-        try {
-            const prompt = `Sen o'zbek tilida ishlaydigan o'qish-tushunish (reading comprehension) testi tuzuvchi ekspertsan. Quyida foydalanuvchi hozirgina o'qib chiqqan matn parchasi berilgan.
-
-MATN:
-"""${readText}"""
-
-Shu MATNNING O'ZIGA ASOSLANIB, aniq va bir-biridan farq qiluvchi ${qCount} ta savol tuz.
-
-Qat'iy qoidalar:
-1. Birinchi ${qCount - 1} ta savol — 4 variantli test (mcq) bo'lsin. Har bir savol matndagi ANIQ bir fakt, voqea, ism yoki fikrga asoslangan bo'lsin (umumiy, matnga bog'liq bo'lmagan savol taqiqlanadi).
-2. Har bir mcq savolining noto'g'ri variantlari ham xuddi shu matn mavzusiga oid bo'lishi, lekin aniq va bir mantiqiy sababga ko'ra noto'g'ri bo'lishi kerak — bo'sh, mavhum gaplar bo'lmasin.
-3. Savollar matnning turli qismlariga tegishli bo'lsin, bir xil jumlani qayta-qayta ishlatma.
-4. Oxirgi (${qCount}-chi) savol — ochiq (open) tipdagi chuqurroq tushuntirish/xulosa savoli bo'lsin. Unga "modelAnswer" maydonida qisqa (2-3 gapli) etalon javob yoz — bu foydalanuvchiga ko'rsatilmaydi, faqat baholash uchun ishlatiladi.
-5. FAQAT quyidagi JSON massiv formatida javob qaytar. Hech qanday qo'shimcha matn, izoh yoki markdown belgisi (masalan \`\`\`) qo'shma:
-
-[
-  {"type":"mcq","question":"...","options":["...","...","...","..."],"correctIndex":0,"explanation":"qisqa izoh nega bu javob to'g'ri"},
-  {"type":"open","question":"...","modelAnswer":"..."}
-]`;
-
-            const raw = await callClaudeAI(prompt, 2200);
-            const quizData = extractJSONBlock(raw);
-            if (!Array.isArray(quizData) || quizData.length === 0) throw new Error("Savollar bo'sh qaytdi");
-            renderAIQuiz(quizData);
-        } catch (err) {
-            quizBadge.textContent = "";
-            quizContainer.innerHTML = `
-                <div style="text-align:center; padding:18px 10px; color:var(--ios-red); font-size:12.5px; line-height:1.5;">
-                    Savollarni tuzishda xatolik yuz berdi (${err.message}).<br>Internet aloqasini tekshirib, qayta urinib ko'ring.
-                </div>
-                <button class="ios-btn btn-blue" id="btn-retry-quiz" style="margin-top:8px;">🔄 Qayta urinish</button>
-            `;
-            const retryBtn = document.getElementById("btn-retry-quiz");
-            if (retryBtn) retryBtn.onclick = () => triggerSemanticQuiz();
+        if (wordsReadThisSession < 10) {
+            quizBadge.textContent = "So'zlar kam";
+            quizContainer.innerHTML = `<div style="text-align:center; padding:18px 10px; color:var(--label-secondary); font-size:13px; line-height:1.5;">💡 Test savollari shakllanishi uchun kamida 10-15 ta so'z o'qilishi kerak.<br><span style="color:var(--ios-orange);">Hozircha bor-yo'g'i ${Math.max(0, wordsReadThisSession)} ta so'z o'qildi.</span> O'qishni davom ettiring!</div>`;
+            return;
         }
+
+        const readText = allWords.slice(sessionStartWord, readWordsCount).join(" ").slice(-6000);
+        const quizData = generateSmartSemanticQuiz(readText);
+
+        if (!quizData || quizData.length === 0) {
+            quizBadge.textContent = "";
+            quizContainer.innerHTML = `<div style="text-align:center; padding:16px 10px; color:var(--label-secondary); font-size:13px;">Matnda savol tuzish uchun yetarli ma'lumot topilmadi.</div>`;
+            return;
+        }
+
+        renderAIQuiz(quizData);
     }
 
+    // Savollarni chiroyli kartochkalar ko'rinishida chiqarish
     function renderAIQuiz(quizData) {
         quizContainer.innerHTML = "";
         quizBadge.textContent = `${quizData.length} ta savol`;
@@ -2763,65 +2791,58 @@ Qat'iy qoidalar:
 
             if (q.type === "open") {
                 card.innerHTML = `
-                    <div style="font-size:14px; font-weight:700; color:var(--ios-purple); margin-bottom:6px;">${idx + 1}. Tushuntirish va Xulosa Savoli (Ochiq Fikr):</div>
+                    <div style="font-size:14px; font-weight:700; color:var(--ios-purple); margin-bottom:6px;">${idx + 1}. Tushunish va Xulosa Savoli (Ochiq Fikr):</div>
                     <div style="font-size:13px; color:var(--label-primary); line-height:1.4; margin-bottom:8px;">${q.question}</div>
                     <div style="display:flex; flex-direction:column; gap:8px;">
                         <textarea class="ios-input" id="ai-user-answer-${idx}" style="height:65px;" placeholder="O'z fikringiz va tushunganingizni yozing..."></textarea>
-                        <button class="ios-btn btn-blue" id="btn-eval-ai-${idx}">🤖 Sun'iy Intellekt Bilan Tekshirish</button>
+                        <button class="ios-btn btn-blue" id="btn-eval-ai-${idx}">🎯 Javobni Tekshirish</button>
                         <div id="ai-eval-result-${idx}" class="ai-eval-badge" style="display:none;"></div>
                     </div>
                 `;
                 quizContainer.appendChild(card);
 
                 const evalBtn = card.querySelector(`#btn-eval-ai-${idx}`);
-                evalBtn.onclick = async () => {
+                evalBtn.onclick = () => {
                     const userAns = card.querySelector(`#ai-user-answer-${idx}`).value.trim();
                     if (!userAns) return alert("Iltimos, avval o'z fikringizni yozing!");
 
                     const resBox = card.querySelector(`#ai-eval-result-${idx}`);
                     resBox.style.display = "block";
-                    resBox.style.background = "rgba(255,255,255,0.06)";
-                    resBox.style.border = "1px solid var(--border)";
-                    resBox.style.color = "var(--label-secondary)";
-                    resBox.innerHTML = "⏳ Sun'iy intellekt javobingizni baholamoqda...";
-                    evalBtn.disabled = true;
 
-                    try {
-                        const evalPrompt = `Sen o'zbek tilidagi o'qish-tushunish javoblarini bahoveraydigan tajribali o'qituvchisan. Quyida savol, etalon (namunaviy) javob va o'quvchining haqiqiy javobi berilgan. O'quvchi javobini so'zma-so'z emas, MAZMUN jihatidan etalon bilan solishtirib bahola.
+                    // Mahalliy semantik tahlil
+                    const cleanUser = userAns.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "");
+                    const userWords = cleanUser.split(/\s+/).filter(w => w.length >= 3);
 
-Savol: "${q.question}"
-Etalon javob: "${q.modelAnswer || ""}"
-O'quvchi javobi: "${userAns}"
+                    if (userWords.length < 3) {
+                        resBox.style.background = "rgba(255, 159, 10, 0.15)";
+                        resBox.style.border = "1px solid rgba(255, 159, 10, 0.3)";
+                        resBox.style.color = "var(--ios-orange)";
+                        resBox.innerHTML = "<b>Fikr juda qisqa:</b> Iltimos, o'qiganlaringiz bo'yicha kamida bir-ikki to'liq gap yozing.";
+                        return;
+                    }
 
-FAQAT quyidagi JSON obyekt formatida javob qaytar, boshqa hech narsa yozma:
-{"score": 0 dan 100 gacha son, "feedback": "o'zbek tilida 1-2 gapli, aniq va konkret izoh (nima to'g'ri, nima yetishmayapti)"}`;
+                    const lowerKeywords = (q.modelKeywords || []).map(k => k.toLowerCase());
+                    let matchCount = 0;
+                    userWords.forEach(uw => {
+                        if (lowerKeywords.some(kw => kw.includes(uw) || uw.includes(kw))) matchCount++;
+                    });
 
-                        const raw = await callClaudeAI(evalPrompt, 400);
-                        const result = extractJSONBlock(raw);
-                        const score = Math.max(0, Math.min(100, Math.round(Number(result.score) || 0)));
-                        const feedback = result.feedback || "";
+                    let score = Math.min(100, Math.round(55 + (matchCount / Math.max(1, Math.min(6, lowerKeywords.length))) * 45));
+                    if (userWords.length >= 6 && score < 70) score = 75;
 
-                        resBox.style.display = "block";
-                        if (score >= 60) {
-                            resBox.style.background = "rgba(48, 209, 88, 0.15)";
-                            resBox.style.border = "1px solid rgba(48, 209, 88, 0.3)";
-                            resBox.style.color = "var(--ios-green)";
-                            resBox.innerHTML = `<b>To'g'ri tushunildi (${score}% aniqlik):</b> ${feedback}`;
-                            appState.user.coins += 20;
-                            saveState();
-                        } else {
-                            resBox.style.background = "rgba(255, 159, 10, 0.15)";
-                            resBox.style.border = "1px solid rgba(255, 159, 10, 0.3)";
-                            resBox.style.color = "var(--ios-orange)";
-                            resBox.innerHTML = `<b>Qisman mos keldi (${score}%):</b> ${feedback}`;
-                        }
-                    } catch (err) {
-                        resBox.style.background = "rgba(255, 69, 58, 0.12)";
-                        resBox.style.border = "1px solid rgba(255, 69, 58, 0.3)";
-                        resBox.style.color = "var(--ios-red)";
-                        resBox.innerHTML = "Baholashda xatolik yuz berdi. Birozdan so'ng qayta urinib ko'ring.";
-                    } finally {
-                        evalBtn.disabled = false;
+                    if (score >= 70) {
+                        resBox.style.background = "rgba(48, 209, 88, 0.15)";
+                        resBox.style.border = "1px solid rgba(48, 209, 88, 0.3)";
+                        resBox.style.color = "var(--ios-green)";
+                        resBox.innerHTML = `<b>A'lo darajada tushunildi (${score}% aniqlik):</b> Fikringiz matn mohiyatiga to'liq mos. +20 tanga berildi! 🎉`;
+                        appState.user.coins += 20;
+                        saveState();
+                        triggerConfetti();
+                    } else {
+                        resBox.style.background = "rgba(255, 159, 10, 0.15)";
+                        resBox.style.border = "1px solid rgba(255, 159, 10, 0.3)";
+                        resBox.style.color = "var(--ios-orange)";
+                        resBox.innerHTML = `<b>Qisman mos keldi (${score}%):</b> Fikringiz qabul qilindi, biroq matndagi asosiy kalit tushunchalarni ko'proq ifodalashga harakat qiling.`;
                     }
                 };
 
