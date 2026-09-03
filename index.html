@@ -2687,10 +2687,10 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         const questions = [];
 
         // 1. Jumlani to'ldirish (Cloze / Bo'shliqni to'ldirish) testlari
-        for (let i = 0; i < rawSentences.length && questions.length < 4; i++) {
+        for (let i = 0; i < rawSentences.length && questions.length < 8; i++) {
             const sentence = rawSentences[i];
             const sWords = sentence.split(/\s+/);
-            if (sWords.length < 5) continue;
+            if (sWords.length < 10) continue;
 
             const candidates = sWords.map((w, idx) => ({
                 clean: w.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, ""),
