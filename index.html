@@ -484,8 +484,6 @@
         @media (min-width: 880px) {
             .workspace-grid { grid-template-columns: 1.15fr 1fr; }
         }
-        /* If there's only one panel in the grid, let it use the full width
-           instead of getting stuck in the left column with an empty gap. */
         .workspace-grid > .glass-panel:only-child {
             grid-column: 1 / -1;
         }
@@ -565,7 +563,7 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* Kitob Javoni (Mutolaa Uslubi) */
+        /* Kitob Javoni */
         .shelf-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -578,7 +576,17 @@
         .shelf-grid .book-card:nth-child(4) { animation-delay: 0.14s; }
         .shelf-grid .book-card:nth-child(5) { animation-delay: 0.18s; }
         .shelf-grid .book-card:nth-child(n+6) { animation-delay: 0.2s; }
-        .book-card { display: flex; flex-direction: column; gap: 8px; cursor: pointer; animation: cellIn 0.45s var(--ease-premium) backwards; }
+        .book-card { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+            cursor: pointer; 
+            animation: cellIn 0.45s var(--ease-premium) backwards; 
+            transition: transform 0.25s var(--ease-snap);
+        }
+        .book-card:hover {
+            transform: translateY(-4px);
+        }
         .book-cover {
             width: 100%; aspect-ratio: 2 / 3; border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -586,10 +594,10 @@
             display: flex; flex-direction: column; justify-content: space-between;
             padding: 14px 12px; transition: transform 0.35s var(--ease-premium), box-shadow 0.35s;
         }
-        .book-card:hover .book-cover { transform: translateY(-6px) rotateX(4deg) scale(1.02); box-shadow: 0 20px 34px rgba(0,0,0,0.7); }
+        .book-card:hover .book-cover { transform: rotateX(4deg) scale(1.02); box-shadow: 0 20px 34px rgba(0,0,0,0.7); }
         .book-logo-tag { align-self: center; font-size: 10px; color: rgba(255,255,255,0.7); font-weight: 600; text-transform: uppercase; }
-        .book-cover-title { font-size: 15px; font-weight: 800; color: #fff; text-align: center; margin: auto 0; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
-        .book-cover-author { font-size: 11px; color: rgba(255,255,255,0.7); text-align: center; }
+        .book-cover-title { font-size: 15px; font-weight: 800; color: #fff; text-align: center; margin: auto 0; text-shadow: 0 2px 8px rgba(0,0,0,0.8); word-break: break-word; }
+        .book-cover-author { font-size: 11px; color: rgba(255,255,255,0.7); text-align: center; margin-bottom: 4px; }
         .book-actions-pill {
             background: rgba(28, 28, 30, 0.7); border: 1px solid var(--border);
             border-radius: 20px; padding: 6px 12px; display: flex;
@@ -651,11 +659,8 @@
             20% { transform: translateY(-4px) scale(1.15); }
             100% { opacity: 0; transform: translateY(-34px) scale(1); }
         }
-    
 
-        /* =========================================================
-           PREMIUM VISUAL SKIN — Glass / Aurora / Apple-inspired UI
-           ========================================================= */
+        /* PREMIUM VISUAL SKIN */
         :root {
             --bg: #05060a;
             --card-bg: rgba(15, 17, 24, 0.78);
@@ -776,7 +781,6 @@
             box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
         }
 
-        /* Dashboard header */
         #view-goals > header.glass-panel {
             padding:18px 20px;
             background:
@@ -789,7 +793,6 @@
             box-shadow:0 12px 30px rgba(10,132,255,.22), inset 0 1px 0 rgba(255,255,255,.22) !important;
         }
 
-        /* Roadmap hero */
         #view-goals > section.glass-panel {
             padding:22px;
             background:
@@ -829,7 +832,6 @@
         }
         .mini-widget .val { font-size:17px; }
 
-        /* Workspace cards */
         .workspace-grid > .glass-panel,
         .timer-side-card,
         #view-reader,
@@ -840,7 +842,6 @@
                 rgba(12,14,20,.82);
         }
 
-        /* Premium standalone timer */
         .timer-shell { gap:18px; }
         .timer-hero {
             min-height:520px;
@@ -898,7 +899,6 @@
             box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
         }
 
-        /* Reader */
         .reader-display {
             height:205px;
             border-radius:20px;
@@ -909,7 +909,6 @@
         }
         #word-screen { text-shadow:0 0 28px rgba(100,210,255,.12); white-space:nowrap; }
 
-        /* Ko'z charchamasligi uchun O'qish Rejimlari (Reading Themes) */
         .reader-theme-ctrl {
             display: flex; align-items: center; gap: 6px;
             background: var(--card-subtle);
@@ -946,16 +945,12 @@
         .reader-display[data-rtheme="light"] #word-screen { color: #2A2622; text-shadow: none; }
         .reader-display[data-rtheme="light"] .orp-marker { background: #C2410C; box-shadow: 0 0 8px rgba(194,65,12,.5); }
 
-
-        /* Books */
         .book-card { gap:10px; }
         .book-cover {
             border-radius:15px;
             box-shadow:0 16px 34px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.12);
         }
-        .book-actions-pill { }
 
-        /* Eye trainer */
         .schulte-cell {
             border-radius:10px;
             background:linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.025));
@@ -984,200 +979,184 @@
             .timer-ring { width:255px; }
             .timer-controls { margin-top:15px; }
         }
-</style>
+    </style>
 
-<style id="apple-liquid-glass-premium">
-/* Apple-inspired Liquid Glass layer */
-:root{
-  --glass:rgba(255,255,255,.075);
-  --glass-strong:rgba(255,255,255,.105);
-  --glass-border:rgba(255,255,255,.16);
-  --glass-highlight:rgba(255,255,255,.28);
-  --glass-shadow:0 24px 70px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.10);
-  --apple-blue:#0A84FF;
-  --apple-purple:#BF5AF2;
-}
-body{background-color:#020308;overflow-x:hidden}
-body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;background:
- radial-gradient(circle at 12% 18%,rgba(10,132,255,.22),transparent 28%),
- radial-gradient(circle at 82% 14%,rgba(191,90,242,.18),transparent 25%),
- radial-gradient(circle at 70% 82%,rgba(48,209,88,.10),transparent 26%),
- radial-gradient(circle at 20% 82%,rgba(100,210,255,.09),transparent 25%);filter:blur(30px);animation:appleAurora 18s ease-in-out infinite alternate}
-@keyframes appleAurora{0%{transform:translate3d(-1%,0,0) scale(1)}100%{transform:translate3d(1%,2%,0) scale(1.06)}}
-.glass-panel,.nav-tabs,.mini-widget,.ios-cell,.quiz-card,.book-actions-pill,.roadmap-container,.reader-display,.motion-box,.schulte-cell{
- border-color:rgba(255,255,255,.14) !important;
-}
-.nav-tabs{position:relative;padding:7px;border-radius:22px;gap:6px;overflow-x:auto;scrollbar-width:none}
-.nav-tabs::-webkit-scrollbar{display:none}
-.tab-btn{border:1px solid transparent!important;background:transparent!important;border-radius:16px!important;padding:11px 16px!important;color:rgba(235,235,245,.62)!important;box-shadow:none!important}
-.tab-btn:hover{background:rgba(255,255,255,.07)!important;color:#fff!important}
-.tab-btn.active{background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.08))!important;border-color:rgba(255,255,255,.16)!important;box-shadow:0 8px 24px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.18)!important;color:#fff!important}
-.ios-btn{border:1px solid rgba(255,255,255,.12)!important;box-shadow:0 8px 22px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.16)!important}
-.ios-input{background:rgba(0,0,0,.4)!important;border-color:rgba(255,255,255,.13)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 24px rgba(0,0,0,.12)}
-.ios-input:focus{background:rgba(0,0,0,.5)!important;box-shadow:0 0 0 4px rgba(10,132,255,.13),inset 0 1px 0 rgba(255,255,255,.08)!important}
-.mini-widget{transition:transform .35s cubic-bezier(.16,1,.3,1),border-color .35s,box-shadow .35s}
-.mini-widget:hover{transform:translateY(-4px) scale(1.015);box-shadow:0 18px 40px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.14)!important}
-.ios-pill{background:rgba(255,255,255,.065)!important;border-color:rgba(255,255,255,.13)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 18px rgba(0,0,0,.16)}
-.brand-icon{box-shadow:0 12px 35px rgba(10,132,255,.32),inset 0 1px 0 rgba(255,255,255,.30)!important}
-.roadmap-container{box-shadow:inset 0 0 70px rgba(10,132,255,.08),0 18px 50px rgba(0,0,0,.30)!important}
-.book-card:hover .book-cover{box-shadow:0 24px 50px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.10)}
-.book-cover{box-shadow:0 16px 35px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.14)!important}
-@media(max-width:600px){
- body{padding:10px 8px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
- .container{gap:12px}
- .glass-panel{border-radius:20px!important;padding:16px!important}
- .nav-tabs{border-radius:19px}
- .tab-btn{font-size:12px!important;padding:10px 13px!important}
- .metric-widgets-grid{gap:7px!important}
- .mini-widget{border-radius:15px!important;padding:9px 6px!important}
-}
-</style>
+    <style id="apple-liquid-glass-premium">
+        :root{
+            --glass:rgba(255,255,255,.075);
+            --glass-strong:rgba(255,255,255,.105);
+            --glass-border:rgba(255,255,255,.16);
+            --glass-highlight:rgba(255,255,255,.28);
+            --glass-shadow:0 24px 70px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.10);
+            --apple-blue:#0A84FF;
+            --apple-purple:#BF5AF2;
+        }
+        body{background-color:#020308;overflow-x:hidden}
+        body:before{content:"";position:fixed;inset:-20%;z-index:-2;pointer-events:none;background:
+            radial-gradient(circle at 12% 18%,rgba(10,132,255,.22),transparent 28%),
+            radial-gradient(circle at 82% 14%,rgba(191,90,242,.18),transparent 25%),
+            radial-gradient(circle at 70% 82%,rgba(48,209,88,.10),transparent 26%),
+            radial-gradient(circle at 20% 82%,rgba(100,210,255,.09),transparent 25%);filter:blur(30px);animation:appleAurora 18s ease-in-out infinite alternate}
+        @keyframes appleAurora{0%{transform:translate3d(-1%,0,0) scale(1)}100%{transform:translate3d(1%,2%,0) scale(1.06)}}
+        .glass-panel,.nav-tabs,.mini-widget,.ios-cell,.quiz-card,.book-actions-pill,.roadmap-container,.reader-display,.motion-box,.schulte-cell{
+            border-color:rgba(255,255,255,.14) !important;
+        }
+        .nav-tabs{position:relative;padding:7px;border-radius:22px;gap:6px;overflow-x:auto;scrollbar-width:none}
+        .nav-tabs::-webkit-scrollbar{display:none}
+        .tab-btn{border:1px solid transparent!important;background:transparent!important;border-radius:16px!important;padding:11px 16px!important;color:rgba(235,235,245,.62)!important;box-shadow:none!important}
+        .tab-btn:hover{background:rgba(255,255,255,.07)!important;color:#fff!important}
+        .tab-btn.active{background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.08))!important;border-color:rgba(255,255,255,.16)!important;box-shadow:0 8px 24px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.18)!important;color:#fff!important}
+        .ios-btn{border:1px solid rgba(255,255,255,.12)!important;box-shadow:0 8px 22px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.16)!important}
+        .ios-input{background:rgba(0,0,0,.4)!important;border-color:rgba(255,255,255,.13)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 24px rgba(0,0,0,.12)}
+        .ios-input:focus{background:rgba(0,0,0,.5)!important;box-shadow:0 0 0 4px rgba(10,132,255,.13),inset 0 1px 0 rgba(255,255,255,.08)!important}
+        .mini-widget{transition:transform .35s cubic-bezier(.16,1,.3,1),border-color .35s,box-shadow .35s}
+        .mini-widget:hover{transform:translateY(-4px) scale(1.015);box-shadow:0 18px 40px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.14)!important}
+        .ios-pill{background:rgba(255,255,255,.065)!important;border-color:rgba(255,255,255,.13)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 18px rgba(0,0,0,.16)}
+        .brand-icon{box-shadow:0 12px 35px rgba(10,132,255,.32),inset 0 1px 0 rgba(255,255,255,.30)!important}
+        .roadmap-container{box-shadow:inset 0 0 70px rgba(10,132,255,.08),0 18px 50px rgba(0,0,0,.30)!important}
+        .book-card:hover .book-cover{box-shadow:0 24px 50px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.10)}
+        .book-cover{box-shadow:0 16px 35px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.14)!important}
+        @media(max-width:600px){
+            body{padding:10px 8px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+            .container{gap:12px}
+            .glass-panel{border-radius:20px!important;padding:16px!important}
+            .nav-tabs{border-radius:19px}
+            .tab-btn{font-size:12px!important;padding:10px 13px!important}
+            .metric-widgets-grid{gap:7px!important}
+            .mini-widget{border-radius:15px!important;padding:9px 6px!important}
+        }
+    </style>
 
-<style id="app-color-themes">
-/* =========================================================
-   RANG REJIMLARI (foydalanuvchi o'zi tanlaydi)
-   body[data-theme="..."] ga qarab butun ilova rangi almashadi.
-   Umumiy (tema-neytral) animatsiya sozlamalari:
-   ========================================================= */
-body{ animation-duration:46s !important; }
-body:before, body::before{ filter:blur(38px) !important; animation-duration:32s !important; }
-@keyframes appleAurora{0%{transform:translate3d(-1%,0,0) scale(1)}100%{transform:translate3d(1%,1%,0) scale(1.03)}}
-.ios-btn:hover{ filter:brightness(1.04) !important; }
-@keyframes brandGlow{
-  0%,100%{ box-shadow:0 4px 12px rgba(10,132,255,.20); }
-  50%{ box-shadow:0 4px 16px rgba(94,92,230,.28); }
-}
+    <style id="app-color-themes">
+        body{ animation-duration:46s !important; }
+        body:before, body::before{ filter:blur(38px) !important; animation-duration:32s !important; }
+        @keyframes appleAurora{0%{transform:translate3d(-1%,0,0) scale(1)}100%{transform:translate3d(1%,1%,0) scale(1.03)}}
+        .ios-btn:hover{ filter:brightness(1.04) !important; }
+        @keyframes brandGlow{
+            0%,100%{ box-shadow:0 4px 12px rgba(10,132,255,.20); }
+            50%{ box-shadow:0 4px 16px rgba(94,92,230,.28); }
+        }
 
-/* ---------- 1) TUN (yumshoq qorong'i) — standart rejim ---------- */
-body[data-theme="dark"]{
-  --bg:#15161c !important;
-  --card-bg:rgba(27,29,35,.94) !important;
-  --card-subtle:rgba(255,255,255,.05) !important;
-  --border:rgba(255,255,255,.09) !important;
-  --border-bright:rgba(255,255,255,.18) !important;
-  --label-primary:#E7E7EA !important;
-  --label-secondary:rgba(222,222,228,.62) !important;
-  --label-tertiary:rgba(222,222,228,.38) !important;
-  --premium-shadow:0 18px 44px rgba(0,0,0,.30), 0 2px 8px rgba(0,0,0,.20) !important;
-  --premium-glow:0 0 30px rgba(94,92,230,.09) !important;
-  background-color:#101116 !important;
-  background-image:
-      radial-gradient(at 12% 8%, rgba(94,92,230,.12) 0px, transparent 52%),
-      radial-gradient(at 88% 92%, rgba(10,132,255,.10) 0px, transparent 52%),
-      radial-gradient(at 85% 15%, rgba(100,210,255,.06) 0px, transparent 45%),
-      radial-gradient(at 8% 90%, rgba(191,90,242,.06) 0px, transparent 45%),
-      linear-gradient(180deg,#121319 0%,#101116 58%,#121319 100%) !important;
-}
-body[data-theme="dark"] .glass-panel{
-  background:linear-gradient(145deg, rgba(255,255,255,.035), transparent 38%), linear-gradient(180deg, rgba(33,35,42,.90), rgba(24,26,32,.88)) !important;
-  border-color:rgba(255,255,255,.09) !important;
-}
-body[data-theme="dark"] .nav-tabs{ background:rgba(26,27,33,.95) !important; }
-body[data-theme="dark"] .ios-input{ background:rgba(255,255,255,.045) !important; color:#E7E7EA !important; }
-body[data-theme="dark"] .ios-input:focus{ background:rgba(255,255,255,.065) !important; }
-body[data-theme="dark"] .motion-box{ background:radial-gradient(circle at center, rgba(10,132,255,.05), #14161c 62%) !important; }
-body[data-theme="dark"] .roadmap-container{ background:radial-gradient(circle at 50% 50%, #191c24 0%, #121419 100%) !important; }
-body[data-theme="dark"] .tab-btn.active{ box-shadow:0 6px 16px rgba(10,132,255,.16), inset 0 1px 0 rgba(255,255,255,.14) !important; }
+        body[data-theme="dark"]{
+            --bg:#15161c !important;
+            --card-bg:rgba(27,29,35,.94) !important;
+            --card-subtle:rgba(255,255,255,.05) !important;
+            --border:rgba(255,255,255,.09) !important;
+            --border-bright:rgba(255,255,255,.18) !important;
+            --label-primary:#E7E7EA !important;
+            --label-secondary:rgba(222,222,228,.62) !important;
+            --label-tertiary:rgba(222,222,228,.38) !important;
+            --premium-shadow:0 18px 44px rgba(0,0,0,.30), 0 2px 8px rgba(0,0,0,.20) !important;
+            --premium-glow:0 0 30px rgba(94,92,230,.09) !important;
+            background-color:#101116 !important;
+            background-image:
+                radial-gradient(at 12% 8%, rgba(94,92,230,.12) 0px, transparent 52%),
+                radial-gradient(at 88% 92%, rgba(10,132,255,.10) 0px, transparent 52%),
+                radial-gradient(at 85% 15%, rgba(100,210,255,.06) 0px, transparent 45%),
+                radial-gradient(at 8% 90%, rgba(191,90,242,.06) 0px, transparent 45%),
+                linear-gradient(180deg,#121319 0%,#101116 58%,#121319 100%) !important;
+        }
+        body[data-theme="dark"] .glass-panel{
+            background:linear-gradient(145deg, rgba(255,255,255,.035), transparent 38%), linear-gradient(180deg, rgba(33,35,42,.90), rgba(24,26,32,.88)) !important;
+            border-color:rgba(255,255,255,.09) !important;
+        }
+        body[data-theme="dark"] .nav-tabs{ background:rgba(26,27,33,.95) !important; }
+        body[data-theme="dark"] .ios-input{ background:rgba(255,255,255,.045) !important; color:#E7E7EA !important; }
+        body[data-theme="dark"] .ios-input:focus{ background:rgba(255,255,255,.065) !important; }
+        body[data-theme="dark"] .motion-box{ background:radial-gradient(circle at center, rgba(10,132,255,.05), #14161c 62%) !important; }
+        body[data-theme="dark"] .roadmap-container{ background:radial-gradient(circle at 50% 50%, #191c24 0%, #121419 100%) !important; }
+        body[data-theme="dark"] .tab-btn.active{ box-shadow:0 6px 16px rgba(10,132,255,.16), inset 0 1px 0 rgba(255,255,255,.14) !important; }
 
-/* ---------- 2) SEPIYA (iliq, kitob uslubi) ---------- */
-body[data-theme="sepia"]{
-  --bg:#1c150d !important;
-  --card-bg:rgba(45,36,24,.94) !important;
-  --card-subtle:rgba(255,224,175,.06) !important;
-  --border:rgba(255,224,175,.10) !important;
-  --border-bright:rgba(255,224,175,.20) !important;
-  --label-primary:#F0DAA6 !important;
-  --label-secondary:rgba(240,218,166,.65) !important;
-  --label-tertiary:rgba(240,218,166,.38) !important;
-  --premium-shadow:0 18px 44px rgba(0,0,0,.34), 0 2px 8px rgba(0,0,0,.22) !important;
-  --premium-glow:0 0 30px rgba(232,163,61,.12) !important;
-  background-color:#150f08 !important;
-  background-image:
-      radial-gradient(at 12% 8%, rgba(232,163,61,.14) 0px, transparent 52%),
-      radial-gradient(at 88% 92%, rgba(200,120,40,.10) 0px, transparent 52%),
-      radial-gradient(at 85% 15%, rgba(240,200,140,.06) 0px, transparent 45%),
-      linear-gradient(180deg,#1a130b 0%,#150f08 58%,#1a130b 100%) !important;
-}
-body[data-theme="sepia"] .glass-panel{
-  background:linear-gradient(145deg, rgba(255,224,175,.045), transparent 38%), linear-gradient(180deg, rgba(48,38,25,.90), rgba(32,25,16,.88)) !important;
-  border-color:rgba(255,224,175,.10) !important;
-}
-body[data-theme="sepia"] .nav-tabs{ background:rgba(38,29,18,.95) !important; }
-body[data-theme="sepia"] .ios-input{ background:rgba(255,224,175,.05) !important; color:#F0DAA6 !important; }
-body[data-theme="sepia"] .ios-input:focus{ background:rgba(255,224,175,.08) !important; }
-body[data-theme="sepia"] .motion-box{ background:radial-gradient(circle at center, rgba(232,163,61,.06), #1c150d 62%) !important; }
-body[data-theme="sepia"] .roadmap-container{ background:radial-gradient(circle at 50% 50%, #251c11 0%, #170f08 100%) !important; }
-body[data-theme="sepia"] .tab-btn.active{ background:linear-gradient(135deg,#a05a1e,#c47a1f) !important; box-shadow:0 6px 16px rgba(196,122,31,.28), inset 0 1px 0 rgba(255,255,255,.14) !important; }
-body[data-theme="sepia"] .grad-primary, body[data-theme="sepia"] .btn-blue{ background:linear-gradient(135deg,#a05a1e,#c47a1f) !important; }
+        body[data-theme="sepia"]{
+            --bg:#1c150d !important;
+            --card-bg:rgba(45,36,24,.94) !important;
+            --card-subtle:rgba(255,224,175,.06) !important;
+            --border:rgba(255,224,175,.10) !important;
+            --border-bright:rgba(255,224,175,.20) !important;
+            --label-primary:#F0DAA6 !important;
+            --label-secondary:rgba(240,218,166,.65) !important;
+            --label-tertiary:rgba(240,218,166,.38) !important;
+            --premium-shadow:0 18px 44px rgba(0,0,0,.34), 0 2px 8px rgba(0,0,0,.22) !important;
+            --premium-glow:0 0 30px rgba(232,163,61,.12) !important;
+            background-color:#150f08 !important;
+            background-image:
+                radial-gradient(at 12% 8%, rgba(232,163,61,.14) 0px, transparent 52%),
+                radial-gradient(at 88% 92%, rgba(200,120,40,.10) 0px, transparent 52%),
+                radial-gradient(at 85% 15%, rgba(240,200,140,.06) 0px, transparent 45%),
+                linear-gradient(180deg,#1a130b 0%,#150f08 58%,#1a130b 100%) !important;
+        }
+        body[data-theme="sepia"] .glass-panel{
+            background:linear-gradient(145deg, rgba(255,224,175,.045), transparent 38%), linear-gradient(180deg, rgba(48,38,25,.90), rgba(32,25,16,.88)) !important;
+            border-color:rgba(255,224,175,.10) !important;
+        }
+        body[data-theme="sepia"] .nav-tabs{ background:rgba(38,29,18,.95) !important; }
+        body[data-theme="sepia"] .ios-input{ background:rgba(255,224,175,.05) !important; color:#F0DAA6 !important; }
+        body[data-theme="sepia"] .ios-input:focus{ background:rgba(255,224,175,.08) !important; }
+        body[data-theme="sepia"] .motion-box{ background:radial-gradient(circle at center, rgba(232,163,61,.06), #1c150d 62%) !important; }
+        body[data-theme="sepia"] .roadmap-container{ background:radial-gradient(circle at 50% 50%, #251c11 0%, #170f08 100%) !important; }
+        body[data-theme="sepia"] .tab-btn.active{ background:linear-gradient(135deg,#a05a1e,#c47a1f) !important; box-shadow:0 6px 16px rgba(196,122,31,.28), inset 0 1px 0 rgba(255,255,255,.14) !important; }
+        body[data-theme="sepia"] .grad-primary, body[data-theme="sepia"] .btn-blue{ background:linear-gradient(135deg,#a05a1e,#c47a1f) !important; }
 
-/* ---------- 3) YENGIL (och/kunduzgi) ---------- */
-body[data-theme="light"]{
-  --bg:#F3EFE6 !important;
-  --card-bg:rgba(255,255,255,.90) !important;
-  --card-subtle:rgba(20,20,25,.045) !important;
-  --border:rgba(20,20,25,.10) !important;
-  --border-bright:rgba(20,20,25,.20) !important;
-  --label-primary:#26241F !important;
-  --label-secondary:rgba(38,36,31,.68) !important;
-  --label-tertiary:rgba(38,36,31,.42) !important;
-  --premium-shadow:0 12px 30px rgba(60,50,30,.12), 0 2px 6px rgba(60,50,30,.08) !important;
-  --premium-glow:0 0 24px rgba(10,132,255,.10) !important;
-  /* Ba'zi pastel rang (teal/purple) och fonda o'qilmay qolmasligi uchun to'qroq qilib qayta belgilanadi */
-  --ios-teal:#0B7285 !important;
-  --ios-purple:#8B2FC9 !important;
-  background-color:#F3EFE6 !important;
-  background-image:
-      radial-gradient(at 12% 8%, rgba(94,92,230,.07) 0px, transparent 52%),
-      radial-gradient(at 88% 92%, rgba(10,132,255,.06) 0px, transparent 52%),
-      radial-gradient(at 85% 15%, rgba(191,90,242,.05) 0px, transparent 45%),
-      linear-gradient(180deg,#F7F4EC 0%,#F1EDE2 58%,#F7F4EC 100%) !important;
-}
-body[data-theme="light"]:before, body[data-theme="light"]::before{ opacity:.06 !important; }
-body[data-theme="light"] .glass-panel{
-  background:linear-gradient(145deg, rgba(255,255,255,.6), transparent 38%), linear-gradient(180deg, rgba(255,255,255,.92), rgba(250,247,240,.88)) !important;
-  border-color:rgba(20,20,25,.09) !important;
-  box-shadow:0 12px 30px rgba(60,50,30,.10), inset 0 1px 0 rgba(255,255,255,.5) !important;
-}
-body[data-theme="light"] .nav-tabs{ background:rgba(255,255,255,.75) !important; box-shadow:0 10px 26px rgba(60,50,30,.10), inset 0 1px 0 rgba(255,255,255,.6) !important; }
-body[data-theme="light"] .tab-btn{ color:rgba(38,36,31,.65) !important; }
-body[data-theme="light"] .tab-btn:hover{ background:rgba(20,20,25,.05) !important; color:#26241F !important; }
-body[data-theme="light"] .ios-input{ background:rgba(20,20,25,.035) !important; color:#26241F !important; border-color:rgba(20,20,25,.12) !important; }
-body[data-theme="light"] .ios-input::placeholder{ color:rgba(38,36,31,.42) !important; }
-body[data-theme="light"] .ios-input:focus{ background:rgba(20,20,25,.055) !important; }
-body[data-theme="light"] .mini-widget, body[data-theme="light"] .quiz-card, body[data-theme="light"] .schulte-cell, body[data-theme="light"] .book-actions-pill{
-  background:rgba(20,20,25,.04) !important; border-color:rgba(20,20,25,.09) !important;
-}
-body[data-theme="light"] .motion-box{ background:radial-gradient(circle at center, rgba(10,132,255,.06), #EFEAE0 62%) !important; }
-body[data-theme="light"] .roadmap-container{ background:radial-gradient(circle at 50% 50%, #EFEAE0 0%, #E7E1D3 100%) !important; }
-body[data-theme="light"] .opt-btn{ background:rgba(20,20,25,.05) !important; color:#26241F !important; border-color:rgba(20,20,25,.10) !important; }
-body[data-theme="light"] .btn-gray{ background:rgba(20,20,25,.05) !important; color:#26241F !important; }
-body[data-theme="light"] .tab-btn.active{ background:linear-gradient(135deg,#0A84FF,#5E5CE6) !important; color:#fff !important; box-shadow:0 6px 16px rgba(10,132,255,.28), inset 0 1px 0 rgba(255,255,255,.25) !important; }
-body[data-theme="light"] ::-webkit-scrollbar-thumb{ background:rgba(20,20,25,.16) !important; }
-body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) !important; }
+        body[data-theme="light"]{
+            --bg:#F3EFE6 !important;
+            --card-bg:rgba(255,255,255,.90) !important;
+            --card-subtle:rgba(20,20,25,.045) !important;
+            --border:rgba(20,20,25,.10) !important;
+            --border-bright:rgba(20,20,25,.20) !important;
+            --label-primary:#26241F !important;
+            --label-secondary:rgba(38,36,31,.68) !important;
+            --label-tertiary:rgba(38,36,31,.42) !important;
+            --premium-shadow:0 12px 30px rgba(60,50,30,.12), 0 2px 6px rgba(60,50,30,.08) !important;
+            --premium-glow:0 0 24px rgba(10,132,255,.10) !important;
+            --ios-teal:#0B7285 !important;
+            --ios-purple:#8B2FC9 !important;
+            background-color:#F3EFE6 !important;
+            background-image:
+                radial-gradient(at 12% 8%, rgba(94,92,230,.07) 0px, transparent 52%),
+                radial-gradient(at 88% 92%, rgba(10,132,255,.06) 0px, transparent 52%),
+                radial-gradient(at 85% 15%, rgba(191,90,242,.05) 0px, transparent 45%),
+                linear-gradient(180deg,#F7F4EC 0%,#F1EDE2 58%,#F7F4EC 100%) !important;
+        }
+        body[data-theme="light"]:before, body[data-theme="light"]::before{ opacity:.06 !important; }
+        body[data-theme="light"] .glass-panel{
+            background:linear-gradient(145deg, rgba(255,255,255,.6), transparent 38%), linear-gradient(180deg, rgba(255,255,255,.92), rgba(250,247,240,.88)) !important;
+            border-color:rgba(20,20,25,.09) !important;
+            box-shadow:0 12px 30px rgba(60,50,30,.10), inset 0 1px 0 rgba(255,255,255,.5) !important;
+        }
+        body[data-theme="light"] .nav-tabs{ background:rgba(255,255,255,.75) !important; box-shadow:0 10px 26px rgba(60,50,30,.10), inset 0 1px 0 rgba(255,255,255,.6) !important; }
+        body[data-theme="light"] .tab-btn{ color:rgba(38,36,31,.65) !important; }
+        body[data-theme="light"] .tab-btn:hover{ background:rgba(20,20,25,.05) !important; color:#26241F !important; }
+        body[data-theme="light"] .ios-input{ background:rgba(20,20,25,.035) !important; color:#26241F !important; border-color:rgba(20,20,25,.12) !important; }
+        body[data-theme="light"] .ios-input::placeholder{ color:rgba(38,36,31,.42) !important; }
+        body[data-theme="light"] .ios-input:focus{ background:rgba(20,20,25,.055) !important; }
+        body[data-theme="light"] .mini-widget, body[data-theme="light"] .quiz-card, body[data-theme="light"] .schulte-cell, body[data-theme="light"] .book-actions-pill{
+            background:rgba(20,20,25,.04) !important; border-color:rgba(20,20,25,.09) !important;
+        }
+        body[data-theme="light"] .motion-box{ background:radial-gradient(circle at center, rgba(10,132,255,.06), #EFEAE0 62%) !important; }
+        body[data-theme="light"] .roadmap-container{ background:radial-gradient(circle at 50% 50%, #EFEAE0 0%, #E7E1D3 100%) !important; }
+        body[data-theme="light"] .opt-btn{ background:rgba(20,20,25,.05) !important; color:#26241F !important; border-color:rgba(20,20,25,.10) !important; }
+        body[data-theme="light"] .btn-gray{ background:rgba(20,20,25,.05) !important; color:#26241F !important; }
+        body[data-theme="light"] .tab-btn.active{ background:linear-gradient(135deg,#0A84FF,#5E5CE6) !important; color:#fff !important; box-shadow:0 6px 16px rgba(10,132,255,.28), inset 0 1px 0 rgba(255,255,255,.25) !important; }
+        body[data-theme="light"] ::-webkit-scrollbar-thumb{ background:rgba(20,20,25,.16) !important; }
+        body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) !important; }
 
-/* Rang tanlash paneli */
-.theme-picker-row{ display:flex; gap:8px; flex-wrap:wrap; }
-.theme-swatch-btn{
-  display:flex; align-items:center; gap:7px;
-  padding:8px 13px; border-radius:20px; cursor:pointer;
-  background:var(--card-subtle); border:1px solid var(--border); color:var(--label-secondary);
-  font-size:12.5px; font-weight:700; transition:transform .2s var(--ease-snap), border-color .3s, color .3s;
-}
-.theme-swatch-btn:hover{ color:var(--label-primary); border-color:var(--border-bright); }
-.theme-swatch-btn.active{ color:#fff; background:var(--grad-primary); border-color:transparent; box-shadow:0 4px 14px rgba(10,132,255,.30); }
-.theme-swatch-dot{ width:14px; height:14px; border-radius:50%; flex-shrink:0; border:1px solid rgba(255,255,255,.25); }
+        .theme-picker-row{ display:flex; gap:8px; flex-wrap:wrap; }
+        .theme-swatch-btn{
+            display:flex; align-items:center; gap:7px;
+            padding:8px 13px; border-radius:20px; cursor:pointer;
+            background:var(--card-subtle); border:1px solid var(--border); color:var(--label-secondary);
+            font-size:12.5px; font-weight:700; transition:transform .2s var(--ease-snap), border-color .3s, color .3s;
+        }
+        .theme-swatch-btn:hover{ color:var(--label-primary); border-color:var(--border-bright); }
+        .theme-swatch-btn.active{ color:#fff; background:var(--grad-primary); border-color:transparent; box-shadow:0 4px 14px rgba(10,132,255,.30); }
+        .theme-swatch-dot{ width:14px; height:14px; border-radius:50%; flex-shrink:0; border:1px solid rgba(255,255,255,.25); }
 
-/* Kitob muqovasi doim o'zining rangli foniga ega (tema-neytral) — shuning uchun
-   uning matni har doim och (oq) rangda qoladi, aks holda yorug' rejimda ham
-   muqova qorong'i qolib, matn o'qib bo'lmay qoladi. */
-.book-cover-title{ color:#fff !important; }
-.book-cover-author, .book-logo-tag{ color:rgba(255,255,255,0.75) !important; }
-</style>
-
+        .book-cover-title{ color:#fff !important; }
+        .book-cover-author, .book-logo-tag{ color:rgba(255,255,255,0.75) !important; }
+    </style>
 </head>
 <body data-theme="dark">
 <script>
-    // Sahifa chizilishidan oldin saqlangan rangni tezda qo'llash (miltillashni oldini olish uchun)
     try {
         var __savedTheme = localStorage.getItem('app_color_theme');
         if (__savedTheme === 'dark' || __savedTheme === 'sepia' || __savedTheme === 'light') {
@@ -1190,9 +1169,7 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
 
 <div class="container">
     
-    <!-- =========================================================
-         0. KIRISH VA RO'YXATDAN O'TISH EKRANI (AUTH / ONBOARDING)
-         ========================================================= -->
+    <!-- 0. KIRISH VA RO'YXATDAN O'TISH EKRANI (AUTH / ONBOARDING) -->
     <div id="auth-screen" class="glass-panel">
         <div style="display:flex; justify-content:flex-end;">
             <div class="theme-picker-row" style="gap:6px;">
@@ -1279,9 +1256,7 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         </div>
     </div>
 
-    <!-- =========================================================
-         ASOSIY ILOVA (RO'YXATDAN O'TGANDAN SO'NG OCHILADI)
-         ========================================================= -->
+    <!-- ASOSIY ILOVA -->
     <div id="main-app" style="display: none; flex-direction: column; gap: 16px;">
         
         <!-- Yagona Navigatsiya -->
@@ -1294,7 +1269,7 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
             <button class="tab-btn" type="button" onclick="toggleThemePanel()" role="button" title="Ilova rangini o‘zgartirish" id="theme-toggle-tab">🎨 Rang</button>
         </div>
 
-        <!-- Rang Tanlash Paneli (ko'z uchun qulay rangni foydalanuvchi o'zi tanlaydi) -->
+        <!-- Rang Tanlash Paneli -->
         <div id="theme-picker-panel" class="glass-panel" style="display:none; flex-direction:column; gap:10px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <strong style="font-size:13.5px;">🎨 Ilova rangini tanlang</strong>
@@ -1450,7 +1425,7 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
             </aside>
         </div>
 
-        <!-- 2. SPEED READING BO'LIMI -->
+        <!-- 3. SPEED READING BO'LIMI -->
         <div id="view-reader" class="glass-panel" style="display: none; flex-direction: column; gap: 14px;">
             <div class="reader-display" id="reader-display-box" data-rtheme="dark" style="transition: background 0.3s;">
                 <div class="orp-marker orp-top"></div>
@@ -1514,10 +1489,11 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
                 </div>
             </div>
 
-            <div style="display: flex; gap: 10px;">
-                <button class="ios-btn btn-blue" id="btn-start" style="flex: 2;">▶ O‘qishni Boshlash</button>
-                <button class="ios-btn btn-orange" id="btn-pause" style="flex: 1;">⏸ To‘xtatish</button>
-                <button class="ios-btn btn-gray" id="btn-reset">🔄 Qayta</button>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="ios-btn btn-blue" id="btn-start" style="flex: 2; min-width: 140px;">▶ O‘qishni Boshlash</button>
+                <button class="ios-btn btn-orange" id="btn-pause" style="flex: 1; min-width: 110px;">⏸ To‘xtatish</button>
+                <button class="ios-btn btn-gray" id="btn-reset" style="min-width: 80px;">🔄 Qayta</button>
+                <button type="button" class="ios-btn btn-green" id="btn-save-shelf" onclick="manualSaveToShelf()" style="flex: 1; min-width: 130px;" title="Kitobni matni bilan javonga saqlash">💾 Javonga Saqlash</button>
             </div>
 
             <!-- Mantiqiy Savol-Javob va Sun'iy Intellekt Tahlil Bloki -->
@@ -1531,19 +1507,19 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
             </div>
         </div>
 
-        <!-- 3. KITOB JAVONI (MUTOLAA USLUBI) -->
+        <!-- 4. KITOB JAVONI (MUTOLAA USLUBI) -->
         <div id="view-shelf" class="glass-panel" style="display: none; flex-direction: column; gap: 16px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                 <div>
                     <h2 style="font-size: 20px; font-weight: 800;">Mening Kitob Javonim</h2>
-                    <p style="font-size: 12.5px; color: var(--label-secondary);">O‘qib tugatilgan kitoblar kolleksiyasi</p>
+                    <p style="font-size: 12.5px; color: var(--label-secondary);">O‘qib tugatilgan yoki saqlangan kitoblar kolleksiyasi. Qayta o‘qish uchun kitob ustiga bosing.</p>
                 </div>
                 <span class="ios-pill" style="color:var(--ios-green);" id="shelf-count-pill">0 ta kitob</span>
             </div>
             <div class="shelf-grid" id="shelf-books-grid"></div>
         </div>
 
-        <!-- 4. KO'Z TRENAJYORI (4 TA MASHQ) -->
+        <!-- 5. KO'Z TRENAJYORI (4 TA MASHQ) -->
         <div id="view-gym" class="glass-panel" style="display: none; flex-direction: column; gap: 14px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h2 style="font-size: 18px; font-weight: 800; color:var(--ios-blue);">👁️ Professional Ko‘z Trenajyori</h2>
@@ -1613,8 +1589,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         try {
             localStorage.setItem('unified_app_state_v3', JSON.stringify(appState));
         } catch(e) {}
-        // Google hisobi ulangan bo'lsa, bulutga (Firestore) ham saqlaymiz —
-        // shunda ma'lumotlar istalgan qurilmadan kirganda ham saqlanib qoladi.
         if (firebaseReady && fbDb && appState.googleUid) {
             fbDb.collection('users').doc(appState.googleUid).set(appState, { merge: true })
                 .catch(e => console.warn("Bulutga saqlashda xatolik:", e));
@@ -1624,18 +1598,8 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
     }
 
     /* ==========================================
-       A0. GOOGLE BILAN KIRISH VA BULUTGA SAQLASH (FIREBASE)
-       ==========================================
-       Bu bo'lim ishlashi uchun O'ZINGIZNING bepul Firebase loyihangizni
-       ulashingiz kerak (bir marta, bir necha daqiqa):
-         1. https://console.firebase.google.com -> "Add project" orqali loyiha yarating.
-         2. Chap menyudan Build > Authentication > Sign-in method -> "Google"ni yoqing.
-         3. Build > Firestore Database -> "Create database" (test rejimida boshlasangiz bo'ladi).
-         4. ⚙️ Project settings > "Your apps" > Web (</>) belgisi orqali ilova qo'shing,
-            sizga beriladigan firebaseConfig obyektini pastdagi o'rniga qo'ying.
-       Konfiguratsiya kiritilmaguncha "Google orqali davom etish" tugmasi
-       ilova buzilmasligi uchun shunchaki ogohlantirish beradi.
-    */
+       A0. GOOGLE BILAN KIRISH VA BULUTGA SAQLASH
+       ========================================== */
     const firebaseConfig = {
         apiKey: "AIzaSyC7C55ykigI6PPJohUdd422p3UJn0NmNa8",
         authDomain: "maqsad-tomon.firebaseapp.com",
@@ -1658,9 +1622,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         console.warn("Firebase sozlanmagan yoki xato:", e);
     }
 
-    // Telefonlarda (ayniqsa ichki brauzerlarda) signInWithPopup ko'pincha
-    // ochilmay qoladi yoki abadiy "yuklanmoqda" holatida osilib qoladi.
-    // Shu sabab telefonda "redirect" usuli, kompyuterda esa "popup" ishlatiladi.
     function isMobileDevice() {
         return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent || "");
     }
@@ -1677,26 +1638,21 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
 
     function signInWithGoogle() {
         if (!firebaseReady) {
-            alert("Google orqali kirish hali sozlanmagan.\n\nIlova egasi index.html faylidagi firebaseConfig qiymatlarini o'zining Firebase loyihasiga almashtirishi kerak (kod ichida A0-bo'limga izoh sifatida qoldirilgan).");
+            alert("Google orqali kirish hali sozlanmagan.\n\nIlova egasi index.html faylidagi firebaseConfig qiymatlarini o'zining Firebase loyihasiga almashtirishi kerak.");
             return;
         }
 
-        // Fayl to'g'ridan-to'g'ri "file://" orqali ochilgan bo'lsa, Google
-        // kirish hech qachon ishlamaydi — buni darhol va aniq aytib beramiz,
-        // aks holda tugma cheksiz "yuklanmoqda" holatida osilib qolganday tuyuladi.
         if (location.protocol === 'file:') {
-            alert("Google orqali kirish faqat ilova https:// (yoki localhost) manzilidan ochilganda ishlaydi.\n\nHozir fayl to'g'ridan-to'g'ri diskdan (file://) ochilgan — shuning uchun kirish tugmasi javob bermaydi. Ilovani veb-serverga (masalan Firebase Hosting, Netlify yoki oddiy http-server) joylashtirib qayta urinib ko'ring.");
+            alert("Google orqali kirish faqat ilova https:// (yoki localhost) manzilidan ochilganda ishlaydi.\n\nHozir fayl to'g'ridan-to'g'ri diskdan (file://) ochilgan. Ilovani veb-serverga joylashtirib qayta urinib ko'ring.");
             return;
         }
 
         const provider = new firebase.auth.GoogleAuthProvider();
         setGoogleButtonLoading(true);
 
-        // Popup/redirect javob bermay qolgan taqdirda foydalanuvchi abadiy
-        // kutib qolmasligi uchun ehtiyot chorasi sifatida taymer qo'yamiz.
         const stuckTimer = setTimeout(() => {
             setGoogleButtonLoading(false);
-            alert("Google bilan bog'lanish juda uzoq davom etyapti.\n\nInternet aloqangizni tekshirib qayta urinib ko'ring, yoki brauzeringiz sozlamalarida pop-up/uchinchi tomon oynalar bloklanmaganini tekshiring.");
+            alert("Google bilan bog'lanish juda uzoq davom etyapti.\n\nInternet aloqangizni tekshirib qayta urinib ko'ring.");
         }, 15000);
 
         if (isMobileDevice()) {
@@ -1706,8 +1662,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
                 console.error(err);
                 alert("Google bilan kirishda xatolik yuz berdi. Qaytadan urinib ko'ring.");
             });
-            // Muvaffaqiyatli bo'lsa sahifa Google'ga o'tib, qaytib kelganda
-            // getRedirectResult() orqali handleGoogleLogin() chaqiriladi (pastga qarang).
         } else {
             fbAuth.signInWithPopup(provider)
                 .then(result => {
@@ -1727,7 +1681,7 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
     }
 
     function signOutGoogle() {
-        if (!confirm("Google hisobingizdan chiqmoqchimisiz?\n\nMa'lumotlaringiz bulutda saqlanib qoladi — keyingi safar shu hisob bilan kirsangiz, hammasi qayta yuklanadi.")) return;
+        if (!confirm("Google hisobingizdan chiqmoqchimisiz?\n\nMa'lumotlaringiz bulutda saqlanib qoladi.")) return;
         if (fbAuth) fbAuth.signOut();
         appState.isLoggedIn = false;
         appState.googleUid = null;
@@ -1736,8 +1690,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         appState.tasks = [];
         try { localStorage.removeItem('unified_app_state_v3'); } catch(e) {}
 
-        // Ro'yxatdan o'tish formasini ham toza 1-qadamga qaytaramiz —
-        // aks holda eski vazifalar/qadam ko'rinishida osilib qolar edi.
         tempWizardTasks = [];
         document.getElementById('auth-name').value = "";
         document.getElementById('auth-phone').value = "";
@@ -1752,7 +1704,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         try {
             const doc = await fbDb.collection('users').doc(user.uid).get();
             if (doc.exists) {
-                // Bu hisob bilan avval ro'yxatdan o'tilgan — bulutdagi ma'lumotlarni yuklaymiz
                 Object.assign(appState, doc.data());
                 appState.googleUid = user.uid;
                 appState.isLoggedIn = true;
@@ -1764,9 +1715,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
             console.warn("Bulutdan yuklashda xatolik, ro'yxatdan o'tish davom etadi:", e);
         }
 
-        // Yangi foydalanuvchi — ismini Google profilidan to'ldiramiz.
-        // Email raqamni "telefon" maydoniga yozmaymiz — bu ikkisi boshqa-boshqa narsa;
-        // telefon raqamini foydalanuvchi xohlasa o'zi kiritadi.
         appState.googleUid = user.uid;
         appState.user.name = user.displayName || "";
         appState.user.email = user.email || "";
@@ -1889,7 +1837,12 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
 
     function switchMainTab(tab, button) {
         document.querySelectorAll('.nav-tabs .tab-btn').forEach(b => b.classList.remove('active'));
-        if (button) button.classList.add('active');
+        if (button) {
+            button.classList.add('active');
+        } else {
+            const btnMatch = document.querySelector(`.nav-tabs .tab-btn[onclick*="${tab}"]`);
+            if (btnMatch) btnMatch.classList.add('active');
+        }
 
         ['goals', 'timer', 'reader', 'shelf', 'gym'].forEach(view => {
             const el = document.getElementById(`view-${view}`);
@@ -1962,14 +1915,12 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
             const dpr = window.devicePixelRatio || 1;
             animProgress += (targetProgressPercent - animProgress) * 0.055;
 
-            // Fon teksturasi
             const bg = rCtx.createRadialGradient(w * .5, h * .45, 0, w * .5, h * .45, Math.max(w,h) * .65);
             bg.addColorStop(0, 'rgba(35,42,58,.34)');
             bg.addColorStop(1, 'rgba(2,4,8,0)');
             rCtx.fillStyle = bg;
             rCtx.fillRect(0, 0, w, h);
 
-            // Mayda "yulduzcha" nuqtalar — har kadrda bir xil joyda
             rCtx.fillStyle = 'rgba(255,255,255,.14)';
             for (let i = 0; i < 32; i++) {
                 const x = ((i * 97) % 1000) / 1000 * w;
@@ -1979,7 +1930,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
                 rCtx.fill();
             }
 
-            // 3D pastki soya
             buildRoadPath(rCtx, w, h, 10 * dpr);
             rCtx.strokeStyle = 'rgba(0,0,0,.62)';
             rCtx.lineWidth = 42 * dpr;
@@ -1987,13 +1937,11 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
             rCtx.lineJoin = 'round';
             rCtx.stroke();
 
-            // Yo‘l cheti
             buildRoadPath(rCtx, w, h, 4 * dpr);
             rCtx.strokeStyle = '#0b1322';
             rCtx.lineWidth = 38 * dpr;
             rCtx.stroke();
 
-            // Yo‘lning o‘zi
             buildRoadPath(rCtx, w, h);
             const roadGrad = rCtx.createLinearGradient(0, 0, w, h);
             roadGrad.addColorStop(0, '#263247');
@@ -2003,13 +1951,11 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
             rCtx.lineWidth = 31 * dpr;
             rCtx.stroke();
 
-            // Yo‘l chetidagi yumshoq yaltirash
             buildRoadPath(rCtx, w, h);
             rCtx.strokeStyle = 'rgba(100,210,255,.10)';
             rCtx.lineWidth = 35 * dpr;
             rCtx.stroke();
 
-            // O‘tilgan qism
             if (animProgress > 0.002) {
                 rCtx.beginPath();
                 const currentSteps = Math.max(1, Math.floor(animProgress * 160));
@@ -2031,7 +1977,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
                 rCtx.shadowBlur = 0;
             }
 
-            // Markaziy yo‘l chizig‘i
             buildRoadPath(rCtx, w, h);
             rCtx.strokeStyle = 'rgba(255,255,255,.72)';
             rCtx.lineWidth = 2.2 * dpr;
@@ -2052,13 +1997,11 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
                 const isReached = animProgress >= m.t - 0.015;
                 const pinY = pos.y - 18 * dpr;
 
-                // Pin soyasi
                 rCtx.fillStyle = 'rgba(0,0,0,.35)';
                 rCtx.beginPath();
                 rCtx.ellipse(pos.x, pos.y + 4*dpr, 12*dpr, 4*dpr, 0, 0, Math.PI*2);
                 rCtx.fill();
 
-                // Pin tayoqchasi
                 rCtx.strokeStyle = m.color;
                 rCtx.lineWidth = 3 * dpr;
                 rCtx.beginPath();
@@ -2066,7 +2009,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
                 rCtx.lineTo(pos.x, pos.y);
                 rCtx.stroke();
 
-                // Pin
                 rCtx.fillStyle = isReached ? m.color : '#1d2636';
                 rCtx.strokeStyle = isReached ? '#fff' : 'rgba(255,255,255,.32)';
                 rCtx.lineWidth = 2 * dpr;
@@ -2075,7 +2017,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
                 rCtx.fill();
                 rCtx.stroke();
 
-                // Label
                 rCtx.font = `800 ${10*dpr}px Manrope, sans-serif`;
                 rCtx.textBaseline = 'middle';
                 rCtx.textAlign = m.align;
@@ -2097,7 +2038,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
                 rCtx.fillText(m.label, labelX, labelY);
             });
 
-            // Progress traveler
             const currentPos = getSplinePoint(Math.min(1, Math.max(0, animProgress)), w, h);
             rCtx.save();
             rCtx.translate(currentPos.x, currentPos.y - 7*dpr);
@@ -2347,21 +2287,17 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
        D. SPEED READING & MANTIQIY SAVOLLAR
        ========================================== */
     let allWords = [], chunks = [], currentIndex = 0;
-    let readingStartWordIndex = 0; // Ushbu o'qish sessiyasi qaysi so'zdan boshlanganini eslab qoladi (savollar shu joydan hisoblanadi)
+    let readingStartWordIndex = 0;
     let rTimer = null, rElapsedTimer = null;
     let rRunning = false, chunkSize = 1, rElapsedSec = 0;
     let readerFontScale = parseFloat(localStorage.getItem("reader_font_scale")) || 1;
 
-    /* ==========================================
-       UMUMIY ILOVA RANG REJIMI (foydalanuvchi tanlaydi)
-       ========================================== */
     function applyAppTheme(theme, btn) {
         document.body.setAttribute('data-theme', theme);
         document.querySelectorAll('.theme-swatch-btn').forEach(b => {
             b.classList.toggle('active', b.getAttribute('data-theme-btn') === theme);
         });
         try { localStorage.setItem('app_color_theme', theme); } catch(e) {}
-        // Fon rangi keskin o'zgargani uchun kanvaslarni (roadmap va h.k.) qayta chizamiz
         setTimeout(() => {
             if (typeof draw3DRoadmap === 'function') draw3DRoadmap();
         }, 60);
@@ -2379,7 +2315,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         applyAppTheme(saved);
     })();
 
-    /* Ko'z charchamasligi uchun o'qish rejimi (Tun / Sepiya / Yorug') */
     function applyReaderTheme(theme, btn) {
         const box = document.getElementById('reader-display-box');
         if (box) box.setAttribute('data-rtheme', theme);
@@ -2395,7 +2330,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         const saved = localStorage.getItem('reader_theme') || 'dark';
         applyReaderTheme(saved);
     })();
-
 
     const wordScreen = document.getElementById("word-screen");
     const bookContent = document.getElementById("book-content");
@@ -2443,9 +2377,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         updateStartPositionPreview(parseInt(startPosRange.value, 10));
     }
 
-    // Slayder yordamida kitobni istalgan joydan boshlash imkoniyati.
-    // Faqat yangi (hali boshlanmagan) o'qish uchun ishlatiladi — pauzadan
-    // keyin davom etishga ta'sir qilmaydi.
     function updateStartPositionPreview(percent) {
         if (!chunks.length) {
             startPosLabel.textContent = "1-so‘zdan";
@@ -2458,7 +2389,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         startPosLabel.textContent = `${wordNum}-so‘zdan`;
         startPosPercent.textContent = percent + "%";
 
-        // O'qish hali boshlanmagan bo'lsa, ekranda tanlangan so'zni oldindan ko'rsatamiz
         if (!rRunning && currentIndex === 0) {
             wordScreen.textContent = chunks[pendingStartIndex] || "Tayyormisiz?";
             wordScreen.style.fontSize = fixedWordFontSize + "px";
@@ -2487,8 +2417,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         };
     });
 
-    // Butun o'qish sessiyasi davomida bitta barqaror shrift o'lchami ishlatiladi,
-    // shunda so'zlar navbatma-navbat "katta-kichik" bo'lib sakramaydi.
     let fixedWordFontSize = 38;
 
     function measureFontSizeForText(text, container, baseFontPx) {
@@ -2514,8 +2442,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         return fontSize;
     }
 
-    // O'qilayotgan butun matndagi ENG UZUN chunk asosida bitta umumiy shrift
-    // o'lchamini hisoblaydi va shu o'lcham barcha so'zlar uchun ishlatiladi.
     function recalcFixedFontSize() {
         const container = wordScreen.parentElement;
         if (!container) return;
@@ -2535,8 +2461,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         wordScreen.style.fontSize = fixedWordFontSize + "px";
     }
 
-    // Eski nom bilan ham chaqirilishi mumkin bo'lgan joylar uchun saqlanadi,
-    // endi u shunchaki umumiy shrift o'lchamini qayta hisoblaydi (har so'zda emas).
     function fitWordScreen() {
         recalcFixedFontSize();
     }
@@ -2580,7 +2504,9 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
                 clearInterval(rElapsedTimer);
                 rRunning = false;
                 wordScreen.textContent = "Kitob Tugadi! 🎉";
-                saveToBookshelf();
+                // Kitob o'qib bo'linganda uning to'liq matnini avtomatik javonga saqlaymiz!
+                saveToBookshelf(undefined, true);
+                triggerConfetti();
                 triggerSemanticQuiz();
             }
         }, ms);
@@ -2600,14 +2526,14 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
             prepareReaderText();
             if (chunks.length === 0) return alert("Iltimos, matn kiriting yoki PDF yuklang!");
             recalcFixedFontSize();
-            // Yangi o'qish (hali boshlanmagan, ya'ni pauzadan davom etmayapmiz) bo'lsa,
-            // foydalanuvchi slayderda tanlagan nuqtadan boshlanadi.
             if (currentIndex === 0 && pendingStartIndex > 0) {
                 currentIndex = pendingStartIndex;
             }
             readingStartWordIndex = currentIndex;
             quizBlock.style.display = "none";
             rRunning = true;
+            // Kitobni boshlagandayoq javonga saqlab qo'yamiz (matni yo'qolmasligi uchun)
+            saveToBookshelf(undefined, true);
             startReadingLoop();
         }
     };
@@ -2618,6 +2544,8 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
             clearInterval(rElapsedTimer);
             rElapsedTimer = null;
             rRunning = false;
+            // To'xtatganda ham joriy holat va matnni saqlab qo'yamiz
+            saveToBookshelf(undefined, true);
             triggerSemanticQuiz();
         }
     };
@@ -2661,18 +2589,16 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
             currentIndex = 0;
             recalcFixedFontSize();
             updateScreen();
+            // PDF yuklanganda avtomatik javonga saqlab qo'yish
+            saveToBookshelf(fullText.trim(), true);
         } catch (err) {
             alert("PDF faylni o'qishda xatolik: " + err.message);
         }
     };
 
     /* ==========================================
-       D2. MATN MOHIYATI ASOSIDA AVTONOM VA AQLLI
-       SAVOL-JAVOB TIZIMI (OFFLINE & INSTANT QUIZ)
+       D2. MATN MOHIYATI ASOSIDA SAVOL-JAVOB TIZIMI
        ========================================== */
-
-    // Claude API'ga so'rov yuborish uchun umumiy yordamchi funksiya.
-    // (Anthropic key avtomatik boshqariladi — bu yerda hech qanday kalit kerak emas.)
     async function callClaudeAPI(promptText, maxTokens = 1000) {
         try {
             const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -2706,10 +2632,6 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
         }
     }
 
-    // O'qilgan haqiqiy matn asosida CHINAKAM TUSHUNISHNI tekshiradigan,
-    // sun'iy intellekt yordamida tuzilgan aqlli savollar generatori.
-    // MUHIM: bu yerda "bo'shliqni to'ldirish" turidagi savollar berilmaydi —
-    // faqat asosiy fikr, sabab-oqibat va xulosa chiqarishga qaratilgan savollar tuziladi.
     async function generateSmartSemanticQuiz(text) {
         if (!text || text.trim().length < 15) return [];
 
@@ -2720,12 +2642,12 @@ body[data-theme="light"] .roadmap-progress-track{ background:rgba(20,20,25,.08) 
 Quyidagi MATN asosida aynan 4 ta savol tuz:
 - Savollarning barchasi matndagi ASOSIY FIKR, SABAB-OQIBAT bog'lanishi, xarakter/voqealar orasidagi munosabat, muallif pozitsiyasi yoki xulosa chiqarish (tahlil, inference) darajasida bo'lishi shart.
 - HECH QACHON "bo'shliqni to'ldiring", "quyidagi so'zni tanlang" yoki matndan so'zma-so'z bitta so'z/ibora ajratib olishga asoslangan savol berma.
-- Har bir savol matnni shunchaki qayta o'qib emas, balki tushunib chiqqan odamgina to'g'ri javob bera oladigan darajada bo'lsin. Masalan: "Muallif nima uchun ... deb hisoblaydi?", "... voqeasi keyinchalik nimaga olib keladi?", "Ushbu parchaning asosiy g'oyasi nima?", "... bilan ... o'rtasidagi bog'liqlik qanday?".
-- Har bir savolga 4 ta variant ber, faqat bittasi to'g'ri, qolgan 3 tasi mantiqan yaqin va ishonarli, lekin noto'g'ri (yaxshi distraktor) bo'lsin.
-- Har bir savoldan keyin qisqa (1 jumlali) tushuntirish yoz — nega bu javob to'g'ri, matnga tayangan holda.
+- Har bir savol matnni shunchaki qayta o'qib emas, balki tushunib chiqqan odamgina to'g'ri javob bera oladigan darajada bo'lsin.
+- Har bir savolga 4 ta variant ber, faqat bittasi to'g'ri, qolgan 3 tasi mantiqan yaqin va ishonarli, lekin noto'g'ri bo'lsin.
+- Har bir savoldan keyin qisqa (1 jumlali) tushuntirish yoz.
 - Savollar va variantlar o'zbek tilida bo'lsin.
 
-Faqat quyidagi JSON massiv formatida javob ber. Boshqa hech qanday matn, izoh, salomlashish yoki markdown belgisi (masalan \`\`\`json) qo'shma:
+Faqat quyidagi JSON massiv formatida javob ber:
 [
   {"question": "...", "options": ["...", "...", "...", "..."], "correctIndex": 0, "explanation": "..."}
 ]
@@ -2752,14 +2674,12 @@ ${clipped}
                 }));
         }
 
-        // AI javob bermasa (internet yo'q, xatolik va h.k.) — mahalliy zaxira generator ishga tushadi
         if (questions.length === 0) {
             questions = generateFallbackQuiz(clipped);
         }
 
         if (questions.length === 0) return [];
 
-        // Har doim bitta ochiq fikr/xulosa savoli qo'shiladi — bu ham AI orqali baholanadi
         questions.push({
             type: "open",
             question: "Ushbu o'qilgan parchadan qanday asosiy xulosaga keldingiz? Asosiy fikrni o'z so'zlaringiz bilan 1-2 jumlada yozing.",
@@ -2769,8 +2689,6 @@ ${clipped}
         return questions;
     }
 
-    // Internet/API mavjud bo'lmagan holatlar uchun oddiy, lekin baribir
-    // "bo'shliqni to'ldirish"siz zaxira (offline) savol generatori.
     function generateFallbackQuiz(text) {
         const rawSentences = text
             .split(/(?<=[.!?])\s+|\n+/)
@@ -2781,7 +2699,6 @@ ${clipped}
 
         const questions = [];
 
-        // Fakt tekshiruvi: matndagi haqiqiy gap va uydirma gaplar orasidan tanlash
         for (let i = 0; i < rawSentences.length && questions.length < 3; i += Math.max(1, Math.floor(rawSentences.length / 3))) {
             const correctSentence = rawSentences[i];
             const distractPool = [
@@ -2800,7 +2717,6 @@ ${clipped}
             });
         }
 
-        // Asosiy g'oya savoli — eng uzun (odatda eng informativ) gapni "to'g'ri" variant sifatida olamiz
         if (rawSentences.length >= 2) {
             const mainSentence = [...rawSentences].sort((a, b) => b.length - a.length)[0];
             const opts = [
@@ -2821,7 +2737,6 @@ ${clipped}
         return questions;
     }
 
-    // O'qilgan qismga qarab savollarni darhol chiqarish (endi AI orqali, asinxron)
     async function triggerSemanticQuiz() {
         const readWordsCount = Math.min((currentIndex + 1) * chunkSize, allWords.length);
         const sessionStartWord = Math.min(readingStartWordIndex * chunkSize, allWords.length);
@@ -2835,7 +2750,6 @@ ${clipped}
             return;
         }
 
-        // So'rov yuborilayotgan vaqtda foydalanuvchiga aniq yuklanish holatini ko'rsatamiz
         quizBadge.textContent = "Tayyorlanmoqda...";
         quizContainer.innerHTML = `<div style="text-align:center; padding:22px 10px; color:var(--label-secondary); font-size:13px; display:flex; flex-direction:column; align-items:center; gap:8px;">
             <span style="font-size:22px;">🧠</span>
@@ -2854,7 +2768,6 @@ ${clipped}
         renderAIQuiz(quizData);
     }
 
-    // Savollarni chiroyli kartochkalar ko'rinishida chiqarish
     function renderAIQuiz(quizData) {
         quizContainer.innerHTML = "";
         quizBadge.textContent = `${quizData.length} ta savol`;
@@ -2883,7 +2796,6 @@ ${clipped}
                     const resBox = card.querySelector(`#ai-eval-result-${idx}`);
                     resBox.style.display = "block";
 
-                    // Mahalliy semantik tahlil
                     const cleanUser = userAns.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, "");
                     const userWords = cleanUser.split(/\s+/).filter(w => w.length >= 3);
 
@@ -2965,7 +2877,7 @@ ${clipped}
     }
 
     /* ==========================================
-       E. KITOB JAVONI (MUTOLAA USLUBI)
+       E. KITOB JAVONI VA QAYTA O'QISH
        ========================================== */
     const coverGradients = [
         "linear-gradient(145deg, #1e3a8a, #0f172a)",
@@ -2975,53 +2887,152 @@ ${clipped}
         "linear-gradient(145deg, #374151, #111827)"
     ];
 
-    function saveToBookshelf() {
-        const shelf = JSON.parse(localStorage.getItem("unified_shelf_v3") || "[]");
-        const title = bookTitle.value.trim() || "Nomsiz Asar";
-        const author = bookAuthor.value.trim() || "Muallif noma'lum";
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>"']/g, function(m) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+        });
+    }
 
-        const bookObj = {
-            id: Date.now(),
-            title: title,
-            author: author,
-            words: allWords.length,
-            timeSpent: formatTime(rElapsedSec),
-            date: new Date().toLocaleDateString('uz-UZ'),
-            bgGrad: coverGradients[Math.floor(Math.random() * coverGradients.length)]
-        };
+    // Kitobni javonga to'liq matni (content) bilan saqlash funksiyasi
+    function saveToBookshelf(customContent, silent = false) {
+        const title = (bookTitle.value.trim()) || "Nomsiz Asar";
+        const author = (bookAuthor.value.trim()) || "Muallif noma'lum";
+        const content = customContent !== undefined ? customContent : bookContent.value.trim();
+
+        if (!content) {
+            if (!silent) alert("Kitob matni bo'sh! Avval matn kiriting yoki PDF yuklang.");
+            return false;
+        }
+
+        let shelf = [];
+        try {
+            shelf = JSON.parse(localStorage.getItem("unified_shelf_v3") || "[]");
+        } catch(e) { shelf = []; }
 
         const existIdx = shelf.findIndex(b => b.title.toLowerCase() === title.toLowerCase());
-        if (existIdx > -1) shelf[existIdx] = bookObj;
-        else shelf.unshift(bookObj);
+        const bgGrad = (existIdx > -1 && shelf[existIdx].bgGrad) 
+            ? shelf[existIdx].bgGrad 
+            : coverGradients[Math.floor(Math.random() * coverGradients.length)];
 
-        localStorage.setItem("unified_shelf_v3", JSON.stringify(shelf));
+        const wordCount = allWords.length > 0 ? allWords.length : content.split(/\s+/).filter(w => w.length > 0).length;
+
+        const bookObj = {
+            id: existIdx > -1 ? shelf[existIdx].id : Date.now(),
+            title: title,
+            author: author,
+            content: content,
+            words: wordCount,
+            timeSpent: rElapsedSec > 0 ? formatTime(rElapsedSec) : (existIdx > -1 && shelf[existIdx].timeSpent ? shelf[existIdx].timeSpent : "0 son"),
+            date: new Date().toLocaleDateString('uz-UZ'),
+            bgGrad: bgGrad
+        };
+
+        if (existIdx > -1) {
+            shelf[existIdx] = bookObj;
+        } else {
+            shelf.unshift(bookObj);
+        }
+
+        try {
+            localStorage.setItem("unified_shelf_v3", JSON.stringify(shelf));
+            if (!silent) {
+                alert(`📚 "${title}" kitobi muvaffaqiyatli javonga saqlandi! Uni istalgan payt qayta o'qishingiz mumkin.`);
+            }
+            return true;
+        } catch(e) {
+            console.warn("Saqlashda xatolik:", e);
+            if (!silent) alert("Xotira cheklovi: Kitob matni juda katta bo'lgani sababli to'liq saqlanmadi.");
+            return false;
+        }
+    }
+
+    // Foydalanuvchi "💾 Javonga Saqlash" tugmasini bosganda
+    function manualSaveToShelf() {
+        prepareReaderText();
+        saveToBookshelf(undefined, false);
+    }
+
+    // Kitob javonidan tanlangan kitobni qayta o'qish uchun ochish
+    function openBookFromShelf(bookId) {
+        let shelf = [];
+        try {
+            shelf = JSON.parse(localStorage.getItem("unified_shelf_v3") || "[]");
+        } catch(e) { shelf = []; }
+
+        const book = shelf.find(b => b.id === bookId);
+        if (!book) return;
+
+        if (!book.content || !book.content.trim()) {
+            alert(`"${book.title}" kitobining matni topilmadi. Avval o'qilgan kitoblar yangi tartibda saqlanganda matni bilan birga saqlanadi.`);
+            return;
+        }
+
+        // Reader maydonlariga yuklash
+        bookTitle.value = book.title || "";
+        bookAuthor.value = book.author || "";
+        bookContent.value = book.content || "";
+
+        // O'qish parametrlarini yangilash
+        clearInterval(rTimer);
+        clearInterval(rElapsedTimer);
+        rElapsedTimer = null;
+        rRunning = false;
+        currentIndex = 0;
+        rElapsedSec = 0;
+        valSpentTime.textContent = "00:00";
+        quizBlock.style.display = "none";
+        startPosRange.value = 0;
+        readingStartWordIndex = 0;
+
+        prepareReaderText();
+        recalcFixedFontSize();
+        updateStartPositionPreview(0);
+
+        // Tez O'qish (reader) tabiga o'tkazish
+        switchMainTab('reader');
+
+        wordScreen.textContent = chunks[0] || "Tayyormisiz?";
+        valProgress.textContent = `0 / ${allWords.length}`;
+        readerProgress.style.width = "0%";
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function renderShelf() {
-        const shelf = JSON.parse(localStorage.getItem("unified_shelf_v3") || "[]");
+        let shelf = [];
+        try {
+            shelf = JSON.parse(localStorage.getItem("unified_shelf_v3") || "[]");
+        } catch(e) { shelf = []; }
+
         shelfGrid.innerHTML = "";
         document.getElementById("shelf-count-pill").textContent = `${shelf.length} ta kitob`;
 
         if (shelf.length === 0) {
-            shelfGrid.innerHTML = `<p style="color:var(--label-tertiary); grid-column:1/-1; text-align:center; padding:30px;">Hozircha o‘qib tugatilgan kitoblar mavjud emas.</p>`;
+            shelfGrid.innerHTML = `<p style="color:var(--label-tertiary); grid-column:1/-1; text-align:center; padding:30px;">Hozircha saqlangan kitoblar mavjud emas.<br><span style="font-size:12px; color:var(--ios-teal); margin-top:6px; display:inline-block;">Tez O‘qish bo‘limida kitob o‘qishni boshlasangiz yoki "💾 Javonga Saqlash" tugmasini bossangiz, shu yerda paydo bo‘ladi.</span></p>`;
             return;
         }
 
         shelf.forEach(b => {
             const card = document.createElement("div");
             card.className = "book-card";
+            card.setAttribute("title", `"${b.title}" kitobini qayta o‘qish uchun bosing`);
+            card.onclick = () => openBookFromShelf(b.id);
             card.innerHTML = `
                 <div class="book-cover" style="background: ${b.bgGrad}; position:relative;">
-                    <button type="button" class="book-delete-btn" title="Kitobni javondan o‘chirish" onclick="event.stopPropagation(); deleteFromBookshelf(${b.id});" style="position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:50%; border:1px solid rgba(255,255,255,0.25); background:rgba(0,0,0,0.45); color:#fff; font-size:13px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1;">✕</button>
+                    <button type="button" class="book-delete-btn" title="Kitobni javondan o‘chirish" onclick="event.stopPropagation(); deleteFromBookshelf(${b.id});" style="position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:50%; border:1px solid rgba(255,255,255,0.25); background:rgba(0,0,0,0.45); color:#fff; font-size:13px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; z-index:2;">✕</button>
                     <div class="book-logo-tag">📖 Mutolaa</div>
-                    <div class="book-cover-title">${b.title}</div>
-                    <div class="book-cover-author">${b.author}</div>
+                    <div class="book-cover-title">${escapeHtml(b.title)}</div>
+                    <div class="book-cover-author">${escapeHtml(b.author)}</div>
+                    <div style="background:rgba(0,0,0,0.55); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,0.18); border-radius:18px; padding:6px 12px; font-size:11.5px; font-weight:700; color:#fff; display:flex; align-items:center; justify-content:center; gap:5px; margin-top:8px;">
+                        <span>▶ Qayta o‘qish</span>
+                    </div>
                 </div>
                 <div class="book-actions-pill">
-                    <span>🎧 Audio</span>
-                    <span>📖 ${b.words} so‘z</span>
+                    <span>📖 ${b.words || 0} so‘z</span>
+                    <span>⏱ ${b.timeSpent || '0 son'}</span>
                 </div>
-                <div style="font-size:11px; color:var(--label-tertiary); text-align:center;">⏱ ${b.timeSpent} • 📅 ${b.date}</div>
+                <div style="font-size:11px; color:var(--label-tertiary); text-align:center;">📅 ${b.date || ''}</div>
             `;
             shelfGrid.appendChild(card);
         });
@@ -3029,7 +3040,10 @@ ${clipped}
 
     function deleteFromBookshelf(bookId) {
         if (!confirm("Bu kitobni javondan o‘chirmoqchimisiz? Bu amalni orqaga qaytarib bo‘lmaydi.")) return;
-        const shelf = JSON.parse(localStorage.getItem("unified_shelf_v3") || "[]");
+        let shelf = [];
+        try {
+            shelf = JSON.parse(localStorage.getItem("unified_shelf_v3") || "[]");
+        } catch(e) { shelf = []; }
         const updated = shelf.filter(b => b.id !== bookId);
         localStorage.setItem("unified_shelf_v3", JSON.stringify(updated));
         renderShelf();
@@ -3192,11 +3206,7 @@ ${clipped}
             fitWordScreen();
         });
 
-        // Google orqali avval kirilgan bo'lsa, qurilma/brauzer almashtirilgan
-        // taqdirda ham hisobni avtomatik tanib, bulutdagi ma'lumotlarni tiklaydi.
         if (firebaseReady) {
-            // Telefonda signInWithRedirect() ishlatilgani uchun, foydalanuvchi
-            // Google'dan qaytib kelganda natija shu yerda qayta ishlanadi.
             setGoogleButtonLoading(true);
             fbAuth.getRedirectResult()
                 .then(result => {
