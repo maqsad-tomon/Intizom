@@ -46,11 +46,11 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
 
-    // ===== FIREBASE SOZLAMASI (Google orqali kirish va ma'lumotni bulutda saqlash) =====
+    // ===== FIREBASE SOZLAMASI (To'liq to'g'rilandi) =====
     const FIREBASE_CONFIG = {
-     databaseURL: '[https://maqsad-tomon-default-rtdb.asia-southeast1.firebasedatabase.app/](https://maqsad-tomon-default-rtdb.asia-southeast1.firebasedatabase.app/)',
       apiKey: "AIzaSyC7C55ykigI6PPJohUdd422p3UJn0NmNa8",
       authDomain: "maqsad-tomon.firebaseapp.com",
+      databaseURL: "https://maqsad-tomon-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "maqsad-tomon",
       storageBucket: "maqsad-tomon.firebasestorage.app",
       messagingSenderId: "131558530387",
@@ -261,7 +261,7 @@
       };
     }
 
-    // ===== FON TOVUSHLARI: Web Audio (internet va tashqi fayl kerak emas) =====
+    // ===== FON TOVUSHLARI: Web Audio =====
     function buildAmbient(ctx, type, master) {
       const bus = ctx.createGain();
       bus.gain.value = 0;
@@ -337,7 +337,7 @@
         pad([130.81, 196.0, 261.63]);
         timers.push(setInterval(() => alive && pad([[130.81, 196, 261.63], [110, 164.81, 220], [87.31, 130.81, 174.61], [98, 146.83, 196]][Math.floor(Math.random() * 4)]), 6500));
         every(() => { const f = scale[Math.floor(Math.random() * scale.length)]; tone(f, 3, 0.07, 'sine', bus); tone(f, 3, 0.05, 'sine', dl); tone(f * 2, 1.5, 0.015, 'sine', dl); }, 1400, 4200);
-      } else { // 'brown' — yumshoq shovqin
+      } else {
         noise(true, 'lowpass', 900, 0.8);
       }
 
@@ -414,7 +414,6 @@
       const [wordIndex, setWordIndex] = useState(0);
       const [isReadingRunning, setIsReadingRunning] = useState(false);
 
-      // TOVUSH (AUDIO) HOLATLARI
       const [activeSound, setActiveSound] = useState('none');
       const [volume, setVolume] = useState(0.5);
       const ctxRef = useRef(null);
@@ -425,7 +424,6 @@
       const [userAnswer, setUserAnswer] = useState("");
       const [examFeedback, setExamFeedback] = useState(null);
 
-      // ===== SAQLASH: shu qurilma + Google hisob (bulut) =====
       const cloudReady = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId && window.firebase);
       const applyData = (d) => {
         if (d.goalTitle !== undefined) setGoalTitle(d.goalTitle);
@@ -680,35 +678,21 @@
       };
 
       const signIn = async () => {
-        if (!cloudReady) { alert("Google orqali kirish uchun fayl boshidagi FIREBASE_CONFIG ni to‘ldiring."); return; }
-        if (location.protocol === 'file:') { alert("Google orqali kirish fayl kompyuterdan ochilganda ishlamaydi. Faylni GitHub Pages kabi saytga joylab, o‘sha manzildan oching."); return; }
+        if (!cloudReady) { alert("Firebase sozlamalari xato."); return; }
+        if (location.protocol === 'file:') { alert("GitHub Pages kabi saytga joylab oching."); return; }
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-        const msgs = {
-          'auth/unauthorized-domain': "Bu sayt manzili Firebase'da ruxsat etilmagan. Firebase → Authentication → Settings → Authorized domains ga shu sayt domenini qo‘shing.",
-          'auth/operation-not-allowed': "Firebase → Authentication → Sign-in method bo‘limida Google usulini yoqing.",
-          'auth/invalid-api-key': "FIREBASE_CONFIG dagi apiKey noto‘g‘ri.",
-          'auth/network-request-failed': "Internet aloqasini tekshiring.",
-          'auth/web-storage-unsupported': "Brauzer saqlashni bloklagan yoki inkognito rejim."
-        };
         try { await firebase.auth().signInWithPopup(provider); }
         catch (e) {
           if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') {
             try { await firebase.auth().signInWithRedirect(provider); return; } catch (e2) { e = e2; }
           }
           if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
-          alert(msgs[e.code] || ("Kirishda xatolik: " + (e.code || e.message)));
+          alert("Kirishda xatolik: " + (e.code || e.message));
         }
       };
-      const showSyncError = () => {
-        const m = {
-          'permission-denied': "Firestore Rules ruxsat bermayapti.",
-          'failed-precondition': "Firestore Database yaratilmagan.",
-          'not-found': "Firestore Database yaratilmagan.",
-          'unavailable': "Bulutga ulanib bo‘lmadi."
-        };
-        alert(m[syncError] || ("Bulutda xatolik: " + syncError));
-      };
+
+      const showSyncError = () => alert("Bulutda xatolik: " + syncError);
       const signOut = () => { if (confirm("Hisobdan chiqasizmi?")) firebase.auth().signOut(); };
 
       const startNewGoal = () => {
@@ -1181,7 +1165,6 @@
                   <span className="font-mono text-xs">{wordIndex + 1} / {wordsList.length}</span>
                 </div>
 
-                {/* FON TOVUSHLARI */}
                 <div className={`${t.cardBg} border ${t.border} p-3 rounded-2xl space-y-2.5 shadow-sm`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
