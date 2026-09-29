@@ -46,11 +46,10 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
 
-    // ===== FIREBASE SOZLAMASI (To'liq to'g'rilandi) =====
+    // ===== FIREBASE SOZLAMASI (To'g'rilandi: faqat Firestore uchun mos konfiguratsiya) =====
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyC7C55ykigI6PPJohUdd422p3UJn0NmNa8",
       authDomain: "maqsad-tomon.firebaseapp.com",
-      databaseURL: "https://maqsad-tomon-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "maqsad-tomon",
       storageBucket: "maqsad-tomon.firebasestorage.app",
       messagingSenderId: "131558530387",
@@ -261,7 +260,6 @@
       };
     }
 
-    // ===== FON TOVUSHLARI: Web Audio =====
     function buildAmbient(ctx, type, master) {
       const bus = ctx.createGain();
       bus.gain.value = 0;
