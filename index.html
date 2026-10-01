@@ -46,8 +46,6 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
 
-    // ===== FIREBASE SOZLAMASI (Google orqali kirish va ma'lumotni bulutda saqlash) =====
-    // Firebase konsolidan olingan qiymatlarni shu yerga qo'ying. Bo'sh qolsa, ilova faqat shu qurilmada saqlaydi.
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyC7C55ykigI6PPJohUdd422p3UJn0NmNa8",
       authDomain: "maqsad-tomon.firebaseapp.com",
@@ -260,7 +258,6 @@
       };
     }
 
-    // ===== FON TOVUSHLARI: Web Audio (internet va tashqi fayl kerak emas) =====
     function buildAmbient(ctx, type, master) {
       const bus = ctx.createGain();
       bus.gain.value = 0;
@@ -336,7 +333,7 @@
         pad([130.81, 196.0, 261.63]);
         timers.push(setInterval(() => alive && pad([[130.81, 196, 261.63], [110, 164.81, 220], [87.31, 130.81, 174.61], [98, 146.83, 196]][Math.floor(Math.random() * 4)]), 6500));
         every(() => { const f = scale[Math.floor(Math.random() * scale.length)]; tone(f, 3, 0.07, 'sine', bus); tone(f, 3, 0.05, 'sine', dl); tone(f * 2, 1.5, 0.015, 'sine', dl); }, 1400, 4200);
-      } else { // 'brown' — yumshoq shovqin
+      } else {
         noise(true, 'lowpass', 900, 0.8);
       }
 
@@ -382,28 +379,9 @@
       const [secondsLeft, setSecondsLeft] = useState(25 * 60);
       const [isTimerRunning, setIsTimerRunning] = useState(false);
 
-      const initialBooks = [
-        {
-          id: 1,
-          title: "Atom Odatlar",
-          author: "Jeyms Klir",
-          coverColor: getRandomColor(1),
-          content: "Odatlar inson xarakterini belgilovchi kichik poydevorlardir. Har kuni bir foizga yaxshiroq bo'lish yil oxirida 37 barobar o'sish beradi. Tizim har doim natijadan ustun turadi. Britaniya velosport jamoasi 110 yil davomida yutolmagan edi. Deyv Brelsford Britaniya velosport jamoasiga rahbar bo'lgach, har bir mayda detalda 1 foizlik yaxshilanishlar kiritdi. Velosiped o'rindiqlarini qulaylashtirishdi, shinalarni spirt bilan artishdi, har bir poygachiga eng mos yostiq va to'shaklarni tanlashdi. Natijada Pekin Olimpiadasida oltin medallarning 60 foizini qo'lga kiritishdi.",
-        },
-        {
-          id: 2,
-          title: "Fokus",
-          author: "Daniel Goleman",
-          coverColor: getRandomColor(2),
-          content: "Zamonaviy dunyoda eng tanqis resurs bu insonning diqqat-e'tiboridir. Diqqat xuddi mushak kabi ishlaydi. Muntazam mashq qildirilsa kuchayadi, chalg'ituvchi omillar ko'p bo'lsa atrofiyaga uchraydi. Smartfonlar, ijtimoiy tarmoqlar va shovqinlar inson ongini bo'laklarga ajratib tashlamoqda. Chalg'ishdan so'ng avvalgi diqqat holatiga qaytish uchun miyaga o'rtacha 20 daqiqadan ko'proq vaqt talab etiladi.",
-        }
-      ];
-
-      const [books, setBooks] = useState(initialBooks.map(b => ({
-        ...b,
-        questions: extractEventQuestions(b.content)
-      })));
-      const [selectedBook, setSelectedBook] = useState(books[0]);
+      // Boshlang'ich default kitoblar olib tashlandi
+      const [books, setBooks] = useState([]);
+      const [selectedBook, setSelectedBook] = useState(null);
       const [searchQuery, setSearchQuery] = useState("");
       const [uploadProgress, setUploadProgress] = useState(null);
 
@@ -424,7 +402,6 @@
       const [userAnswer, setUserAnswer] = useState("");
       const [examFeedback, setExamFeedback] = useState(null);
 
-      // ===== SAQLASH: shu qurilma + Google hisob (bulut) =====
       const cloudReady = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId && window.firebase);
       const applyData = (d) => {
         if (d.goalTitle !== undefined) setGoalTitle(d.goalTitle);
@@ -436,10 +413,9 @@
         if (d.onboarded !== undefined) setOnboarded(d.onboarded);
         if (d.themeKey) setThemeKey(d.themeKey);
         if (d.customBooks && d.customBooks.length) {
-          setBooks(prev => {
-            const ids = new Set(prev.map(b => b.id));
-            return [...prev, ...d.customBooks.filter(b => !ids.has(b.id)).map(b => ({ ...b, questions: extractEventQuestions(b.content) }))];
-          });
+          const loaded = d.customBooks.map(b => ({ ...b, questions: extractEventQuestions(b.content) }));
+          setBooks(loaded);
+          setSelectedBook(loaded[0] || null);
         }
       };
 
@@ -463,9 +439,7 @@
 
       useEffect(() => {
         if (!hydrated) return;
-        const customBooks = books
-          .filter(b => !initialBooks.some(i => i.id === b.id))
-          .map(({ questions, ...rest }) => rest);
+        const customBooks = books.map(({ questions, ...rest }) => rest);
         const data = JSON.parse(JSON.stringify({ goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, customBooks, archive }));
         const id = setTimeout(() => {
           try { localStorage.setItem('intizom_v1', JSON.stringify(data)); } catch (e) {}
@@ -483,7 +457,7 @@
         if (!ctxRef.current) {
           const AC = window.AudioContext || window.webkitAudioContext;
           ctxRef.current = new AC();
-          masterRef.current = ctxRef.current.createGain();
+          masterRef.current = ctxRef.createGain();
           masterRef.current.gain.value = volume;
           masterRef.current.connect(ctxRef.current.destination);
         }
@@ -588,6 +562,22 @@
         setIsGoalModalOpen(false);
       };
 
+      const deleteBook = (id, e) => {
+        if (e) e.stopPropagation();
+        const bookToDelete = books.find(b => b.id === id);
+        if (!confirm(`"${bookToDelete?.title || 'Ushbu'}" kitobini haqiqatdan ham kutubxonadan o‘chirmoqchimisiz?`)) return;
+        
+        const newBooks = books.filter(b => b.id !== id);
+        setBooks(newBooks);
+        if (selectedBook?.id === id) {
+          setSelectedBook(newBooks[0] || null);
+          setWordIndex(0);
+          setCurrentQIndex(0);
+          setUserAnswer("");
+          setExamFeedback(null);
+        }
+      };
+
       const handlePdfUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -630,7 +620,7 @@
               setExamFeedback(null);
               setUploadProgress(null);
               e.target.value = "";
-              alert(`"${bookTitle}" kitobi boshidan to‘liq yuklandi!`);
+              alert(`"${bookTitle}" kitobi muvaffaqiyatli yuklandi!`);
             } catch (err) {
               setUploadProgress(null);
               alert("PDF o'qishda xatolik yuz berdi.");
@@ -659,7 +649,6 @@
       const finishedDays = completedDays.filter(d => d <= goalDays);
       const doneCount = finishedDays.length;
       const remainCount = Math.max(0, goalDays - doneCount);
-      // Kun balli: yakunlangan kunda bajarilgan vazifalar ulushi (vazifasiz yakunlansa 0)
       const dayScore = (d) => {
         if (!completedDays.includes(d)) return 0;
         const list = dayTasks[d] || [];
@@ -680,34 +669,21 @@
       };
 
       const signIn = async () => {
-        if (!cloudReady) { alert("Google orqali kirish uchun fayl boshidagi FIREBASE_CONFIG ni (apiKey, authDomain, projectId, appId) to‘ldiring."); return; }
-        if (location.protocol === 'file:') { alert("Google orqali kirish fayl kompyuterdan ochilganda ishlamaydi. Faylni GitHub Pages kabi saytga joylab, o‘sha manzildan oching."); return; }
+        if (!cloudReady) { alert("Google orqali kirish uchun fayl boshidagi FIREBASE_CONFIG ni to‘ldiring."); return; }
+        if (location.protocol === 'file:') { alert("Google orqali kirish fayl kompyuterdan ochilganda ishlamaydi. GitHub Pages kabi domen orqali oching."); return; }
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-        const msgs = {
-          'auth/unauthorized-domain': "Bu sayt manzili Firebase'da ruxsat etilmagan. Firebase → Authentication → Settings → Authorized domains ga shu sayt domenini (masalan sizningnom.github.io) qo‘shing.",
-          'auth/operation-not-allowed': "Firebase → Authentication → Sign-in method bo‘limida Google usulini yoqing.",
-          'auth/invalid-api-key': "FIREBASE_CONFIG dagi apiKey noto‘g‘ri.",
-          'auth/network-request-failed': "Internet aloqasini tekshiring.",
-          'auth/web-storage-unsupported': "Brauzer saqlashni (cookie) bloklagan yoki inkognito rejim. Oddiy oynada oching."
-        };
         try { await firebase.auth().signInWithPopup(provider); }
         catch (e) {
           if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') {
             try { await firebase.auth().signInWithRedirect(provider); return; } catch (e2) { e = e2; }
           }
           if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
-          alert(msgs[e.code] || ("Kirishda xatolik: " + (e.code || e.message)));
+          alert("Kirishda xatolik: " + (e.code || e.message));
         }
       };
       const showSyncError = () => {
-        const m = {
-          'permission-denied': "Firestore Rules ruxsat bermayapti. Rules ga yozing: match /intizom_users/{uid} { allow read, write: if request.auth.uid == uid; }",
-          'failed-precondition': "Firestore Database yaratilmagan. Firebase → Firestore Database → Create database.",
-          'not-found': "Firestore Database yaratilmagan. Firebase → Firestore Database → Create database.",
-          'unavailable': "Bulutga ulanib bo‘lmadi. Internetni tekshiring."
-        };
-        alert(m[syncError] || ("Bulutda xatolik: " + syncError));
+        alert("Bulutda xatolik: " + syncError);
       };
       const signOut = () => { if (confirm("Hisobdan chiqasizmi?")) firebase.auth().signOut(); };
 
@@ -758,11 +734,11 @@
                 <div>
                   <h2 className={`font-black text-base ${t.textMain}`}>{creatingNew ? "Yangi maqsad" : "Maqsad va vazifalar"}</h2>
                   {creatingNew && <p className="text-xs text-emerald-500 font-semibold mt-1">Joriy maqsad natijasi bilan arxivga saqlanadi.</p>}
-                  <p className={`text-xs mt-1 ${t.textSub}`}>Boshlash uchun maqsad va kunlik vazifalarni yozing. Hisobingiz bo‘lsa, yuqoridan Google orqali kiring — ma’lumotlaringiz yuklanadi.</p>
+                  <p className={`text-xs mt-1 ${t.textSub}`}>Boshlash uchun maqsad va kunlik vazifalarni yozing.</p>
                 </div>
                 <div className="space-y-1.5">
                   <label className={`text-xs font-bold ${t.textSub}`}>Maqsadingiz</label>
-                  <input value={setupTitle} onChange={e => setSetupTitle(e.target.value)} placeholder="Masalan: 10 kunda 2 ta kitob o‘qish"
+                  <input value={setupTitle} onChange={e => setSetupTitle(e.target.value)} placeholder="Masalan: 10 kunda yangi odat shakllantirish"
                     className={`w-full p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none`} />
                 </div>
                 <div className="space-y-1.5">
@@ -824,7 +800,7 @@
                   <div className="grid grid-cols-2 gap-3">
                     <div className="rounded-2xl p-3 bg-emerald-500/10 border border-emerald-500/20">
                       <div className="text-2xl font-black text-emerald-500">{doneCount}</div>
-                      <div className={`text-xs font-semibold ${t.textSub}`}>Yakunlangan kun (to‘liq bajarilgani: {fullDays})</div>
+                      <div className={`text-xs font-semibold ${t.textSub}`}>Yakunlangan kun (to‘liq: {fullDays})</div>
                     </div>
                     <div className={`rounded-2xl p-3 ${t.subtleBg} border ${t.border}`}>
                       <div className={`text-2xl font-black ${t.textMain}`}>{remainCount}</div>
@@ -842,10 +818,6 @@
                         } ${d === currentDay ? 'ring-2 ring-amber-400' : ''}`}>{d}</button>
                     ))}
                   </div>
-                  <div className={`text-[10px] ${t.textSub}`}>Yashil — hamma vazifa bajarilgan, sariq — qisman, qizil — vazifasiz yakunlangan</div>
-                  {overallPct >= 100 ? (
-                    <div className="text-center text-sm font-bold text-emerald-500 py-1">Maqsad to‘liq bajarildi! 🎉</div>
-                  ) : null}
                   <button onClick={toggleDayComplete}
                     className={`w-full py-3 rounded-2xl text-sm font-bold shadow-md flex items-center justify-center gap-2 ${isDayDone ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30' : t.accent}`}>
                     <i className={`fa-solid ${isDayDone ? 'fa-circle-check' : 'fa-flag-checkered'}`}></i>
@@ -1007,7 +979,7 @@
                     </>
                   ) : (
                     <>
-                      <p className={`text-xs ${t.textSub}`}>Hisobga kirmagansiz — ma’lumotlar faqat shu qurilmada saqlanadi. Google orqali kirsangiz, telefon va kompyuterda bir xil bo‘ladi.</p>
+                      <p className={`text-xs ${t.textSub}`}>Hisobga kirmagansiz — ma’lumotlar faqat shu qurilmada saqlanadi.</p>
                       <button onClick={signIn} className={`w-full py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 ${t.accent}`}>
                         <i className="fa-brands fa-google"></i> Google bilan kirish
                       </button>
@@ -1021,7 +993,7 @@
                     <span className={`text-xs font-semibold ${t.textSub}`}>{archive.length} ta</span>
                   </div>
                   {archive.length === 0 ? (
-                    <div className={`text-center text-sm py-3 ${t.textSub}`}>Hozircha arxiv bo‘sh. Yangi maqsad boshlasangiz, avvalgisi natijasi bilan shu yerga saqlanadi.</div>
+                    <div className={`text-center text-sm py-3 ${t.textSub}`}>Hozircha arxiv bo‘sh.</div>
                   ) : [...archive].reverse().map(a => (
                     <div key={a.id} className={`rounded-2xl p-3 border ${t.border} ${t.subtleBg} space-y-2`}>
                       <div className="flex justify-between items-start gap-2">
@@ -1102,7 +1074,7 @@
                   <div className="flex justify-between items-center">
                     <div>
                       <h2 className={`font-black text-base tracking-wide ${t.textMain}`}>Kitob Javoni</h2>
-                      <span className={`text-xs ${t.textSub}`}>Asl voqealar va manbalar</span>
+                      <span className={`text-xs ${t.textSub}`}>Mening kitoblarim ({books.length} ta)</span>
                     </div>
                     <input
                       type="file"
@@ -1133,42 +1105,61 @@
                   </div>
                 </div>
 
-                <div className="library-two-shelf p-3 rounded-2xl space-y-3">
-                  <div className="grid grid-cols-3 gap-2.5">
-                    {filteredBooks.map(b => {
-                      const isCurrent = selectedBook?.id === b.id;
-                      return (
-                        <div
-                          key={b.id}
-                          onClick={() => { 
-                            setSelectedBook(b); 
-                            setWordIndex(0);
-                            setCurrentQIndex(0); 
-                            setExamFeedback(null); 
-                            setUserAnswer(""); 
-                          }}
-                          className={`book-spine-compact cursor-pointer transition-all duration-200 transform hover:-translate-y-1 rounded-r-md bg-gradient-to-br ${b.coverColor} p-2 text-white flex flex-col justify-between h-32 select-none relative ${
-                            isCurrent ? 'ring-2 ring-amber-400 shadow-xl scale-105' : 'opacity-95'
-                          }`}
-                        >
-                          <div className="w-1 h-full absolute left-0 top-0 border-r border-black/20"></div>
-                          
-                          <div className="pl-1.5 flex justify-between items-center">
-                            <i className="fa-solid fa-bookmark text-[8px] text-amber-400/80"></i>
-                            {isCurrent && <span className="text-[7px] font-black uppercase px-1 py-0.2 bg-amber-400 text-zinc-950 rounded">Faol</span>}
-                          </div>
-
-                          <div className="pl-1.5 pr-1 text-center my-auto">
-                            <div className="text-[10px] font-black leading-tight line-clamp-2">{b.title}</div>
-                            <div className="text-[8px] text-zinc-300 mt-1 truncate">{b.author}</div>
-                          </div>
-
-                          <div className="pl-1.5 h-1"></div>
-                        </div>
-                      );
-                    })}
+                {books.length === 0 ? (
+                  <div className="text-center py-16 space-y-3">
+                    <i className="fa-solid fa-book-open text-4xl text-zinc-600"></i>
+                    <p className={`text-sm ${t.textSub}`}>Hozircha kitoblar mavjud emas.</p>
+                    <button onClick={() => fileInputRef.current.click()} className={`text-xs font-bold px-4 py-2 rounded-xl ${t.accent}`}>
+                      + PDF Kitob Yuklash
+                    </button>
                   </div>
-                </div>
+                ) : (
+                  <div className="library-two-shelf p-3 rounded-2xl space-y-3">
+                    <div className="grid grid-cols-3 gap-2.5">
+                      {filteredBooks.map(b => {
+                        const isCurrent = selectedBook?.id === b.id;
+                        return (
+                          <div
+                            key={b.id}
+                            onClick={() => { 
+                              setSelectedBook(b); 
+                              setWordIndex(0);
+                              setCurrentQIndex(0); 
+                              setExamFeedback(null); 
+                              setUserAnswer(""); 
+                            }}
+                            className={`book-spine-compact cursor-pointer transition-all duration-200 transform hover:-translate-y-1 rounded-r-md bg-gradient-to-br ${b.coverColor} p-2 text-white flex flex-col justify-between h-32 select-none relative group ${
+                              isCurrent ? 'ring-2 ring-amber-400 shadow-xl scale-105' : 'opacity-95'
+                            }`}
+                          >
+                            <div className="w-1 h-full absolute left-0 top-0 border-r border-black/20"></div>
+                            
+                            <div className="pl-1.5 flex justify-between items-center">
+                              <i className="fa-solid fa-bookmark text-[8px] text-amber-400/80"></i>
+                              <div className="flex items-center gap-1">
+                                {isCurrent && <span className="text-[7px] font-black uppercase px-1 py-0.2 bg-amber-400 text-zinc-950 rounded">Faol</span>}
+                                <button
+                                  onClick={(e) => deleteBook(b.id, e)}
+                                  title="Kitobni o'chirish"
+                                  className="w-4 h-4 rounded-full bg-black/40 hover:bg-red-600 text-white/80 hover:text-white flex items-center justify-center transition text-[8px]"
+                                >
+                                  <i className="fa-solid fa-xmark"></i>
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="pl-1.5 pr-1 text-center my-auto">
+                              <div className="text-[10px] font-black leading-tight line-clamp-2">{b.title}</div>
+                              <div className="text-[8px] text-zinc-300 mt-1 truncate">{b.author}</div>
+                            </div>
+
+                            <div className="pl-1.5 h-1"></div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {selectedBook && (
                   <div className={`${t.cardBg} border ${t.border} p-4 rounded-3xl space-y-3 shadow-sm`}>
@@ -1177,7 +1168,16 @@
                         <h4 className={`text-sm font-bold ${t.textMain}`}>{selectedBook.title}</h4>
                         <p className={`text-xs ${t.textSub} mt-0.5`}>Muallif: {selectedBook.author} • {wordsList.length.toLocaleString()} ta so‘z</p>
                       </div>
-                      <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${t.badge}`}>Tanlangan</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${t.badge}`}>Tanlangan</span>
+                        <button
+                          onClick={(e) => deleteBook(selectedBook.id, e)}
+                          title="Kitobni o'chirish"
+                          className="px-2 py-0.5 text-xs text-red-400 hover:text-red-500 font-bold"
+                        >
+                          <i className="fa-solid fa-trash-can mr-1"></i> O‘chirish
+                        </button>
+                      </div>
                     </div>
 
                     <div className="flex gap-2 pt-1">
@@ -1195,7 +1195,7 @@
                         onClick={() => { 
                           setActiveTab('ai_exam'); 
                           setExamFeedback(null); 
-                          setUserAnswer("");
+                          setUserAnswer(""); 
                         }}
                         className={`px-4 py-2 rounded-2xl text-xs font-bold border ${t.border} ${t.textMain} hover:opacity-80 flex items-center gap-1.5`}
                       >
@@ -1211,8 +1211,10 @@
             {activeTab === 'speed' && (
               <div className="space-y-4 pt-1">
                 <div className={`flex justify-between items-center text-sm ${t.textSub}`}>
-                  <span className={`truncate max-w-[200px] font-semibold ${t.textMain}`}>{selectedBook.title}</span>
-                  <span className="font-mono text-xs">{wordIndex + 1} / {wordsList.length}</span>
+                  <span className={`truncate max-w-[200px] font-semibold ${t.textMain}`}>
+                    {selectedBook ? selectedBook.title : "Kitob tanlanmagan"}
+                  </span>
+                  <span className="font-mono text-xs">{wordsList.length > 0 ? wordIndex + 1 : 0} / {wordsList.length}</span>
                 </div>
 
                 {/* FON TOVUSHLARI */}
@@ -1257,7 +1259,14 @@
                 </div>
 
                 <div className={`w-full h-44 md:h-64 rounded-3xl border ${t.border} ${t.cardBg} flex items-center justify-center p-5 relative shadow-inner`}>
-                  {wordIndex >= wordsList.length - 1 && wordsList.length > 0 ? (
+                  {!selectedBook ? (
+                    <div className="text-center space-y-2">
+                      <p className={`text-sm ${t.textSub}`}>Kutubxonadan kitob tanlang yoki yangi PDF yuklang</p>
+                      <button onClick={() => setActiveTab('library')} className={`px-4 py-2 rounded-xl text-xs font-bold ${t.accent}`}>
+                        Kutubxonaga o'tish
+                      </button>
+                    </div>
+                  ) : wordIndex >= wordsList.length - 1 && wordsList.length > 0 ? (
                     <div className="text-center space-y-3">
                       <span className="text-sm font-bold text-emerald-500 block">Kitob to‘liq mutolaa qilindi! 🎉</span>
                       <button onClick={() => setActiveTab('ai_exam')} className={`px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg ${t.accent}`}>
@@ -1267,23 +1276,53 @@
                   ) : (
                     <span 
                       style={{ fontSize: `${fontSize}px` }} 
-                      className={`font-black text-center ${t.textMain} tracking-wide select-none leading-none transition-all duration-75`}
+                      className={`font-black text-center ${t.textMain} tracking-wide select-none leading-tight transition-all duration-75 px-4`}
                     >
                       {(() => {
                         const chunk = wordsList.slice(wordIndex, wordIndex + chunkSize);
                         if (chunk.length === 0) return "Tayyor";
-                        return chunk.map((w, wi) => {
+
+                        // 1 TA SO'Z: Markaziy harfi qizil (fokal nuqta)
+                        if (chunkSize === 1) {
+                          const w = chunk[0];
                           const chars = Array.from(w);
                           const mid = Math.floor((chars.length - 1) / 2);
                           return (
-                            <React.Fragment key={wi}>
-                              {wi > 0 && " "}
+                            <span>
                               {chars.slice(0, mid).join("")}
                               <span className="text-red-500">{chars[mid]}</span>
                               {chars.slice(mid + 1).join("")}
-                            </React.Fragment>
+                            </span>
                           );
-                        });
+                        }
+
+                        // 2 TA SO'Z: Hech qanday qizil rang bo'lmaydi, oddiy matn
+                        if (chunkSize === 2) {
+                          return <span>{chunk.join(" ")}</span>;
+                        }
+
+                        // 3 TA SO'Z: Markazdagi 2-so'z to'liq qizil rangda
+                        if (chunkSize === 3) {
+                          return (
+                            <span>
+                              {chunk[0]}
+                              {chunk.length > 1 && (
+                                <>
+                                  {" "}
+                                  <span className="text-red-500">{chunk[1]}</span>
+                                </>
+                              )}
+                              {chunk.length > 2 && (
+                                <>
+                                  {" "}
+                                  {chunk.slice(2).join(" ")}
+                                </>
+                              )}
+                            </span>
+                          );
+                        }
+
+                        return chunk.join(" ");
                       })()}
                     </span>
                   )}
@@ -1328,7 +1367,7 @@
                         key={n}
                         onClick={() => setChunkSize(n)}
                         className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 ${
-                          chunkSize === n ? t.accent : `${t.subtleBg} ${t.textSub}`
+                          chunkSize === n ? t.accent : `${t.subtleBg}${t.textSub}`
                         }`}
                       >
                         <i className="fa-solid fa-font text-[10px]"></i> {n} ta
@@ -1351,7 +1390,8 @@
                   </button>
                   <button
                     onClick={() => setIsReadingRunning(!isReadingRunning)}
-                    className={`flex-[1.6] py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 ${t.accent}`}
+                    disabled={wordsList.length === 0}
+                    className={`flex-[1.6] py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 ${t.accent} disabled:opacity-50`}
                   >
                     <i className={`fa-solid ${isReadingRunning ? 'fa-pause' : 'fa-play'} text-xs`}></i>
                     {isReadingRunning ? 'To‘xtatish' : 'Boshlash'}
@@ -1372,7 +1412,7 @@
                   <div className="flex gap-1.5 flex-wrap">
                     {[200, 300, 400, 600].map(w => (
                       <button key={w} onClick={() => setSpeedWPM(w)}
-                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold ${speedWPM === w ? t.accent : `${t.subtleBg} ${t.textSub}`}`}>{w}</button>
+                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold ${speedWPM === w ? t.accent : `${t.subtleBg}${t.textSub}`}`}>{w}</button>
                     ))}
                   </div>
                   <input
@@ -1392,7 +1432,9 @@
               <div className="space-y-4 pt-1">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className={`text-sm font-bold ${t.textMain} truncate max-w-[220px]`}>{selectedBook.title}</h3>
+                    <h3 className={`text-sm font-bold ${t.textMain} truncate max-w-[220px]`}>
+                      {selectedBook ? selectedBook.title : "Kitob tanlanmagan"}
+                    </h3>
                     <p className={`text-xs ${t.textSub}`}>Asl voqealarni eslash imtihoni</p>
                   </div>
                   <button onClick={() => setActiveTab('library')} className={`text-xs ${t.textSub} hover:${t.textMain}`}>
@@ -1400,7 +1442,9 @@
                   </button>
                 </div>
 
-                {currentQList.length > 0 ? (
+                {!selectedBook ? (
+                  <div className="text-center py-12 text-sm text-zinc-500">Iltimos, avval kutubxonadan kitob yuklang yoki tanlang.</div>
+                ) : currentQList.length > 0 ? (
                   <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-4 shadow-sm`}>
                     <div className="flex justify-between items-center text-xs">
                       <span className={t.textSub}>Savol {currentQIndex + 1} / {currentQList.length}</span>
@@ -1410,7 +1454,7 @@
                             key={idx}
                             onClick={() => { setCurrentQIndex(idx); setExamFeedback(null); setUserAnswer(""); }}
                             className={`w-7 h-7 rounded-lg text-xs font-bold ${
-                              currentQIndex === idx ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-lg shadow-amber-500/25' : `${t.subtleBg} ${t.textSub}`
+                              currentQIndex === idx ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-lg shadow-amber-500/25' : `${t.subtleBg}${t.textSub}`
                             }`}
                           >
                             {idx + 1}
