@@ -379,7 +379,6 @@
       const [secondsLeft, setSecondsLeft] = useState(25 * 60);
       const [isTimerRunning, setIsTimerRunning] = useState(false);
 
-      // Boshlang'ich default kitoblar olib tashlandi
       const [books, setBooks] = useState([]);
       const [selectedBook, setSelectedBook] = useState(null);
       const [searchQuery, setSearchQuery] = useState("");
@@ -391,7 +390,6 @@
       const [wordIndex, setWordIndex] = useState(0);
       const [isReadingRunning, setIsReadingRunning] = useState(false);
 
-      // TOVUSH (AUDIO) HOLATLARI
       const [activeSound, setActiveSound] = useState('none');
       const [volume, setVolume] = useState(0.5);
       const ctxRef = useRef(null);
@@ -476,9 +474,21 @@
         return books.filter(b => b.title.toLowerCase().includes(searchQuery.toLowerCase()) || b.author.toLowerCase().includes(searchQuery.toLowerCase()));
       }, [books, searchQuery]);
 
+      // TINISH BELGILARINI TO'G'RI BIRIKTIRISH VA YOLG'IZ BELGILARDAN TOZALASH
       const wordsList = useMemo(() => {
         if (!selectedBook?.content) return [];
-        return selectedBook.content.split(/\s+/).filter(w => w.trim().length > 0);
+        let cleaned = selectedBook.content
+          .replace(/\s+([.,!?:;»”’')\]])/g, '$1')
+          .replace(/([«“‘(\[])\s+/g, '$1');
+
+        return cleaned
+          .split(/\s+/)
+          .filter(w => {
+            const trimmed = w.trim();
+            if (!trimmed) return false;
+            // Agar faqat belgilardan iborat bo'lsa (so'z emas), uni ro'yxatdan chiqaramiz
+            return !/^[\p{P}\p{S}]+$/u.test(trimmed);
+          });
       }, [selectedBook]);
 
       const remainingWords = Math.max(0, wordsList.length - wordIndex);
@@ -1282,7 +1292,7 @@
                         const chunk = wordsList.slice(wordIndex, wordIndex + chunkSize);
                         if (chunk.length === 0) return "Tayyor";
 
-                        // 1 TA SO'Z: Markaziy harfi qizil (fokal nuqta)
+                        // 1 TA SO'Z: Markaziy harf qizil
                         if (chunkSize === 1) {
                           const w = chunk[0];
                           const chars = Array.from(w);
@@ -1296,12 +1306,12 @@
                           );
                         }
 
-                        // 2 TA SO'Z: Hech qanday qizil rang bo'lmaydi, oddiy matn
+                        // 2 TA SO'Z: Oddiy matn (qizil rang yo'q)
                         if (chunkSize === 2) {
                           return <span>{chunk.join(" ")}</span>;
                         }
 
-                        // 3 TA SO'Z: Markazdagi 2-so'z to'liq qizil rangda
+                        // 3 TA SO'Z: O'rtadagi 2-so'z to'liq qizil
                         if (chunkSize === 3) {
                           return (
                             <span>
