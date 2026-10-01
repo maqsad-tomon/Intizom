@@ -153,30 +153,60 @@
       return BOOK_COLORS[id % BOOK_COLORS.length];
     }
 
+    // Lotin va Kirill yozuvidagi belgilarni toza ajratish
     function cleanWord(w) {
-      return w.toLowerCase().replace(/[^a-z0-9a-zʻʼo'g']/gi, '').trim();
+      return (w || '').toLowerCase().replace(/[^a-z0-9а-яёўқғҳʻʼo'g']/gi, '').trim();
     }
 
+    // ILMIY VA BADIIY ASARLAR UCHUN MAZMUNLI SAVOLLAR TUZISH
     function extractEventQuestions(content) {
       const cleaned = content.replace(/\s+/g, ' ');
-      const rawSentences = cleaned.split(/(?<=[.!?])\s+/);
+      // Kitob boshidagi 4-5% titul ma'lumotlarini tashlab, matn o'rtasidan boshlaymiz
+      const startOffset = Math.floor(cleaned.length * 0.05);
+      const mainBody = cleaned.substring(startOffset);
+
+      const rawSentences = mainBody.split(/(?<=[.!?])\s+/);
       const qualitySentences = rawSentences.filter(s => {
         const words = s.split(/\s+/).filter(w => w.length > 2);
-        return words.length >= 10 && words.length <= 35 && !s.includes('@') && !s.includes('http');
+        return words.length >= 12 && words.length <= 40 && !s.includes('@') && !s.includes('http');
       });
 
-      if (qualitySentences.length < 3) {
+      if (qualitySentences.length < 5) {
         return [
           {
-            prompt: "Ushbu asardagi asosiy voqealar ketma-ketligi va xulosani kitobdagi faktlar bilan bayon qiling.",
-            targetFacts: content.split(/\s+/).filter(w => w.length > 4).slice(0, 15),
-            fullEvent: content.substring(0, 300)
+            type: "Fikr tahlili",
+            prompt: "Ushbu asardagi muallif ilgari surgan asosiy g‘oya, fakt yoki xulosalarni bayon eting.",
+            targetFacts: cleaned.split(/\s+/).filter(w => w.length > 4).slice(0, 15).map(cleanWord),
+            fullEvent: cleaned.substring(0, 350)
           }
         ];
       }
 
       const questions = [];
       const step = Math.max(1, Math.floor(qualitySentences.length / 5));
+
+      const questionTypes = [
+        {
+          label: "Mantiqiy yakun va g‘oya",
+          text: (ctx) => `Muallif quyidagi fikrni bayon qiladi:\n«${ctx}...»\nUshbu mulohaza kitobda qanday mantiqiy xulosa yoki voqea bilan yakunlanadi?`
+        },
+        {
+          label: "Sabab va oqibat tahlili",
+          text: (ctx) => `Kitobdagi muhim qism:\n«${ctx}...»\nMuallif fikricha, ushbu holat qanday natijaga yoki oqibatga olib keladi?`
+        },
+        {
+          label: "Asosiy qoida / Ta'rif",
+          text: (ctx) => `Asardagi tushunchaga ko‘ra:\n«${ctx}...»\nBu yerda ilgari surilgan asosiy fakt yoki qonuniyat nima edi?`
+        },
+        {
+          label: "Faktlar va dalillar",
+          text: (ctx) => `Muallif ta'kidlaganidek:\n«${ctx}...»\nUshbu jumlani kitobdagi haqiqiy dalillar bilan yakunlang:`
+        },
+        {
+          label: "Xulosa va xarakteristika",
+          text: (ctx) => `Ushbu parchadagi holatga e'tibor bering:\n«${ctx}...»\nKitobda bu holatdan keyin aynan nima yuz beradi yoki qanday yakun beriladi?`
+        }
+      ];
 
       for (let i = 0; i < 5; i++) {
         const sentence = qualitySentences[Math.min(qualitySentences.length - 1, i * step)];
@@ -187,13 +217,17 @@
         const eventContext = words.slice(0, splitIndex).join(' ');
         const eventAnswer = words.slice(splitIndex).join(' ');
 
+        const stopWords = ["bilan", "uchun", "hamda", "ammo", "lekin", "chunki", "faqat", "edi", "emas", "kerak", "bo'lib", "bilan", "ham", "yoki", "deb", "esa", "agar"];
         const targetFacts = words
           .slice(splitIndex)
           .map(cleanWord)
-          .filter(w => w.length >= 4 && !["uchun", "bilan", "hamda", "chunki", "ammo", "lekin", "faqat", "kerak", "edi", "emas"].includes(w));
+          .filter(w => w.length >= 4 && !stopWords.includes(w));
+
+        const qType = questionTypes[i % questionTypes.length];
 
         questions.push({
-          prompt: `Kitobdagi voqea rivojiga ko‘ra:\n"${eventContext}..."\nUshbu holatdan keyin nima sodir bo‘ldi yoki jumla kitobda qanday yakun topdi?`,
+          type: qType.label,
+          prompt: qType.text(eventContext),
           targetFacts: targetFacts,
           fullEvent: sentence,
           eventAnswer: eventAnswer
@@ -211,8 +245,8 @@
         return {
           score: 10,
           verdict: "Juda qisqa yoki yetarli emas",
-          praise: "Javobingiz juda qisqa yozilgan.",
-          missing: `Kitobdagi haqiqiy voqea: "${questionObj.fullEvent}"`
+          praise: "Javobingiz juda qisqa yozilgan, fikrni to'liqroq ifodalang.",
+          missing: `Kitobdagi asl parcha: «${questionObj.fullEvent}»`
         };
       }
 
@@ -233,21 +267,21 @@
       let praise = "";
       let missing = "";
 
-      if (matchedCount >= 3 || factRatio >= 0.5) {
+      if (matchedCount >= 3 || factRatio >= 0.45) {
         calculatedScore = Math.min(100, Math.round(75 + (factRatio * 25)));
-        verdict = "A'lo darajada! To‘g‘ri topdingiz";
-        praise = `Siz kitobdagi asosiy faktlarni (${foundWords.join(', ')}) aniq keltirdingiz.`;
-        missing = `To‘liq kitob parchasi: "${questionObj.fullEvent}"`;
-      } else if (matchedCount >= 1 || factRatio >= 0.25) {
+        verdict = "A'lo darajada! To‘g‘ri tushungansiz";
+        praise = `Kitobdagi asosiy mazmunni (${foundWords.slice(0, 4).join(', ')}) juda aniq ifodalab berdingiz.`;
+        missing = `To‘liq kitob parchasi: «${questionObj.fullEvent}»`;
+      } else if (matchedCount >= 1 || factRatio >= 0.2) {
         calculatedScore = Math.min(65, Math.round(40 + (factRatio * 30)));
         verdict = "Qisman to‘g‘ri, lekin detallar yetishmaydi";
-        praise = `Voqeadan ayrim elementlarni ilg‘agansiz.`;
-        missing = `Lekin kitobdagi asl yakun boshqacha edi: "${questionObj.eventAnswer}".`;
+        praise = `Mazmunning ayrim qismlarini to‘g‘ri ilg‘agansiz.`;
+        missing = `Kitobdagi asl yakun: «${questionObj.eventAnswer}».`;
       } else {
         calculatedScore = 15;
-        verdict = "Noto‘g‘ri javob (Asar voqeasiga mos kelmadi)";
-        praise = "Siz kiritgan javob kitobdagi aynan ushbu voqeaga to‘g‘ri kelmadi.";
-        missing = `Aslida kitobda quyidagicha yozilgan edi: "${questionObj.fullEvent}"`;
+        verdict = "Mazmunga to‘liq mos kelmadi";
+        praise = "Kiritilgan javob kitobdagi aynan ushbu fikrga to‘g‘ri kelmadi.";
+        missing = `Aslida kitobda quyidagicha keltirilgan: «${questionObj.fullEvent}»`;
       }
 
       return {
@@ -258,16 +292,17 @@
       };
     }
 
+    // XAVFSIZ VA BARQAROR FON TOVUSHLARI GENERATORI
     function buildAmbient(ctx, type, master) {
-      const bus = ctx.createGain();
-      bus.gain.value = 0;
-      bus.connect(master);
-      bus.gain.linearRampToValueAtTime(1, ctx.currentTime + 2);
-      const nodes = [], timers = [];
       let alive = true;
+      const nodes = [], timers = [];
+      const bus = ctx.createGain();
+      bus.gain.setValueAtTime(0, ctx.currentTime);
+      bus.connect(master);
+      bus.gain.linearRampToValueAtTime(1, ctx.currentTime + 1.5);
 
       const noiseSrc = (brown) => {
-        const len = ctx.sampleRate * 4, buf = ctx.createBuffer(1, len, ctx.sampleRate);
+        const len = ctx.sampleRate * 3, buf = ctx.createBuffer(1, len, ctx.sampleRate);
         const d = buf.getChannelData(0); let last = 0;
         for (let i = 0; i < len; i++) {
           const w = Math.random() * 2 - 1;
@@ -275,75 +310,81 @@
         }
         const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; return s;
       };
-      const noise = (brown, ftype, freq, gain, q = 0.7) => {
-        const n = noiseSrc(brown), f = ctx.createBiquadFilter(), g = ctx.createGain();
-        f.type = ftype; f.frequency.value = freq; f.Q.value = q; g.gain.value = gain;
-        n.connect(f); f.connect(g); g.connect(bus); n.start(); nodes.push(n);
-        return { f, g };
-      };
-      const lfo = (rate, depth, param) => {
-        const o = ctx.createOscillator(), g = ctx.createGain();
-        o.frequency.value = rate; g.gain.value = depth;
-        o.connect(g); g.connect(param); o.start(); nodes.push(o);
-      };
-      const tone = (freq, dur, vol, wave = 'sine', dest = bus, slideTo = null) => {
-        const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime;
-        o.type = wave; o.frequency.setValueAtTime(freq, t);
-        if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.linearRampToValueAtTime(vol, t + Math.min(0.03, dur / 3));
-        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-        o.connect(g); g.connect(dest); o.start(t); o.stop(t + dur + 0.1);
-      };
-      const every = (fn, min, max) => {
-        const loop = () => { if (!alive) return; fn(); timers.push(setTimeout(loop, min + Math.random() * (max - min))); };
-        timers.push(setTimeout(loop, min * Math.random()));
+
+      const noise = (brown, ftype, freq, gain) => {
+        try {
+          const n = noiseSrc(brown), f = ctx.createBiquadFilter(), g = ctx.createGain();
+          f.type = ftype; f.frequency.value = freq; g.gain.value = gain;
+          n.connect(f); f.connect(g); g.connect(bus); n.start(); nodes.push(n);
+          return { f, g };
+        } catch(e) { return null; }
       };
 
-      if (type === 'rain') {
-        noise(false, 'bandpass', 3500, 0.10, 0.4);
-        noise(false, 'highpass', 1200, 0.05);
-        noise(true, 'lowpass', 400, 0.35);
-      } else if (type === 'fireplace') {
-        noise(true, 'lowpass', 500, 0.55);
-        every(() => tone(1200 + Math.random() * 3000, 0.03 + Math.random() * 0.05, 0.05 + Math.random() * 0.08, 'triangle'), 60, 500);
-      } else if (type === 'cafe') {
-        const m = noise(true, 'bandpass', 450, 0.7, 0.6);
-        lfo(0.15, 0.25, m.g.gain);
-        noise(false, 'bandpass', 1800, 0.012, 0.8);
-        every(() => { const f = 2400 + Math.random() * 1400; tone(f, 0.35, 0.02, 'sine'); tone(f * 1.5, 0.25, 0.012, 'sine'); }, 4000, 11000);
-      } else if (type === 'forest') {
-        const w = noise(true, 'bandpass', 500, 0.6, 0.5);
-        lfo(0.08, 250, w.f.frequency);
-        every(() => {
-          const f = 2200 + Math.random() * 1800, n = 2 + Math.floor(Math.random() * 3);
-          for (let i = 0; i < n; i++) setTimeout(() => alive && tone(f, 0.12, 0.03, 'sine', bus, f * 1.35), i * 160);
-        }, 2500, 7000);
-      } else if (type === 'ocean') {
-        const o = noise(true, 'lowpass', 700, 0.5, 0.3);
-        lfo(0.09, 0.4, o.g.gain);
-        const s = noise(false, 'highpass', 2500, 0.03);
-        lfo(0.09, 0.02, s.g.gain);
-      } else if (type === 'piano') {
-        const dl = ctx.createDelay(1), fb = ctx.createGain(), wet = ctx.createGain();
-        dl.delayTime.value = 0.55; fb.gain.value = 0.45; wet.gain.value = 0.6;
-        dl.connect(fb); fb.connect(dl); dl.connect(wet); wet.connect(bus);
-        const scale = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33];
-        const pad = (fs) => fs.forEach(f => tone(f, 7, 0.025, 'sine'));
-        pad([130.81, 196.0, 261.63]);
-        timers.push(setInterval(() => alive && pad([[130.81, 196, 261.63], [110, 164.81, 220], [87.31, 130.81, 174.61], [98, 146.83, 196]][Math.floor(Math.random() * 4)]), 6500));
-        every(() => { const f = scale[Math.floor(Math.random() * scale.length)]; tone(f, 3, 0.07, 'sine', bus); tone(f, 3, 0.05, 'sine', dl); tone(f * 2, 1.5, 0.015, 'sine', dl); }, 1400, 4200);
-      } else {
-        noise(true, 'lowpass', 900, 0.8);
+      const tone = (freq, dur, vol, wave = 'sine') => {
+        if (!alive) return;
+        try {
+          const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime;
+          o.type = wave; o.frequency.setValueAtTime(freq, t);
+          g.gain.setValueAtTime(0.001, t);
+          g.gain.linearRampToValueAtTime(vol, t + 0.05);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+          o.connect(g); g.connect(bus); o.start(t); o.stop(t + dur + 0.1);
+        } catch(e) {}
+      };
+
+      try {
+        if (type === 'rain') {
+          noise(false, 'bandpass', 3500, 0.12);
+          noise(true, 'lowpass', 400, 0.35);
+        } else if (type === 'fireplace') {
+          noise(true, 'lowpass', 450, 0.5);
+          const loop = () => {
+            if (!alive) return;
+            tone(1500 + Math.random() * 2500, 0.04, 0.05, 'triangle');
+            timers.push(setTimeout(loop, 100 + Math.random() * 300));
+          };
+          loop();
+        } else if (type === 'cafe') {
+          noise(true, 'bandpass', 400, 0.4);
+          noise(false, 'highpass', 2000, 0.015);
+        } else if (type === 'forest') {
+          noise(true, 'bandpass', 600, 0.3);
+          const loop = () => {
+            if (!alive) return;
+            const f = 2000 + Math.random() * 1500;
+            tone(f, 0.15, 0.02, 'sine');
+            timers.push(setTimeout(loop, 2500 + Math.random() * 4000));
+          };
+          loop();
+        } else if (type === 'ocean') {
+          noise(true, 'lowpass', 600, 0.45);
+        } else if (type === 'piano') {
+          const notes = [261.63, 329.63, 392.0, 440.0, 523.25];
+          const loop = () => {
+            if (!alive) return;
+            const f = notes[Math.floor(Math.random() * notes.length)];
+            tone(f, 2.5, 0.08, 'sine');
+            timers.push(setTimeout(loop, 2000 + Math.random() * 2000));
+          };
+          loop();
+        } else {
+          noise(true, 'lowpass', 800, 0.6); // brown shovqin
+        }
+      } catch (err) {
+        console.warn("Audio inicializatsiya xatosi:", err);
       }
 
       return {
         stop() {
-          alive = false; timers.forEach(id => { clearTimeout(id); clearInterval(id); });
-          bus.gain.cancelScheduledValues(ctx.currentTime);
-          bus.gain.setValueAtTime(bus.gain.value, ctx.currentTime);
-          bus.gain.linearRampToValueAtTime(0, ctx.currentTime + 1);
-          setTimeout(() => { nodes.forEach(n => { try { n.stop(); } catch (e) {} }); bus.disconnect(); }, 1100);
+          alive = false;
+          timers.forEach(id => clearTimeout(id));
+          try {
+            bus.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+            setTimeout(() => {
+              nodes.forEach(n => { try { n.stop(); } catch(e) {} });
+              bus.disconnect();
+            }, 350);
+          } catch(e) {}
         }
       };
     }
@@ -449,22 +490,52 @@
       const fileInputRef = useRef(null);
       const t = THEMES[themeKey] || THEMES.obsidian;
 
-      useEffect(() => {
-        if (currentRef.current) { currentRef.current.stop(); currentRef.current = null; }
-        if (activeSound === 'none') return;
-        if (!ctxRef.current) {
+      // XAVFSIZ MUSIQA BOSHQARUVI (Qorayib qolmasligi uchun)
+      const handleSoundClick = (sndId) => {
+        try {
+          if (activeSound === sndId) {
+            if (currentRef.current) currentRef.current.stop();
+            currentRef.current = null;
+            setActiveSound('none');
+            return;
+          }
+
+          if (currentRef.current) {
+            currentRef.current.stop();
+            currentRef.current = null;
+          }
+
+          if (sndId === 'none') {
+            setActiveSound('none');
+            return;
+          }
+
           const AC = window.AudioContext || window.webkitAudioContext;
-          ctxRef.current = new AC();
-          masterRef.current = ctxRef.createGain();
-          masterRef.current.gain.value = volume;
-          masterRef.current.connect(ctxRef.current.destination);
+          if (!ctxRef.current) {
+            ctxRef.current = new AC();
+            masterRef.current = ctxRef.current.createGain();
+            masterRef.current.gain.value = volume;
+            masterRef.current.connect(ctxRef.current.destination);
+          }
+
+          if (ctxRef.current.state === 'suspended') {
+            ctxRef.current.resume();
+          }
+
+          currentRef.current = buildAmbient(ctxRef.current, sndId, masterRef.current);
+          setActiveSound(sndId);
+        } catch (err) {
+          console.error("Audio xatosi bartaraf etildi:", err);
+          setActiveSound('none');
         }
-        ctxRef.current.resume();
-        currentRef.current = buildAmbient(ctxRef.current, activeSound, masterRef.current);
-      }, [activeSound]);
+      };
 
       useEffect(() => {
-        if (masterRef.current) masterRef.current.gain.setTargetAtTime(volume, ctxRef.current.currentTime, 0.05);
+        if (masterRef.current && ctxRef.current) {
+          try {
+            masterRef.current.gain.setTargetAtTime(volume, ctxRef.current.currentTime, 0.05);
+          } catch(e) {}
+        }
       }, [volume]);
 
       useEffect(() => () => { if (currentRef.current) currentRef.current.stop(); }, []);
@@ -474,7 +545,7 @@
         return books.filter(b => b.title.toLowerCase().includes(searchQuery.toLowerCase()) || b.author.toLowerCase().includes(searchQuery.toLowerCase()));
       }, [books, searchQuery]);
 
-      // TINISH BELGILARINI TO'G'RI BIRIKTIRISH VA YOLG'IZ BELGILARDAN TOZALASH
+      // MATNDAN TINISH BELGILARINI TOZALASH VA SO'ZLARGA AJRATISH
       const wordsList = useMemo(() => {
         if (!selectedBook?.content) return [];
         let cleaned = selectedBook.content
@@ -486,7 +557,6 @@
           .filter(w => {
             const trimmed = w.trim();
             if (!trimmed) return false;
-            // Agar faqat belgilardan iborat bo'lsa (so'z emas), uni ro'yxatdan chiqaramiz
             return !/^[\p{P}\p{S}]+$/u.test(trimmed);
           });
       }, [selectedBook]);
@@ -673,25 +743,25 @@
       const toggleDayComplete = () => {
         if (isDayDone) { setCompletedDays(prev => prev.filter(d => d !== currentDay)); return; }
         const left = (dayTasks[currentDay] || []).filter(x => !x.done).length;
-        if (left > 0 && !confirm(`${currentDay}-kunda ${left} ta vazifa bajarilmagan. Baribir yakunlaysizmi? Natija faqat bajarilgan vazifalarga qarab hisoblanadi.`)) return;
+        if (left > 0 && !confirm(`${currentDay}-kunda ${left} ta vazifa bajarilmagan. Baribir yakunlaysizmi?`)) return;
         setCompletedDays(prev => [...prev, currentDay]);
         if (currentDay < goalDays) setCurrentDay(currentDay + 1);
       };
 
       const signIn = async () => {
-        if (!cloudReady) { alert("Google orqali kirish uchun fayl boshidagi FIREBASE_CONFIG ni to‘ldiring."); return; }
-        if (location.protocol === 'file:') { alert("Google orqali kirish fayl kompyuterdan ochilganda ishlamaydi. GitHub Pages kabi domen orqali oching."); return; }
+        if (!cloudReady) { alert("Firebase sozlamalari to‘ldirilmagan."); return; }
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
         try { await firebase.auth().signInWithPopup(provider); }
         catch (e) {
-          if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') {
-            try { await firebase.auth().signInWithRedirect(provider); return; } catch (e2) { e = e2; }
+          if (e.code === 'auth/popup-blocked') {
+            try { await firebase.auth().signInWithRedirect(provider); return; } catch(e2) { e = e2; }
           }
-          if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
+          if (e.code === 'auth/popup-closed-by-user') return;
           alert("Kirishda xatolik: " + (e.code || e.message));
         }
       };
+
       const showSyncError = () => {
         alert("Bulutda xatolik: " + syncError);
       };
@@ -748,7 +818,7 @@
                 </div>
                 <div className="space-y-1.5">
                   <label className={`text-xs font-bold ${t.textSub}`}>Maqsadingiz</label>
-                  <input value={setupTitle} onChange={e => setSetupTitle(e.target.value)} placeholder="Masalan: 10 kunda yangi odat shakllantirish"
+                  <input value={setupTitle} onChange={e => setSetupTitle(e.target.value)} placeholder="Masalan: 10 kunda yangi kitob o'qish"
                     className={`w-full p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none`} />
                 </div>
                 <div className="space-y-1.5">
@@ -780,11 +850,11 @@
             
             <div className={`flex items-center gap-1.5 p-1 rounded-full ${t.cardBg} border ${t.border}`}>
               {[
-                { k: 'obsidian', color: 'bg-zinc-900 border border-zinc-600', title: 'Obsidian Qora (Tungi)' },
-                { k: 'light', color: 'bg-white border border-slate-300', title: 'Yorug‘lik Oq (Kunduzgi)' },
-                { k: 'sepia', color: 'bg-[#e7d8be] border border-[#b89f78]', title: 'Sepia Qog‘oz (Kunduzgi)' },
-                { k: 'midnight', color: 'bg-blue-600', title: 'Midnight Ko‘k (Tungi)' },
-                { k: 'emerald', color: 'bg-emerald-600', title: 'Zumrad Yashil (Tungi)' }
+                { k: 'obsidian', color: 'bg-zinc-900 border border-zinc-600', title: 'Obsidian Qora' },
+                { k: 'light', color: 'bg-white border border-slate-300', title: 'Yorug‘lik Oq' },
+                { k: 'sepia', color: 'bg-[#e7d8be] border border-[#b89f78]', title: 'Sepia Qog‘oz' },
+                { k: 'midnight', color: 'bg-blue-600', title: 'Midnight Ko‘k' },
+                { k: 'emerald', color: 'bg-emerald-600', title: 'Zumrad Yashil' }
               ].map(item => (
                 <button
                   key={item.k}
@@ -834,7 +904,7 @@
                     {isDayDone ? `${currentDay}-kun yakunlandi (bekor qilish)` : `${currentDay}-kunni yakunlash`}
                   </button>
                   <button onClick={startNewGoal} className={`w-full py-2.5 rounded-2xl text-xs font-bold border ${t.border} ${t.textMain} flex items-center justify-center gap-2 hover:opacity-80`}>
-                    <i className="fa-solid fa-rotate"></i> Maqsadni yangilash (yangi maqsad)
+                    <i className="fa-solid fa-rotate"></i> Maqsadni yangilash
                   </button>
                 </div>
 
@@ -1210,7 +1280,7 @@
                         className={`px-4 py-2 rounded-2xl text-xs font-bold border ${t.border} ${t.textMain} hover:opacity-80 flex items-center gap-1.5`}
                       >
                         <i className="fa-solid fa-brain text-amber-500"></i>
-                        <span>Voqealar Imtihoni</span>
+                        <span>Mazmun Imtihoni</span>
                       </button>
                     </div>
                   </div>
@@ -1227,7 +1297,7 @@
                   <span className="font-mono text-xs">{wordsList.length > 0 ? wordIndex + 1 : 0} / {wordsList.length}</span>
                 </div>
 
-                {/* FON TOVUSHLARI */}
+                {/* XAVFSIZ FON TOVUSHLARI BOSHQARUVI */}
                 <div className={`${t.cardBg} border ${t.border} p-3 rounded-2xl space-y-2.5 shadow-sm`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -1256,7 +1326,8 @@
                     ].map(snd => (
                       <button
                         key={snd.id}
-                        onClick={() => setActiveSound(snd.id)}
+                        type="button"
+                        onClick={() => handleSoundClick(snd.id)}
                         className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition flex items-center gap-1.5 ${
                           activeSound === snd.id ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-lg shadow-amber-500/25' : `${t.subtleBg} ${t.textSub} hover:${t.textMain}`
                         }`}
@@ -1292,7 +1363,7 @@
                         const chunk = wordsList.slice(wordIndex, wordIndex + chunkSize);
                         if (chunk.length === 0) return "Tayyor";
 
-                        // 1 TA SO'Z: Markaziy harf qizil
+                        // 1 TA SO'Z: Markaziy harfi qizil
                         if (chunkSize === 1) {
                           const w = chunk[0];
                           const chars = Array.from(w);
@@ -1445,7 +1516,7 @@
                     <h3 className={`text-sm font-bold ${t.textMain} truncate max-w-[220px]`}>
                       {selectedBook ? selectedBook.title : "Kitob tanlanmagan"}
                     </h3>
-                    <p className={`text-xs ${t.textSub}`}>Asl voqealarni eslash imtihoni</p>
+                    <p className={`text-xs ${t.textSub}`}>Mazmun va tushunish imtihoni</p>
                   </div>
                   <button onClick={() => setActiveTab('library')} className={`text-xs ${t.textSub} hover:${t.textMain}`}>
                     Chiqish
@@ -1453,7 +1524,7 @@
                 </div>
 
                 {!selectedBook ? (
-                  <div className="text-center py-12 text-sm text-zinc-500">Iltimos, avval kutubxonadan kitob yuklang yoki tanlang.</div>
+                  <div className="text-center py-12 text-sm text-zinc-500">Iltimos, avval kutubxonadan kitob tanlang yoki yuklang.</div>
                 ) : currentQList.length > 0 ? (
                   <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-4 shadow-sm`}>
                     <div className="flex justify-between items-center text-xs">
@@ -1474,23 +1545,23 @@
                     </div>
 
                     <div className={`p-4 rounded-2xl ${t.subtleBg} border ${t.border}`}>
-                      <span className="text-xs text-amber-500 font-bold block mb-1.5">
-                        <i className="fa-solid fa-circle-question mr-1.5"></i> Asardagi voqea:
+                      <span className="text-xs text-amber-500 font-bold block mb-1.5 flex items-center gap-1.5">
+                        <i className="fa-solid fa-circle-question"></i> {currentQList[currentQIndex]?.type || "Kitobdagi mazmun"}:
                       </span>
-                      <p className={`text-sm font-bold leading-relaxed ${t.textMain} whitespace-pre-line`}>
+                      <p className={`text-sm font-semibold leading-relaxed ${t.textMain} whitespace-pre-line`}>
                         {currentQList[currentQIndex]?.prompt}
                       </p>
                     </div>
 
                     <div>
                       <label className={`text-xs ${t.textSub} font-bold block mb-1.5`}>
-                        O‘z so‘zingiz bilan kitobdagi haqiqiy yakunni yozing:
+                        O‘z so‘zingiz bilan kitobdagi fikrni to‘liq davom ettiring yoki xulosalang:
                       </label>
                       <textarea
                         rows="4"
                         value={userAnswer}
                         onChange={(e) => setUserAnswer(e.target.value)}
-                        placeholder="Kitobda aynan nima sodir bo'lganini aniq yozing..."
+                        placeholder="Kitob mazmunidan kelib chiqib, aniq fakt yoki fikrni yozing..."
                         className={`w-full ${t.subtleBg} border ${t.border} rounded-2xl p-3.5 text-sm leading-relaxed ${t.textMain} focus:outline-none placeholder:opacity-40`}
                       />
                     </div>
@@ -1531,7 +1602,7 @@
 
                         <div className="text-xs space-y-1 pt-2 border-t border-black/10">
                           <span className="font-bold flex items-center gap-1.5 text-amber-400">
-                            <i className="fa-solid fa-book-open"></i> Asl kitobdagi to‘g‘ri fakt:
+                            <i className="fa-solid fa-book-open"></i> Asl kitobdagi matn:
                           </span>
                           <p className={`text-xs leading-relaxed italic opacity-90 ${t.textMain}`}>
                             {examFeedback.missing}
@@ -1542,7 +1613,7 @@
 
                   </div>
                 ) : (
-                  <div className="text-center py-12 text-sm text-zinc-500">Kitob voqealari tahlil qilinmoqda...</div>
+                  <div className="text-center py-12 text-sm text-zinc-500">Kitob tahlil qilinmoqda...</div>
                 )}
               </div>
             )}
