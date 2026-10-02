@@ -27,22 +27,12 @@
     .app-emerald { background: radial-gradient(650px circle at 12% 0%, rgba(16,185,129,.26), transparent 60%), radial-gradient(550px circle at 100% 35%, rgba(20,184,166,.20), transparent 60%), radial-gradient(500px circle at 0% 100%, rgba(132,204,22,.12), transparent 60%), linear-gradient(160deg,#03110b,#062016 55%,#04130d); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    .library-two-shelf {
-      background: linear-gradient(180deg, #381805 0%, #1c0b02 100%);
-      border: 2px solid #542508;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.1);
-    }
-    .book-spine-compact {
-      box-shadow: -3px 0 6px rgba(0,0,0,0.4), inset 2px 0 2px rgba(255,255,255,0.2);
-      border-left: 4px solid rgba(0,0,0,0.3);
-    }
+    .library-two-shelf { background: linear-gradient(180deg, #381805 0%, #1c0b02 100%); border: 2px solid #542508; box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.1); }
+    .book-spine-compact { box-shadow: -3px 0 6px rgba(0,0,0,0.4), inset 2px 0 2px rgba(255,255,255,0.2); border-left: 4px solid rgba(0,0,0,0.3); }
   </style>
 </head>
 <body style="height:100dvh" class="bg-zinc-900 flex justify-center items-center h-screen m-0 p-0 text-zinc-100 antialiased selection:bg-amber-500 selection:text-black overflow-hidden">
-
   <div id="root" class="w-full h-full flex justify-center"></div>
-
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
 
@@ -55,87 +45,15 @@
       appId: "1:131558530387:web:45c4b99acbf7c04654d5a6"
     };
 
+    const mk = (id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg) =>
+      ({ id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg });
+
     const THEMES = {
-      obsidian: {
-        id: 'obsidian',
-        name: 'Obsidian (Tungi)',
-        isDark: true,
-        appBg: 'app-obsidian',
-        cardBg: 'bg-white/[0.06] backdrop-blur-xl shadow-xl shadow-black/20',
-        border: 'border-white/10',
-        textMain: 'text-zinc-100',
-        textSub: 'text-zinc-400',
-        accent: 'bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-lg shadow-amber-500/25 hover:brightness-110',
-        accentText: 'text-amber-400',
-        rangeAccent: 'accent-amber-400',
-        badge: 'bg-amber-400/10 text-amber-300 border-amber-400/20',
-        subtleBg: 'bg-white/[0.07] backdrop-blur-md',
-        sliderBg: 'bg-zinc-800'
-      },
-      light: {
-        id: 'light',
-        name: 'Yorug‘lik (Kunduzgi)',
-        isDark: false,
-        appBg: 'app-light',
-        cardBg: 'bg-white/60 backdrop-blur-xl shadow-lg shadow-indigo-900/5',
-        border: 'border-slate-900/10',
-        textMain: 'text-slate-900',
-        textSub: 'text-slate-500',
-        accent: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:brightness-110',
-        accentText: 'text-blue-600',
-        rangeAccent: 'accent-blue-600',
-        badge: 'bg-blue-50 text-blue-700 border-blue-200',
-        subtleBg: 'bg-white/50 backdrop-blur-md',
-        sliderBg: 'bg-slate-200'
-      },
-      sepia: {
-        id: 'sepia',
-        name: 'Qog‘oz / Sepia (Kunduzgi)',
-        isDark: false,
-        appBg: 'app-sepia',
-        cardBg: 'bg-[#fcf9f2]/60 backdrop-blur-xl shadow-lg shadow-amber-900/5',
-        border: 'border-[#3c2f1e]/10',
-        textMain: 'text-[#3c2f1e]',
-        textSub: 'text-[#7e6e58]',
-        accent: 'bg-gradient-to-r from-[#b8743a] to-[#8a4b1f] text-white shadow-lg shadow-amber-900/25 hover:brightness-110',
-        accentText: 'text-[#965a2d]',
-        rangeAccent: 'accent-[#965a2d]',
-        badge: 'bg-[#ede3d1] text-[#70421e] border-[#dac9b0]',
-        subtleBg: 'bg-[#fcf9f2]/50 backdrop-blur-md',
-        sliderBg: 'bg-[#e4dcce]'
-      },
-      midnight: {
-        id: 'midnight',
-        name: 'Midnight (Tungi)',
-        isDark: true,
-        appBg: 'app-midnight',
-        cardBg: 'bg-blue-300/[0.07] backdrop-blur-xl shadow-xl shadow-black/30',
-        border: 'border-blue-200/15',
-        textMain: 'text-blue-50',
-        textSub: 'text-blue-300/70',
-        accent: 'bg-gradient-to-r from-blue-500 to-violet-500 text-white shadow-lg shadow-blue-500/30 hover:brightness-110',
-        accentText: 'text-blue-400',
-        rangeAccent: 'accent-blue-500',
-        badge: 'bg-blue-500/10 text-blue-300 border-blue-500/20',
-        subtleBg: 'bg-white/[0.07] backdrop-blur-md',
-        sliderBg: 'bg-slate-800'
-      },
-      emerald: {
-        id: 'emerald',
-        name: 'Zumrad (Tungi)',
-        isDark: true,
-        appBg: 'app-emerald',
-        cardBg: 'bg-emerald-300/[0.07] backdrop-blur-xl shadow-xl shadow-black/30',
-        border: 'border-emerald-200/15',
-        textMain: 'text-emerald-50',
-        textSub: 'text-emerald-300/70',
-        accent: 'bg-gradient-to-r from-emerald-400 to-teal-400 text-zinc-950 shadow-lg shadow-emerald-500/25 hover:brightness-110',
-        accentText: 'text-emerald-400',
-        rangeAccent: 'accent-emerald-400',
-        badge: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-        subtleBg: 'bg-white/[0.07] backdrop-blur-md',
-        sliderBg: 'bg-emerald-950'
-      }
+      obsidian: mk('obsidian','Obsidian (Tungi)',true,'app-obsidian','bg-white/[0.06] backdrop-blur-xl shadow-xl shadow-black/20','border-white/10','text-zinc-100','text-zinc-400','bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-lg shadow-amber-500/25 hover:brightness-110','text-amber-400','accent-amber-400','bg-amber-400/10 text-amber-300 border-amber-400/20','bg-white/[0.07] backdrop-blur-md','bg-zinc-800'),
+      light: mk('light','Yorug‘lik (Kunduzgi)',false,'app-light','bg-white/60 backdrop-blur-xl shadow-lg shadow-indigo-900/5','border-slate-900/10','text-slate-900','text-slate-500','bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:brightness-110','text-blue-600','accent-blue-600','bg-blue-50 text-blue-700 border-blue-200','bg-white/50 backdrop-blur-md','bg-slate-200'),
+      sepia: mk('sepia','Qog‘oz / Sepia (Kunduzgi)',false,'app-sepia','bg-[#fcf9f2]/60 backdrop-blur-xl shadow-lg shadow-amber-900/5','border-[#3c2f1e]/10','text-[#3c2f1e]','text-[#7e6e58]','bg-gradient-to-r from-[#b8743a] to-[#8a4b1f] text-white shadow-lg shadow-amber-900/25 hover:brightness-110','text-[#965a2d]','accent-[#965a2d]','bg-[#ede3d1] text-[#70421e] border-[#dac9b0]','bg-[#fcf9f2]/50 backdrop-blur-md','bg-[#e4dcce]'),
+      midnight: mk('midnight','Midnight (Tungi)',true,'app-midnight','bg-blue-300/[0.07] backdrop-blur-xl shadow-xl shadow-black/30','border-blue-200/15','text-blue-50','text-blue-300/70','bg-gradient-to-r from-blue-500 to-violet-500 text-white shadow-lg shadow-blue-500/30 hover:brightness-110','text-blue-400','accent-blue-500','bg-blue-500/10 text-blue-300 border-blue-500/20','bg-white/[0.07] backdrop-blur-md','bg-slate-800'),
+      emerald: mk('emerald','Zumrad (Tungi)',true,'app-emerald','bg-emerald-300/[0.07] backdrop-blur-xl shadow-xl shadow-black/30','border-emerald-200/15','text-emerald-50','text-emerald-300/70','bg-gradient-to-r from-emerald-400 to-teal-400 text-zinc-950 shadow-lg shadow-emerald-500/25 hover:brightness-110','text-emerald-400','accent-emerald-400','bg-emerald-500/10 text-emerald-300 border-emerald-500/20','bg-white/[0.07] backdrop-blur-md','bg-emerald-950')
     };
 
     const BOOK_COLORS = [
@@ -146,66 +64,108 @@
       "from-purple-800 via-violet-950 to-stone-950",
       "from-cyan-800 via-blue-950 to-stone-950"
     ];
+    function getRandomColor(id) { return BOOK_COLORS[id % BOOK_COLORS.length]; }
+    function cleanWord(w) { return (w || '').toLowerCase().replace(/[^a-z0-9а-яёўқғҳʻʼo'g']/gi, '').trim(); }
 
-    function getRandomColor(id) {
-      return BOOK_COLORS[id % BOOK_COLORS.length];
-    }
-
-    function cleanWord(w) {
-      return (w || '').toLowerCase().replace(/[^a-z0-9а-яёўқғҳʻʼo'g']/gi, '').trim();
-    }
-
-    // 4 TALIK VARIANTLI TEST SAVOLLARI TUZISH MEXANIZMI
     function extractEventQuestions(content) {
       if (!content) return [];
       const cleaned = content.replace(/\s+/g, ' ');
-      const startOffset = Math.floor(cleaned.length * 0.03);
-      const mainBody = cleaned.substring(startOffset);
-
+      const mainBody = cleaned.substring(Math.floor(cleaned.length * 0.03));
       const rawSentences = mainBody.split(/(?<=[.!?])\s+/);
       const qualitySentences = rawSentences.filter(s => {
         const words = s.split(/\s+/).filter(w => w.length > 2);
         return words.length >= 10 && words.length <= 40 && !s.includes('@') && !s.includes('http');
       });
-
-      if (qualitySentences.length < 10) {
-        return [];
-      }
-
+      if (qualitySentences.length < 10) return [];
       const questions = [];
       const step = Math.max(1, Math.floor(qualitySentences.length / 10));
-
-      // Asardan xarakterli so'zlar va iboralarni yig'ib olish (noto'g'ri variantlar uchun)
       const allWords = cleaned.split(/\s+/).map(cleanWord).filter(w => w.length >= 4);
-      const pool = Array.from(new Set(allWords)).slice(100, 300);
-
+      const uniq = Array.from(new Set(allWords));
+      const pool = uniq.length > 300 ? uniq.slice(100, 300) : uniq;
+      if (!pool.length) return [];
       for (let i = 0; i < 10; i++) {
         const sentence = qualitySentences[Math.min(qualitySentences.length - 1, i * step)];
         if (!sentence) continue;
-
         const words = sentence.split(/\s+/);
         const splitIndex = Math.floor(words.length * 0.6);
         const context = words.slice(0, splitIndex).join(' ');
         const correctAnswer = words.slice(splitIndex).join(' ').replace(/[.!?]/g, '');
-
-        // Noto'g'ri variantlar generatsiyasi
-        const r1 = pool[(i * 3 + 1) % pool.length] + " " + pool[(i * 3 + 2) % pool.length];
-        const r2 = pool[(i * 3 + 4) % pool.length] + " bilan bog‘liq hodisa";
-        const r3 = pool[(i * 3 + 7) % pool.length] + " holati yuz berdi";
-
-        const options = [correctAnswer, r1, r2, r3];
-        // Variantlarni aralashtirish
+        const p = (n) => pool[n % pool.length];
+        const options = [correctAnswer, p(i*3+1) + " " + p(i*3+2), p(i*3+4) + " bilan bog‘liq hodisa", p(i*3+7) + " holati yuz berdi"];
         options.sort(() => Math.random() - 0.5);
-
         questions.push({
           id: i + 1,
           question: `Asarda keltirilishicha:\n"${context}..."\nUshbu holatdan keyin kitobda qanday voqea sodir bo‘ldi yoki jumla qanday yakunlandi?`,
-          options: options,
-          correctAnswer: correctAnswer
+          options, correctAnswer
         });
       }
-
       return questions;
+    }
+
+    // ===== IndexedDB: qurilmada katta hajmli saqlash =====
+    const idb = {
+      db: null,
+      open() {
+        return new Promise((res, rej) => {
+          if (this.db) return res(this.db);
+          const r = indexedDB.open('intizom_books', 1);
+          r.onupgradeneeded = () => r.result.createObjectStore('books', { keyPath: 'id' });
+          r.onsuccess = () => { this.db = r.result; res(this.db); };
+          r.onerror = () => rej(r.error);
+        });
+      },
+      async all() {
+        const db = await this.open();
+        return new Promise((res, rej) => {
+          const q = db.transaction('books').objectStore('books').getAll();
+          q.onsuccess = () => res(q.result || []);
+          q.onerror = () => rej(q.error);
+        });
+      },
+      async put(book) {
+        const db = await this.open();
+        const { questions, ...rest } = book;
+        return new Promise((res, rej) => {
+          const tx = db.transaction('books', 'readwrite');
+          tx.objectStore('books').put(rest);
+          tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+        });
+      },
+      async del(id) {
+        const db = await this.open();
+        return new Promise((res, rej) => {
+          const tx = db.transaction('books', 'readwrite');
+          tx.objectStore('books').delete(id);
+          tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+        });
+      }
+    };
+
+    // ===== Bulutda kitoblarni bo'laklab saqlash =====
+    const CHUNK = 300000;
+    const userRef = (uid) => firebase.firestore().collection('intizom_users').doc(uid);
+
+    async function cloudSaveBook(uid, b) {
+      const n = Math.ceil(b.content.length / CHUNK);
+      for (let i = 0; i < n; i++) {
+        await userRef(uid).collection('book_chunks').doc(`${b.id}_${i}`).set({ text: b.content.slice(i * CHUNK, (i + 1) * CHUNK) });
+      }
+      await userRef(uid).collection('books').doc(String(b.id)).set({ id: b.id, title: b.title, author: b.author, coverColor: b.coverColor, chunks: n });
+    }
+    async function cloudLoadBook(uid, meta) {
+      let content = '';
+      for (let i = 0; i < meta.chunks; i++) {
+        const s = await userRef(uid).collection('book_chunks').doc(`${meta.id}_${i}`).get();
+        content += s.exists ? s.data().text : '';
+      }
+      return { id: meta.id, title: meta.title, author: meta.author, coverColor: meta.coverColor, content };
+    }
+    async function cloudDeleteBook(uid, id) {
+      const ref = userRef(uid).collection('books').doc(String(id));
+      const s = await ref.get();
+      const n = s.exists ? s.data().chunks : 0;
+      for (let i = 0; i < n; i++) await userRef(uid).collection('book_chunks').doc(`${id}_${i}`).delete();
+      await ref.delete();
     }
 
     function buildAmbient(ctx, type, master) {
@@ -215,7 +175,6 @@
       bus.gain.setValueAtTime(0.01, ctx.currentTime);
       bus.connect(master);
       bus.gain.linearRampToValueAtTime(1, ctx.currentTime + 1);
-
       const noise = (brown, freq, gain) => {
         try {
           const len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate);
@@ -230,7 +189,6 @@
           s.connect(f); f.connect(g); g.connect(bus); s.start(); nodes.push(s);
         } catch(e) {}
       };
-
       const tone = (freq, dur, vol) => {
         if (!alive) return;
         try {
@@ -242,74 +200,45 @@
           o.connect(g); g.connect(bus); o.start(t); o.stop(t + dur + 0.1);
         } catch(e) {}
       };
-
       try {
-        if (type === 'rain') {
-          noise(false, 3000, 0.15);
-          noise(true, 400, 0.4);
-        } else if (type === 'fireplace') {
+        if (type === 'rain') { noise(false, 3000, 0.15); noise(true, 400, 0.4); }
+        else if (type === 'fireplace') {
           noise(true, 300, 0.55);
           const crackle = () => {
             if (!alive) return;
             try {
-              const bufferSize = Math.floor(ctx.sampleRate * (0.015 + Math.random() * 0.025));
-              const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+              const bs = Math.floor(ctx.sampleRate * (0.015 + Math.random() * 0.025));
+              const buffer = ctx.createBuffer(1, bs, ctx.sampleRate);
               const data = buffer.getChannelData(0);
-              for (let i = 0; i < bufferSize; i++) {
-                data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
-              }
-              const crackleNode = ctx.createBufferSource();
-              crackleNode.buffer = buffer;
-              const filter = ctx.createBiquadFilter();
-              filter.type = 'bandpass';
-              filter.frequency.value = 1200 + Math.random() * 1800;
-              filter.Q.value = 1.2;
-              const gain = ctx.createGain();
-              gain.gain.value = 0.08 + Math.random() * 0.12;
-              crackleNode.connect(filter);
-              filter.connect(gain);
-              gain.connect(bus);
-              crackleNode.start();
-              nodes.push(crackleNode);
+              for (let i = 0; i < bs; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bs * 0.25));
+              const cn = ctx.createBufferSource(); cn.buffer = buffer;
+              const filter = ctx.createBiquadFilter(); filter.type = 'bandpass';
+              filter.frequency.value = 1200 + Math.random() * 1800; filter.Q.value = 1.2;
+              const gain = ctx.createGain(); gain.gain.value = 0.08 + Math.random() * 0.12;
+              cn.connect(filter); filter.connect(gain); gain.connect(bus); cn.start(); nodes.push(cn);
             } catch (e) {}
             timers.push(setTimeout(crackle, 70 + Math.random() * 260));
           };
           crackle();
-        } else if (type === 'cafe') {
-          noise(true, 500, 0.35);
-        } else if (type === 'forest') {
+        } else if (type === 'cafe') { noise(true, 500, 0.35); }
+        else if (type === 'forest') {
           noise(true, 600, 0.25);
-          const loop = () => {
-            if (!alive) return;
-            tone(2200 + Math.random() * 1200, 0.12, 0.02);
-            timers.push(setTimeout(loop, 2500 + Math.random() * 3000));
-          };
+          const loop = () => { if (!alive) return; tone(2200 + Math.random() * 1200, 0.12, 0.02); timers.push(setTimeout(loop, 2500 + Math.random() * 3000)); };
           loop();
-        } else if (type === 'ocean') {
-          noise(true, 550, 0.45);
-        } else if (type === 'piano') {
+        } else if (type === 'ocean') { noise(true, 550, 0.45); }
+        else if (type === 'piano') {
           const notes = [261.63, 329.63, 392.0, 440.0, 523.25];
-          const loop = () => {
-            if (!alive) return;
-            tone(notes[Math.floor(Math.random() * notes.length)], 2.5, 0.06);
-            timers.push(setTimeout(loop, 2500 + Math.random() * 2500));
-          };
+          const loop = () => { if (!alive) return; tone(notes[Math.floor(Math.random() * notes.length)], 2.5, 0.06); timers.push(setTimeout(loop, 2500 + Math.random() * 2500)); };
           loop();
-        } else {
-          noise(true, 800, 0.5);
-        }
+        } else { noise(true, 800, 0.5); }
       } catch(e) {}
-
       return {
         stop() {
           alive = false;
           timers.forEach(t => clearTimeout(t));
           try {
             bus.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-            setTimeout(() => {
-              nodes.forEach(n => { try { n.stop(); } catch(e) {} });
-              bus.disconnect();
-            }, 250);
+            setTimeout(() => { nodes.forEach(n => { try { n.stop(); } catch(e) {} }); bus.disconnect(); }, 250);
           } catch(e) {}
         }
       };
@@ -318,14 +247,12 @@
     function App() {
       const [activeTab, setActiveTab] = useState('home');
       const [themeKey, setThemeKey] = useState('obsidian');
-
       const [goalTitle, setGoalTitle] = useState("");
       const [goalDays, setGoalDays] = useState(10);
       const [currentDay, setCurrentDay] = useState(1);
       const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
       const [tempTitle, setTempTitle] = useState("");
       const [tempDays, setTempDays] = useState(10);
-
       const [dayTasks, setDayTasks] = useState({});
       const [completedDays, setCompletedDays] = useState([]);
       const [onboarded, setOnboarded] = useState(false);
@@ -335,35 +262,30 @@
       const [archive, setArchive] = useState([]);
       const [creatingNew, setCreatingNew] = useState(false);
       const cloudLoadedRef = useRef(false);
+      const legacyBooksRef = useRef([]);
       const [setupTitle, setSetupTitle] = useState("");
       const [setupDays, setSetupDays] = useState(10);
       const [setupTasks, setSetupTasks] = useState("");
       const [newTaskText, setNewTaskText] = useState("");
       const [editingTaskId, setEditingTaskId] = useState(null);
       const [editingTaskText, setEditingTaskText] = useState("");
-
       const [pomoMinutes, setPomoMinutes] = useState(25);
       const [secondsLeft, setSecondsLeft] = useState(25 * 60);
       const [isTimerRunning, setIsTimerRunning] = useState(false);
-
       const [books, setBooks] = useState([]);
       const [selectedBook, setSelectedBook] = useState(null);
       const [searchQuery, setSearchQuery] = useState("");
       const [uploadProgress, setUploadProgress] = useState(null);
-
       const [speedWPM, setSpeedWPM] = useState(300);
       const [fontSize, setFontSize] = useState(36);
       const [chunkSize, setChunkSize] = useState(1);
       const [wordIndex, setWordIndex] = useState(0);
       const [isReadingRunning, setIsReadingRunning] = useState(false);
-
       const [activeSound, setActiveSound] = useState('none');
       const [volume, setVolume] = useState(0.5);
       const ctxRef = useRef(null);
       const masterRef = useRef(null);
       const currentRef = useRef(null);
-
-      // VIKTORINA TEST STATELARI (10 ta savol va variantlar)
       const [quizIndex, setQuizIndex] = useState(0);
       const [selectedAnswers, setSelectedAnswers] = useState({});
       const [quizFinished, setQuizFinished] = useState(false);
@@ -380,11 +302,8 @@
         if (d.archive) setArchive(d.archive);
         if (d.onboarded !== undefined) setOnboarded(d.onboarded);
         if (d.themeKey) setThemeKey(d.themeKey);
-        if (d.customBooks && d.customBooks.length) {
-          const loaded = d.customBooks.map(b => ({ ...b, questions: extractEventQuestions(b.content) }));
-          setBooks(loaded);
-          setSelectedBook(loaded[0] || null);
-        }
+        // eski formatdagi kitoblar yangi tizimga ko'chiriladi
+        if (d.customBooks && d.customBooks.length) legacyBooksRef.current.push(...d.customBooks);
       };
 
       useEffect(() => {
@@ -405,16 +324,54 @@
         });
       }, []);
 
+      // Asosiy ma'lumotlarni saqlash (kitoblarsiz — hajm kichik)
       useEffect(() => {
         if (!hydrated) return;
-        const customBooks = books.map(({ questions, ...rest }) => rest);
-        const data = JSON.parse(JSON.stringify({ goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, customBooks, archive }));
+        const data = JSON.parse(JSON.stringify({ goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive }));
         const id = setTimeout(() => {
           try { localStorage.setItem('intizom_v1', JSON.stringify(data)); } catch (e) {}
-          if (user && cloudLoadedRef.current) firebase.firestore().collection('intizom_users').doc(user.uid).set(data).then(() => setSyncError("")).catch(e => setSyncError(e.code || e.message));
+          if (user && cloudLoadedRef.current) userRef(user.uid).set(data, { merge: true }).then(() => setSyncError("")).catch(e => setSyncError(e.code || e.message));
         }, 700);
         return () => clearTimeout(id);
-      }, [hydrated, user, goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, books, archive]);
+      }, [hydrated, user, goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive]);
+
+      // Kitoblarni yuklash: IndexedDB + bulut sinxronizatsiyasi
+      useEffect(() => {
+        if (!hydrated) return;
+        (async () => {
+          try {
+            const map = new Map();
+            (await idb.all()).forEach(b => map.set(b.id, b));
+            for (const b of legacyBooksRef.current) {
+              if (!map.has(b.id)) { map.set(b.id, b); await idb.put(b); }
+            }
+            legacyBooksRef.current = [];
+            const show = () => {
+              const list = Array.from(map.values()).sort((a, b) => a.id - b.id).map(b => ({ ...b, questions: extractEventQuestions(b.content) }));
+              setBooks(list);
+              setSelectedBook(prev => list.find(b => b.id === prev?.id) || list[0] || null);
+            };
+            show();
+            if (user) {
+              try {
+                const metas = (await userRef(user.uid).collection('books').get()).docs.map(d => d.data());
+                for (const m of metas) {
+                  if (!map.has(m.id)) {
+                    const full = await cloudLoadBook(user.uid, m);
+                    map.set(full.id, full); await idb.put(full);
+                  }
+                }
+                const cloudIds = new Set(metas.map(m => m.id));
+                for (const b of map.values()) {
+                  if (!cloudIds.has(b.id)) await cloudSaveBook(user.uid, b);
+                }
+                setSyncError("");
+                show();
+              } catch (e) { setSyncError(e.code || e.message); }
+            }
+          } catch (e) { console.error(e); }
+        })();
+      }, [hydrated, user]);
 
       const fileInputRef = useRef(null);
       const t = THEMES[themeKey] || THEMES.obsidian;
@@ -423,21 +380,10 @@
         try {
           if (activeSound === sndId) {
             if (currentRef.current) currentRef.current.stop();
-            currentRef.current = null;
-            setActiveSound('none');
-            return;
+            currentRef.current = null; setActiveSound('none'); return;
           }
-
-          if (currentRef.current) {
-            currentRef.current.stop();
-            currentRef.current = null;
-          }
-
-          if (sndId === 'none') {
-            setActiveSound('none');
-            return;
-          }
-
+          if (currentRef.current) { currentRef.current.stop(); currentRef.current = null; }
+          if (sndId === 'none') { setActiveSound('none'); return; }
           const AC = window.AudioContext || window.webkitAudioContext;
           if (!ctxRef.current) {
             ctxRef.current = new AC();
@@ -445,44 +391,32 @@
             masterRef.current.gain.value = volume;
             masterRef.current.connect(ctxRef.current.destination);
           }
-
-          if (ctxRef.current.state === 'suspended') {
-            ctxRef.current.resume();
-          }
-
+          if (ctxRef.current.state === 'suspended') ctxRef.current.resume();
           currentRef.current = buildAmbient(ctxRef.current, sndId, masterRef.current);
           setActiveSound(sndId);
-        } catch (err) {
-          setActiveSound('none');
-        }
+        } catch (err) { setActiveSound('none'); }
       };
 
       useEffect(() => {
         if (masterRef.current && ctxRef.current) {
-          try {
-            masterRef.current.gain.setValueAtTime(volume, ctxRef.current.currentTime);
-          } catch(e) {}
+          try { masterRef.current.gain.setValueAtTime(volume, ctxRef.current.currentTime); } catch(e) {}
         }
       }, [volume]);
 
       const filteredBooks = useMemo(() => {
         if (!searchQuery.trim()) return books;
-        return books.filter(b => (b.title && b.title.toLowerCase().includes(searchQuery.toLowerCase())) || (b.author && b.author.toLowerCase().includes(searchQuery.toLowerCase())));
+        const q = searchQuery.toLowerCase();
+        return books.filter(b => (b.title && b.title.toLowerCase().includes(q)) || (b.author && b.author.toLowerCase().includes(q)));
       }, [books, searchQuery]);
 
       const wordsList = useMemo(() => {
         if (!selectedBook || !selectedBook.content) return [];
-        let cleaned = selectedBook.content
-          .replace(/\s+([.,!?:;»”’')\]])/g, '$1')
-          .replace(/([«“‘(\[])\s+/g, '$1');
-
-        return cleaned
-          .split(/\s+/)
-          .filter(w => {
-            const trimmed = w.trim();
-            if (!trimmed) return false;
-            return !/^[-.,!?:;—–"'\(\)\[\]«»]+$/.test(trimmed);
-          });
+        const cleaned = selectedBook.content.replace(/\s+([.,!?:;»”’')\]])/g, '$1').replace(/([«“‘(\[])\s+/g, '$1');
+        return cleaned.split(/\s+/).filter(w => {
+          const tr = w.trim();
+          if (!tr) return false;
+          return !/^[-.,!?:;—–"'\(\)\[\]«»]+$/.test(tr);
+        });
       }, [selectedBook]);
 
       const remainingWords = Math.max(0, wordsList.length - wordIndex);
@@ -507,10 +441,7 @@
           const delay = (60 / speedWPM) * 1000 * chunkSize;
           speedInterval = setInterval(() => {
             setWordIndex(prev => {
-              if (prev + chunkSize >= wordsList.length) {
-                setIsReadingRunning(false);
-                return Math.max(0, wordsList.length - 1);
-              }
+              if (prev + chunkSize >= wordsList.length) { setIsReadingRunning(false); return Math.max(0, wordsList.length - 1); }
               return prev + chunkSize;
             });
           }, delay);
@@ -522,46 +453,25 @@
       const completedTasksCount = currentTasks.filter(tk => tk.done).length;
       const dayPercent = currentTasks.length > 0 ? Math.round((completedTasksCount / currentTasks.length) * 100) : 0;
 
-      const toggleTask = (id) => {
-        setDayTasks(prev => ({
-          ...prev,
-          [currentDay]: (prev[currentDay] || []).map(tk => tk.id === id ? { ...tk, done: !tk.done } : tk)
-        }));
-      };
-
+      const toggleTask = (id) => setDayTasks(prev => ({ ...prev, [currentDay]: (prev[currentDay] || []).map(tk => tk.id === id ? { ...tk, done: !tk.done } : tk) }));
       const addTask = () => {
         if (!newTaskText.trim()) return;
-        const newTask = { id: Date.now(), text: newTaskText.trim(), done: false };
-        setDayTasks(prev => ({
-          ...prev,
-          [currentDay]: [...(prev[currentDay] || []), newTask]
-        }));
+        const nt = { id: Date.now(), text: newTaskText.trim(), done: false };
+        setDayTasks(prev => ({ ...prev, [currentDay]: [...(prev[currentDay] || []), nt] }));
         setNewTaskText("");
       };
-
       const saveEditingTask = (id) => {
         if (!editingTaskText.trim()) return;
-        setDayTasks(prev => ({
-          ...prev,
-          [currentDay]: (prev[currentDay] || []).map(tk => tk.id === id ? { ...tk, text: editingTaskText.trim() } : tk)
-        }));
-        setEditingTaskId(null);
-        setEditingTaskText("");
+        setDayTasks(prev => ({ ...prev, [currentDay]: (prev[currentDay] || []).map(tk => tk.id === id ? { ...tk, text: editingTaskText.trim() } : tk) }));
+        setEditingTaskId(null); setEditingTaskText("");
       };
-
-      const deleteTask = (id) => {
-        setDayTasks(prev => ({
-          ...prev,
-          [currentDay]: (prev[currentDay] || []).filter(tk => tk.id !== id)
-        }));
-      };
+      const deleteTask = (id) => setDayTasks(prev => ({ ...prev, [currentDay]: (prev[currentDay] || []).filter(tk => tk.id !== id) }));
 
       const saveGoalSettings = (e) => {
         e.preventDefault();
         const days = parseInt(tempDays, 10);
         if (!tempTitle.trim() || isNaN(days) || days < 1) return;
-        setGoalTitle(tempTitle.trim());
-        setGoalDays(days);
+        setGoalTitle(tempTitle.trim()); setGoalDays(days);
         if (currentDay > days) setCurrentDay(days);
         setIsGoalModalOpen(false);
       };
@@ -570,20 +480,19 @@
         if (e) e.stopPropagation();
         const bookToDelete = books.find(b => b.id === id);
         if (!confirm(`"${bookToDelete?.title || 'Ushbu'}" kitobini kutubxonadan o‘chirmoqchimisiz?`)) return;
-        
         const newBooks = books.filter(b => b.id !== id);
         setBooks(newBooks);
+        idb.del(id).catch(() => {});
+        if (user) cloudDeleteBook(user.uid, id).catch(e => setSyncError(e.code || e.message));
         if (selectedBook?.id === id) {
           setSelectedBook(newBooks[0] || null);
-          setWordIndex(0);
-          setQuizIndex(0);
-          setSelectedAnswers({});
-          setQuizFinished(false);
+          setWordIndex(0); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false);
         }
       };
 
       const handlePdfUpload = async (e) => {
-        const file = e.target.files[0];
+        const input = e.target;
+        const file = input.files[0];
         if (!file) return;
         setUploadProgress(10);
         try {
@@ -593,41 +502,32 @@
               const typedarray = new Uint8Array(this.result);
               const pdf = await pdfjsLib.getDocument(typedarray).promise;
               let fullText = "";
-              
               for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
                 fullText += textContent.items.map(item => item.str).join(" ") + " ";
                 setUploadProgress(Math.round((i / pdf.numPages) * 100));
               }
-
               const cleanText = fullText.replace(/\s+/g, ' ').trim() || "Matn o‘qilmadi.";
               const bookTitle = file.name.replace(/\.[^/.]+$/, "");
-              
-              const generatedQuestions = extractEventQuestions(cleanText);
               const newId = Date.now();
-
               const newBook = {
-                id: newId,
-                title: bookTitle,
-                author: "Yuklangan asar",
-                coverColor: getRandomColor(newId),
-                content: cleanText,
-                questions: generatedQuestions
+                id: newId, title: bookTitle, author: "Yuklangan asar",
+                coverColor: getRandomColor(newId), content: cleanText,
+                questions: extractEventQuestions(cleanText)
               };
-
+              await idb.put(newBook);
+              if (user) cloudSaveBook(user.uid, newBook).catch(er => setSyncError(er.code || er.message));
               setBooks(prev => [...prev, newBook]);
               setSelectedBook(newBook);
-              setWordIndex(0);
-              setQuizIndex(0);
-              setSelectedAnswers({});
-              setQuizFinished(false);
+              setWordIndex(0); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false);
               setUploadProgress(null);
-              e.target.value = "";
+              input.value = "";
               alert(`"${bookTitle}" kitobi muvaffaqiyatli yuklandi!`);
             } catch (err) {
+              console.error(err);
               setUploadProgress(null);
-              alert("PDF o'qishda xatolik yuz berdi.");
+              alert("PDF o'qishda yoki saqlashda xatolik yuz berdi.");
             }
           };
           fileReader.readAsArrayBuffer(file);
@@ -638,16 +538,10 @@
       };
 
       const currentQList = selectedBook?.questions || [];
-
-      // Test natijasini hisoblash
       const calculateScore = () => {
-        let correctCount = 0;
-        currentQList.forEach((q, i) => {
-          if (selectedAnswers[i] === q.correctAnswer) {
-            correctCount++;
-          }
-        });
-        return correctCount;
+        let c = 0;
+        currentQList.forEach((q, i) => { if (selectedAnswers[i] === q.correctAnswer) c++; });
+        return c;
       };
 
       const finishedDays = completedDays.filter(d => d <= goalDays);
@@ -685,7 +579,6 @@
           alert("Kirishda xatolik: " + (e.code || e.message));
         }
       };
-
       const signOut = () => { if (confirm("Hisobdan chiqasizmi?")) firebase.auth().signOut(); };
 
       const startNewGoal = () => {
@@ -735,18 +628,15 @@
                 </div>
                 <div className="space-y-1.5">
                   <label className={`text-xs font-bold ${t.textSub}`}>Maqsadingiz</label>
-                  <input value={setupTitle} onChange={e => setSetupTitle(e.target.value)} placeholder="Masalan: 10 kunda yangi kitob o'qish"
-                    className={`w-full p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none`} />
+                  <input value={setupTitle} onChange={e => setSetupTitle(e.target.value)} placeholder="Masalan: 10 kunda yangi kitob o'qish" className={`w-full p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none`} />
                 </div>
                 <div className="space-y-1.5">
                   <label className={`text-xs font-bold ${t.textSub}`}>Necha kunlik reja?</label>
-                  <input type="number" min="1" max="365" value={setupDays} onChange={e => setSetupDays(e.target.value)}
-                    className={`w-28 p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none`} />
+                  <input type="number" min="1" max="365" value={setupDays} onChange={e => setSetupDays(e.target.value)} className={`w-28 p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none`} />
                 </div>
                 <div className="space-y-1.5">
                   <label className={`text-xs font-bold ${t.textSub}`}>Har kungi vazifalar (har qatorga bittadan)</label>
-                  <textarea rows="5" value={setupTasks} onChange={e => setSetupTasks(e.target.value)} placeholder={"20 daqiqa kitob o‘qish\n25 daqiqa fokus ishlash"}
-                    className={`w-full p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none resize-none`} />
+                  <textarea rows="5" value={setupTasks} onChange={e => setSetupTasks(e.target.value)} placeholder={"20 daqiqa kitob o‘qish\n25 daqiqa fokus ishlash"} className={`w-full p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none resize-none`} />
                 </div>
                 <button onClick={submitSetup} className={`w-full py-3 rounded-2xl text-sm font-bold shadow-md ${t.accent}`}>{creatingNew ? "Yangi maqsadni boshlash" : "Boshlash"}</button>
                 {creatingNew && <button onClick={() => setCreatingNew(false)} className={`w-full py-2.5 rounded-2xl text-xs font-bold border ${t.border} ${t.textSub}`}>Bekor qilish</button>}
@@ -758,13 +648,11 @@
 
       return (
         <div className={`w-full h-full ${t.appBg} flex flex-col overflow-hidden relative transition-colors duration-300 font-sans`}>
-          
           <div className={`px-6 md:px-10 py-4 flex justify-between items-center border-b ${t.border} flex-shrink-0`}>
             <div className="flex items-center gap-2">
               <h1 className={`text-lg font-black tracking-tight ${t.textMain}`}>Intizom</h1>
               {authButton}
             </div>
-            
             <div className={`flex items-center gap-1.5 p-1 rounded-full ${t.cardBg} border ${t.border}`}>
               {[
                 { k: 'obsidian', color: 'bg-zinc-900 border border-zinc-600', title: 'Obsidian Qora' },
@@ -773,20 +661,14 @@
                 { k: 'midnight', color: 'bg-blue-600', title: 'Midnight Ko‘k' },
                 { k: 'emerald', color: 'bg-emerald-600', title: 'Zumrad Yashil' }
               ].map(item => (
-                <button
-                  key={item.k}
-                  onClick={() => setThemeKey(item.k)}
-                  title={item.title}
-                  className={`w-4 h-4 rounded-full transition-transform ${item.color} ${
-                    themeKey === item.k ? 'scale-125 ring-2 ring-blue-500 shadow' : 'opacity-60 hover:opacity-100'
-                  }`}
-                />
+                <button key={item.k} onClick={() => setThemeKey(item.k)} title={item.title}
+                  className={`w-4 h-4 rounded-full transition-transform ${item.color} ${themeKey === item.k ? 'scale-125 ring-2 ring-blue-500 shadow' : 'opacity-60 hover:opacity-100'}`} />
               ))}
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-4 max-w-xl md:max-w-3xl xl:max-w-4xl mx-auto w-full md:p-8">
-            
+
             {activeTab === 'home' && (
               <div className="space-y-4">
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-3 shadow-sm`}>
@@ -810,9 +692,7 @@
                   <div className="flex flex-wrap gap-1.5">
                     {Array.from({ length: goalDays }, (_, i) => i + 1).map(d => (
                       <button key={d} onClick={() => setCurrentDay(d)} title={`${d}-kun`}
-                        className={`w-6 h-6 rounded-md text-[9px] font-bold transition ${
-                          completedDays.includes(d) ? (dayScore(d) === 1 ? 'bg-emerald-500 text-white' : dayScore(d) > 0 ? 'bg-amber-500 text-white' : 'bg-red-500/70 text-white') : `${t.subtleBg} ${t.textSub}`
-                        } ${d === currentDay ? 'ring-2 ring-amber-400' : ''}`}>{d}</button>
+                        className={`w-6 h-6 rounded-md text-[9px] font-bold transition ${completedDays.includes(d) ? (dayScore(d) === 1 ? 'bg-emerald-500 text-white' : dayScore(d) > 0 ? 'bg-amber-500 text-white' : 'bg-red-500/70 text-white') : `${t.subtleBg} ${t.textSub}`} ${d === currentDay ? 'ring-2 ring-amber-400' : ''}`}>{d}</button>
                     ))}
                   </div>
                   <button onClick={toggleDayComplete}
@@ -828,18 +708,9 @@
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl relative shadow-sm`}>
                   <div className="flex justify-between items-start mb-2">
                     <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Bosh Reja</span>
-                    <button 
-                      onClick={() => { setTempTitle(goalTitle); setTempDays(goalDays); setIsGoalModalOpen(true); }}
-                      className={`text-xs font-semibold ${t.accentText} hover:opacity-80 transition`}
-                    >
-                      Tahrirlash
-                    </button>
+                    <button onClick={() => { setTempTitle(goalTitle); setTempDays(goalDays); setIsGoalModalOpen(true); }} className={`text-xs font-semibold ${t.accentText} hover:opacity-80 transition`}>Tahrirlash</button>
                   </div>
-
-                  <h2 className={`font-bold text-sm leading-relaxed ${t.textMain}`}>
-                    {goalTitle || "Maqsad belgilanmagan"}
-                  </h2>
-
+                  <h2 className={`font-bold text-sm leading-relaxed ${t.textMain}`}>{goalTitle || "Maqsad belgilanmagan"}</h2>
                   <div className="mt-4 pt-3 border-t border-black/5 flex items-center justify-between">
                     <div>
                       <div className={`text-xs ${t.textSub} font-medium`}>Reja muddati</div>
@@ -847,107 +718,47 @@
                     </div>
                     <div className="text-right">
                       <div className={`text-xs ${t.textSub} font-medium`}>Kunlik natija</div>
-                      <div className={`text-sm font-black ${dayPercent === 100 ? 'text-emerald-500' : t.accentText}`}>
-                        {dayPercent}%
-                      </div>
+                      <div className={`text-sm font-black ${dayPercent === 100 ? 'text-emerald-500' : t.accentText}`}>{dayPercent}%</div>
                     </div>
                   </div>
-
-                  <input
-                    type="range"
-                    min="1"
-                    max={goalDays}
-                    value={currentDay}
-                    onChange={(e) => setCurrentDay(Number(e.target.value))}
-                    className={`w-full mt-3 h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`}
-                  />
+                  <input type="range" min="1" max={goalDays} value={currentDay} onChange={(e) => setCurrentDay(Number(e.target.value))} className={`w-full mt-3 h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
                 </div>
 
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-3 shadow-sm`}>
                   <div className="flex justify-between items-center">
-                    <h3 className={`text-xs font-bold tracking-tight uppercase ${t.textSub}`}>
-                      {currentDay}-Kunning vazifalari
-                    </h3>
-                    <span className={`text-xs font-semibold ${t.textSub}`}>
-                      {completedTasksCount} / {currentTasks.length}
-                    </span>
+                    <h3 className={`text-xs font-bold tracking-tight uppercase ${t.textSub}`}>{currentDay}-Kunning vazifalari</h3>
+                    <span className={`text-xs font-semibold ${t.textSub}`}>{completedTasksCount} / {currentTasks.length}</span>
                   </div>
-
                   <div className="space-y-2.5">
-                    {currentTasks.length > 0 ? (
-                      currentTasks.map(tk => (
-                        <div 
-                          key={tk.id} 
-                          className={`flex items-center justify-between p-3 rounded-2xl border ${t.border} ${t.subtleBg} transition-all`}
-                        >
-                          {editingTaskId === tk.id ? (
-                            <div className="flex gap-2 w-full">
-                              <input
-                                type="text"
-                                value={editingTaskText}
-                                onChange={(e) => setEditingTaskText(e.target.value)}
-                                className={`flex-1 ${t.cardBg} text-sm px-3 py-2 rounded-xl border ${t.border} ${t.textMain} focus:outline-none`}
-                                autoFocus
-                              />
-                              <button onClick={() => saveEditingTask(tk.id)} className="px-3 py-1.5 bg-emerald-500 text-white font-bold rounded-xl text-xs">
-                                <i className="fa-solid fa-check"></i>
-                              </button>
+                    {currentTasks.length > 0 ? currentTasks.map(tk => (
+                      <div key={tk.id} className={`flex items-center justify-between p-3 rounded-2xl border ${t.border} ${t.subtleBg} transition-all`}>
+                        {editingTaskId === tk.id ? (
+                          <div className="flex gap-2 w-full">
+                            <input type="text" value={editingTaskText} onChange={(e) => setEditingTaskText(e.target.value)} className={`flex-1 ${t.cardBg} text-sm px-3 py-2 rounded-xl border ${t.border} ${t.textMain} focus:outline-none`} autoFocus />
+                            <button onClick={() => saveEditingTask(tk.id)} className="px-3 py-1.5 bg-emerald-500 text-white font-bold rounded-xl text-xs"><i className="fa-solid fa-check"></i></button>
+                          </div>
+                        ) : (
+                          <>
+                            <div onClick={() => toggleTask(tk.id)} className="flex items-center gap-3 flex-1 cursor-pointer select-none">
+                              <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition ${tk.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-zinc-400'}`}>
+                                {tk.done && <i className="fa-solid fa-check text-[10px] font-black"></i>}
+                              </div>
+                              <span className={`text-sm font-medium leading-snug ${tk.done ? `line-through ${t.textSub}` : t.textMain}`}>{tk.text}</span>
                             </div>
-                          ) : (
-                            <>
-                              <div 
-                                onClick={() => toggleTask(tk.id)}
-                                className="flex items-center gap-3 flex-1 cursor-pointer select-none"
-                              >
-                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition ${
-                                  tk.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-zinc-400'
-                                }`}>
-                                  {tk.done && <i className="fa-solid fa-check text-[10px] font-black"></i>}
-                                </div>
-                                <span className={`text-sm font-medium leading-snug ${
-                                  tk.done ? `line-through ${t.textSub}` : t.textMain
-                                }`}>
-                                  {tk.text}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 ml-2">
-                                <button 
-                                  onClick={() => { setEditingTaskId(tk.id); setEditingTaskText(tk.text); }}
-                                  className={`${t.textSub} hover:${t.textMain} text-xs p-1.5`}
-                                >
-                                  <i className="fa-solid fa-pen"></i>
-                                </button>
-                                <button 
-                                  onClick={() => deleteTask(tk.id)}
-                                  className={`${t.textSub} hover:text-rose-500 text-xs p-1.5`}
-                                >
-                                  <i className="fa-solid fa-trash-can"></i>
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      ))
-                    ) : (
+                            <div className="flex items-center gap-2 ml-2">
+                              <button onClick={() => { setEditingTaskId(tk.id); setEditingTaskText(tk.text); }} className={`${t.textSub} text-xs p-1.5`}><i className="fa-solid fa-pen"></i></button>
+                              <button onClick={() => deleteTask(tk.id)} className={`${t.textSub} hover:text-rose-500 text-xs p-1.5`}><i className="fa-solid fa-trash-can"></i></button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )) : (
                       <div className={`text-center py-4 text-sm ${t.textSub}`}>Bu kunga vazifalar belgilanmagan</div>
                     )}
                   </div>
-
                   <div className="flex gap-2 pt-1">
-                    <input
-                      type="text"
-                      placeholder="Yangi vazifa..."
-                      value={newTaskText}
-                      onChange={(e) => setNewTaskText(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && addTask()}
-                      className={`flex-1 ${t.subtleBg} border ${t.border} rounded-2xl px-4 py-2.5 text-sm ${t.textMain} placeholder:opacity-50 focus:outline-none`}
-                    />
-                    <button
-                      onClick={addTask}
-                      className={`px-5 py-2.5 rounded-2xl text-sm font-bold ${t.accent}`}
-                    >
-                      +
-                    </button>
+                    <input type="text" placeholder="Yangi vazifa..." value={newTaskText} onChange={(e) => setNewTaskText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTask()} className={`flex-1 ${t.subtleBg} border ${t.border} rounded-2xl px-4 py-2.5 text-sm ${t.textMain} placeholder:opacity-50 focus:outline-none`} />
+                    <button onClick={addTask} className={`px-5 py-2.5 rounded-2xl text-sm font-bold ${t.accent}`}>+</button>
                   </div>
                 </div>
               </div>
@@ -967,22 +778,17 @@
                         </div>
                       </div>
                       <div className={`text-xs font-semibold ${syncError ? 'text-red-500' : 'text-emerald-500'}`}>
-                        {syncError ? "⚠ Bulutda xatolik" : "☁ Ma’lumotlar bulutda saqlanmoqda"}
+                        {syncError ? `⚠ Bulutda xatolik: ${syncError}` : "☁ Ma’lumotlar bulutda saqlanmoqda"}
                       </div>
-                      <button onClick={signOut} className="w-full py-2.5 rounded-2xl text-sm font-bold border border-red-500/40 text-red-500 flex items-center justify-center gap-2">
-                        <i className="fa-solid fa-right-from-bracket"></i> Profildan chiqish
-                      </button>
+                      <button onClick={signOut} className="w-full py-2.5 rounded-2xl text-sm font-bold border border-red-500/40 text-red-500 flex items-center justify-center gap-2"><i className="fa-solid fa-right-from-bracket"></i> Profildan chiqish</button>
                     </>
                   ) : (
                     <>
                       <p className={`text-xs ${t.textSub}`}>Hisobga kirmagansiz — ma’lumotlar faqat shu qurilmada saqlanadi.</p>
-                      <button onClick={signIn} className={`w-full py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 ${t.accent}`}>
-                        <i className="fa-brands fa-google"></i> Google bilan kirish
-                      </button>
+                      <button onClick={signIn} className={`w-full py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 ${t.accent}`}><i className="fa-brands fa-google"></i> Google bilan kirish</button>
                     </>
                   )}
                 </div>
-
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-3 shadow-sm`}>
                   <div className="flex justify-between items-center">
                     <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Maqsadlar arxivi</span>
@@ -999,9 +805,7 @@
                         </div>
                         <span className={`text-sm font-black ${a.pct >= 100 ? 'text-emerald-500' : t.accentText}`}>{a.pct}%</span>
                       </div>
-                      <div className={`w-full h-2 rounded-full ${t.sliderBg} overflow-hidden`}>
-                        <div className="h-full bg-emerald-500" style={{ width: `${a.pct}%` }}></div>
-                      </div>
+                      <div className={`w-full h-2 rounded-full ${t.sliderBg} overflow-hidden`}><div className="h-full bg-emerald-500" style={{ width: `${a.pct}%` }}></div></div>
                       <div className={`flex justify-between items-center text-[11px] ${t.textSub}`}>
                         <span>Yakunlangan kun: {a.finished}/{a.days}</span>
                         <span>Vazifalar: {a.tDone}/{a.tTotal}</span>
@@ -1016,88 +820,45 @@
             {activeTab === 'timer' && (
               <div className="flex flex-col items-center justify-center space-y-6 pt-5">
                 <span className={`text-xs font-bold uppercase tracking-widest ${t.textSub}`}>Chuqur Ishlash Rejimi</span>
-                
                 <div className={`w-60 h-60 md:w-72 md:h-72 rounded-full border-4 ${t.border} ${t.cardBg} flex flex-col items-center justify-center shadow-lg relative`}>
                   <span className={`text-6xl font-black tracking-tight font-mono ${t.textMain}`}>
-                    {Math.floor(secondsLeft / 60).toString().padStart(2, '0')}:
-                    {(secondsLeft % 60).toString().padStart(2, '0')}
+                    {Math.floor(secondsLeft / 60).toString().padStart(2, '0')}:{(secondsLeft % 60).toString().padStart(2, '0')}
                   </span>
                   <span className={`text-xs ${t.textSub} font-medium mt-1.5`}>Fokus seansi</span>
                 </div>
-
                 <div className="flex gap-3">
-                  <button
-                    onClick={() => setIsTimerRunning(!isTimerRunning)}
-                    className={`px-8 py-3 rounded-2xl font-bold text-sm shadow-lg transition-transform active:scale-95 ${t.accent}`}
-                  >
-                    {isTimerRunning ? 'To‘xtatish' : 'Boshlash'}
-                  </button>
-                  <button
-                    onClick={() => { setIsTimerRunning(false); setSecondsLeft(pomoMinutes * 60); }}
-                    className={`px-5 py-3 rounded-2xl font-semibold text-sm border ${t.border} ${t.textMain} hover:opacity-80`}
-                  >
-                    Qaytarish
-                  </button>
+                  <button onClick={() => setIsTimerRunning(!isTimerRunning)} className={`px-8 py-3 rounded-2xl font-bold text-sm shadow-lg ${t.accent}`}>{isTimerRunning ? 'To‘xtatish' : 'Boshlash'}</button>
+                  <button onClick={() => { setIsTimerRunning(false); setSecondsLeft(pomoMinutes * 60); }} className={`px-5 py-3 rounded-2xl font-semibold text-sm border ${t.border} ${t.textMain} hover:opacity-80`}>Qaytarish</button>
                 </div>
-
                 <div className={`w-full ${t.cardBg} border ${t.border} p-5 rounded-3xl shadow-sm`}>
                   <div className="flex justify-between text-sm mb-2.5">
                     <span className={t.textSub}>Vaqtni sozlash</span>
                     <span className={`font-bold ${t.textMain}`}>{pomoMinutes} daqiqa</span>
                   </div>
-                  <input
-                    type="range"
-                    min="5"
-                    max="60"
-                    step="5"
-                    value={pomoMinutes}
-                    onChange={(e) => {
-                      const val = Number(e.target.value);
-                      setPomoMinutes(val);
-                      setSecondsLeft(val * 60);
-                      setIsTimerRunning(false);
-                    }}
-                    className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`}
-                  />
+                  <input type="range" min="5" max="60" step="5" value={pomoMinutes}
+                    onChange={(e) => { const v = Number(e.target.value); setPomoMinutes(v); setSecondsLeft(v * 60); setIsTimerRunning(false); }}
+                    className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
                 </div>
               </div>
             )}
 
             {activeTab === 'library' && (
               <div className="space-y-4">
-                
                 <div className={`sticky top-0 z-30 ${t.appBg} pt-2 pb-3 space-y-3 border-b ${t.border}`}>
                   <div className="flex justify-between items-center">
                     <div>
                       <h2 className={`font-black text-base tracking-wide ${t.textMain}`}>Kitob Javoni</h2>
                       <span className={`text-xs ${t.textSub}`}>Mening kitoblarim ({books.length} ta)</span>
                     </div>
-                    <input
-                      type="file"
-                      accept="application/pdf"
-                      ref={fileInputRef}
-                      onChange={handlePdfUpload}
-                      className="hidden"
-                    />
-                    <button
-                      onClick={() => fileInputRef.current.click()}
-                      disabled={uploadProgress !== null}
-                      className={`text-xs px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-md ${t.accent}`}
-                    >
+                    <input type="file" accept="application/pdf" ref={fileInputRef} onChange={handlePdfUpload} className="hidden" />
+                    <button onClick={() => fileInputRef.current.click()} disabled={uploadProgress !== null} className={`text-xs px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-md ${t.accent}`}>
                       <i className="fa-solid fa-file-pdf text-xs"></i>
                       <span>{uploadProgress !== null ? `${uploadProgress}%` : "+ PDF Qo‘shish"}</span>
                     </button>
                   </div>
-
                   <div className="relative">
                     <i className={`fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs ${t.textSub}`}></i>
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Kitoblardan qidirish..."
-                      className={`w-full pl-9 pr-4 py-2.5 text-xs rounded-2xl ${t.cardBg} border ${t.border} ${t.textMain} placeholder:opacity-50 focus:outline-none`}
-                    />
+                    <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Kitoblardan qidirish..." className={`w-full pl-9 pr-4 py-2.5 text-xs rounded-2xl ${t.cardBg} border ${t.border} ${t.textMain} placeholder:opacity-50 focus:outline-none`} />
                   </div>
                 </div>
 
@@ -1105,9 +866,7 @@
                   <div className="text-center py-16 space-y-3">
                     <i className="fa-solid fa-book-open text-4xl text-zinc-600"></i>
                     <p className={`text-sm ${t.textSub}`}>Hozircha kitoblar mavjud emas.</p>
-                    <button onClick={() => fileInputRef.current.click()} className={`text-xs font-bold px-4 py-2 rounded-xl ${t.accent}`}>
-                      + PDF Kitob Yuklash
-                    </button>
+                    <button onClick={() => fileInputRef.current.click()} className={`text-xs font-bold px-4 py-2 rounded-xl ${t.accent}`}>+ PDF Kitob Yuklash</button>
                   </div>
                 ) : (
                   <div className="library-two-shelf p-3 rounded-2xl space-y-3">
@@ -1115,40 +874,21 @@
                       {filteredBooks.map(b => {
                         const isCurrent = selectedBook?.id === b.id;
                         return (
-                          <div
-                            key={b.id}
-                            onClick={() => { 
-                              setSelectedBook(b); 
-                              setWordIndex(0);
-                              setQuizIndex(0);
-                              setSelectedAnswers({});
-                              setQuizFinished(false);
-                            }}
-                            className={`book-spine-compact cursor-pointer transition-all duration-200 transform hover:-translate-y-1 rounded-r-md bg-gradient-to-br ${b.coverColor} p-2 text-white flex flex-col justify-between h-32 select-none relative group ${
-                              isCurrent ? 'ring-2 ring-amber-400 shadow-xl scale-105' : 'opacity-95'
-                            }`}
-                          >
+                          <div key={b.id}
+                            onClick={() => { setSelectedBook(b); setWordIndex(0); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }}
+                            className={`book-spine-compact cursor-pointer transition-all duration-200 transform hover:-translate-y-1 rounded-r-md bg-gradient-to-br ${b.coverColor} p-2 text-white flex flex-col justify-between h-32 select-none relative group ${isCurrent ? 'ring-2 ring-amber-400 shadow-xl scale-105' : 'opacity-95'}`}>
                             <div className="w-1 h-full absolute left-0 top-0 border-r border-black/20"></div>
-                            
                             <div className="pl-1.5 flex justify-between items-center">
                               <i className="fa-solid fa-bookmark text-[8px] text-amber-400/80"></i>
                               <div className="flex items-center gap-1">
-                                {isCurrent && <span className="text-[7px] font-black uppercase px-1 py-0.2 bg-amber-400 text-zinc-950 rounded">Faol</span>}
-                                <button
-                                  onClick={(e) => deleteBook(b.id, e)}
-                                  title="Kitobni o'chirish"
-                                  className="w-4 h-4 rounded-full bg-black/40 hover:bg-red-600 text-white/80 hover:text-white flex items-center justify-center transition text-[8px]"
-                                >
-                                  <i className="fa-solid fa-xmark"></i>
-                                </button>
+                                {isCurrent && <span className="text-[7px] font-black uppercase px-1 bg-amber-400 text-zinc-950 rounded">Faol</span>}
+                                <button onClick={(e) => deleteBook(b.id, e)} title="Kitobni o'chirish" className="w-4 h-4 rounded-full bg-black/40 hover:bg-red-600 text-white/80 hover:text-white flex items-center justify-center transition text-[8px]"><i className="fa-solid fa-xmark"></i></button>
                               </div>
                             </div>
-
                             <div className="pl-1.5 pr-1 text-center my-auto">
                               <div className="text-[10px] font-black leading-tight line-clamp-2">{b.title}</div>
                               <div className="text-[8px] text-zinc-300 mt-1 truncate">{b.author}</div>
                             </div>
-
                             <div className="pl-1.5 h-1"></div>
                           </div>
                         );
@@ -1166,39 +906,12 @@
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${t.badge}`}>Tanlangan</span>
-                        <button
-                          onClick={(e) => deleteBook(selectedBook.id, e)}
-                          title="Kitobni o'chirish"
-                          className="px-2 py-0.5 text-xs text-red-400 hover:text-red-500 font-bold"
-                        >
-                          <i className="fa-solid fa-trash-can mr-1"></i> O‘chirish
-                        </button>
+                        <button onClick={(e) => deleteBook(selectedBook.id, e)} title="Kitobni o'chirish" className="px-2 py-0.5 text-xs text-red-400 hover:text-red-500 font-bold"><i className="fa-solid fa-trash-can mr-1"></i> O‘chirish</button>
                       </div>
                     </div>
-
                     <div className="flex gap-2 pt-1">
-                      <button
-                        onClick={() => {
-                          setWordIndex(0);
-                          setActiveTab('speed');
-                        }}
-                        className={`flex-1 py-2 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 ${t.accent}`}
-                      >
-                        <i className="fa-solid fa-bolt text-xs"></i>
-                        <span>Tez O‘qish</span>
-                      </button>
-                      <button
-                        onClick={() => { 
-                          setActiveTab('ai_exam'); 
-                          setQuizIndex(0);
-                          setSelectedAnswers({});
-                          setQuizFinished(false);
-                        }}
-                        className={`px-4 py-2 rounded-2xl text-xs font-bold border ${t.border} ${t.textMain} hover:opacity-80 flex items-center gap-1.5`}
-                      >
-                        <i className="fa-solid fa-brain text-amber-500"></i>
-                        <span>Test / Viktorina</span>
-                      </button>
+                      <button onClick={() => { setWordIndex(0); setActiveTab('speed'); }} className={`flex-1 py-2 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 ${t.accent}`}><i className="fa-solid fa-bolt text-xs"></i><span>Tez O‘qish</span></button>
+                      <button onClick={() => { setActiveTab('ai_exam'); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`px-4 py-2 rounded-2xl text-xs font-bold border ${t.border} ${t.textMain} hover:opacity-80 flex items-center gap-1.5`}><i className="fa-solid fa-brain text-amber-500"></i><span>Test / Viktorina</span></button>
                     </div>
                   </div>
                 )}
@@ -1208,25 +921,16 @@
             {activeTab === 'speed' && (
               <div className="space-y-4 pt-1">
                 <div className={`flex justify-between items-center text-sm ${t.textSub}`}>
-                  <span className={`truncate max-w-[200px] font-semibold ${t.textMain}`}>
-                    {selectedBook ? selectedBook.title : "Kitob tanlanmagan"}
-                  </span>
+                  <span className={`truncate max-w-[200px] font-semibold ${t.textMain}`}>{selectedBook ? selectedBook.title : "Kitob tanlanmagan"}</span>
                   <span className="font-mono text-xs">{wordsList.length > 0 ? wordIndex + 1 : 0} / {wordsList.length}</span>
                 </div>
 
                 <div className={`${t.cardBg} border ${t.border} p-3 rounded-2xl space-y-2.5 shadow-sm`}>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <i className="fa-solid fa-headphones text-amber-400 text-xs"></i>
-                      <span className={`text-xs font-bold ${t.textMain}`}>Fon tovushi</span>
-                    </div>
+                    <div className="flex items-center gap-2"><i className="fa-solid fa-headphones text-amber-400 text-xs"></i><span className={`text-xs font-bold ${t.textMain}`}>Fon tovushi</span></div>
                     <div className="flex items-center gap-2">
                       <i className={`fa-solid ${volume === 0 ? 'fa-volume-xmark' : 'fa-volume-low'} text-[10px] ${t.textSub}`}></i>
-                      <input
-                        type="range" min="0" max="1" step="0.05" value={volume}
-                        onChange={(e) => setVolume(Number(e.target.value))}
-                        className={`w-24 h-1.5 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`}
-                      />
+                      <input type="range" min="0" max="1" step="0.05" value={volume} onChange={(e) => setVolume(Number(e.target.value))} className={`w-24 h-1.5 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -1240,16 +944,9 @@
                       { id: 'ocean', label: 'Dengiz', icon: 'fa-water' },
                       { id: 'brown', label: 'Shovqin', icon: 'fa-wind' }
                     ].map(snd => (
-                      <button
-                        key={snd.id}
-                        type="button"
-                        onClick={() => handleSoundClick(snd.id)}
-                        className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition flex items-center gap-1.5 ${
-                          activeSound === snd.id ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-lg shadow-amber-500/25' : `${t.subtleBg} ${t.textSub} hover:${t.textMain}`
-                        }`}
-                      >
-                        <i className={`fa-solid ${snd.icon} text-[10px]`}></i>
-                        <span>{snd.label}</span>
+                      <button key={snd.id} type="button" onClick={() => handleSoundClick(snd.id)}
+                        className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition flex items-center gap-1.5 ${activeSound === snd.id ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-lg shadow-amber-500/25' : `${t.subtleBg} ${t.textSub}`}`}>
+                        <i className={`fa-solid ${snd.icon} text-[10px]`}></i><span>{snd.label}</span>
                       </button>
                     ))}
                   </div>
@@ -1259,63 +956,33 @@
                   {!selectedBook ? (
                     <div className="text-center space-y-2">
                       <p className={`text-sm ${t.textSub}`}>Kutubxonadan kitob tanlang yoki yangi PDF yuklang</p>
-                      <button onClick={() => setActiveTab('library')} className={`px-4 py-2 rounded-xl text-xs font-bold ${t.accent}`}>
-                        Kutubxonaga o'tish
-                      </button>
+                      <button onClick={() => setActiveTab('library')} className={`px-4 py-2 rounded-xl text-xs font-bold ${t.accent}`}>Kutubxonaga o'tish</button>
                     </div>
                   ) : wordIndex >= wordsList.length - 1 && wordsList.length > 0 ? (
                     <div className="text-center space-y-3">
                       <span className="text-sm font-bold text-emerald-500 block">Kitob to‘liq mutolaa qilindi! 🎉</span>
-                      <button onClick={() => setActiveTab('ai_exam')} className={`px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg ${t.accent}`}>
-                        Testni Boshlash
-                      </button>
+                      <button onClick={() => setActiveTab('ai_exam')} className={`px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg ${t.accent}`}>Testni Boshlash</button>
                     </div>
                   ) : (
-                    <span 
-                      style={{ fontSize: `${fontSize}px` }} 
-                      className={`font-black text-center ${t.textMain} tracking-wide select-none leading-tight transition-all duration-75 px-4`}
-                    >
+                    <span style={{ fontSize: `${fontSize}px` }} className={`font-black text-center ${t.textMain} tracking-wide select-none leading-tight transition-all duration-75 px-4`}>
                       {(() => {
                         const chunk = wordsList.slice(wordIndex, wordIndex + chunkSize);
                         if (chunk.length === 0) return "Tayyor";
-
                         if (chunkSize === 1) {
-                          const w = chunk[0];
-                          const chars = Array.from(w);
+                          const chars = Array.from(chunk[0]);
                           const mid = Math.floor((chars.length - 1) / 2);
-                          return (
-                            <span>
-                              {chars.slice(0, mid).join("")}
-                              <span className="text-red-500">{chars[mid]}</span>
-                              {chars.slice(mid + 1).join("")}
-                            </span>
-                          );
+                          return (<span>{chars.slice(0, mid).join("")}<span className="text-red-500">{chars[mid]}</span>{chars.slice(mid + 1).join("")}</span>);
                         }
-
-                        if (chunkSize === 2) {
-                          return <span>{chunk.join(" ")}</span>;
-                        }
-
+                        if (chunkSize === 2) return <span>{chunk.join(" ")}</span>;
                         if (chunkSize === 3) {
                           return (
                             <span>
                               {chunk[0]}
-                              {chunk.length > 1 && (
-                                <>
-                                  {" "}
-                                  <span className="text-red-500">{chunk[1]}</span>
-                                </>
-                              )}
-                              {chunk.length > 2 && (
-                                <>
-                                  {" "}
-                                  {chunk.slice(2).join(" ")}
-                                </>
-                              )}
+                              {chunk.length > 1 && (<>{" "}<span className="text-red-500">{chunk[1]}</span></>)}
+                              {chunk.length > 2 && (<>{" "}{chunk.slice(2).join(" ")}</>)}
                             </span>
                           );
                         }
-
                         return chunk.join(" ");
                       })()}
                     </span>
@@ -1324,32 +991,16 @@
 
                 <div className={`${t.cardBg} border ${t.border} p-4 rounded-2xl space-y-3 shadow-sm`}>
                   <div className="flex justify-between text-xs font-medium">
-                    <span className={`${t.textSub} flex items-center gap-1.5`}>
-                      <i className="fa-solid fa-sliders text-xs"></i> Pozitsiya:
-                    </span>
+                    <span className={`${t.textSub} flex items-center gap-1.5`}><i className="fa-solid fa-sliders text-xs"></i> Pozitsiya:</span>
                     <span className={`${t.textMain} font-bold`}>
-                      {wordsList.length > 0 ? Math.round(((wordIndex + 1) / wordsList.length) * 100) : 0}% 
+                      {wordsList.length > 0 ? Math.round(((wordIndex + 1) / wordsList.length) * 100) : 0}%
                       <span className={`${t.textSub} font-normal ml-1`}>({wordIndex + 1}-so‘z)</span>
                     </span>
                   </div>
-
-                  <input
-                    type="range"
-                    min="0"
-                    max={Math.max(0, wordsList.length - 1)}
-                    value={wordIndex}
-                    onChange={(e) => {
-                      setWordIndex(Number(e.target.value));
-                      setIsReadingRunning(false);
-                    }}
-                    className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`}
-                  />
-
+                  <input type="range" min="0" max={Math.max(0, wordsList.length - 1)} value={wordIndex} onChange={(e) => { setWordIndex(Number(e.target.value)); setIsReadingRunning(false); }} className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
                   <div className={`flex justify-between items-center pt-2 border-t ${t.border} text-xs`}>
                     <span className={t.textSub}>Tugashiga qolgan vaqt:</span>
-                    <span className={`font-mono font-bold ${t.accentText}`}>
-                      ~{estMinutes > 0 ? `${estMinutes} daq ` : ''}{estSeconds} soniya
-                    </span>
+                    <span className={`font-mono font-bold ${t.accentText}`}>~{estMinutes > 0 ? `${estMinutes} daq ` : ''}{estSeconds} soniya</span>
                   </div>
                 </div>
 
@@ -1357,161 +1008,73 @@
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className={`text-xs ${t.textSub} font-bold mr-1`}>Ko‘rinish:</span>
                     {[1, 2, 3].map(n => (
-                      <button
-                        key={n}
-                        onClick={() => setChunkSize(n)}
-                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 ${
-                          chunkSize === n ? t.accent : `${t.subtleBg}${t.textSub}`
-                        }`}
-                      >
+                      <button key={n} onClick={() => setChunkSize(n)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 ${chunkSize === n ? t.accent : `${t.subtleBg} ${t.textSub}`}`}>
                         <i className="fa-solid fa-font text-[10px]"></i> {n} ta
                       </button>
                     ))}
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <button onClick={() => setFontSize(prev => Math.max(22, prev - 4))} className={`w-8 h-8 rounded-full border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>−</button>
+                    <button onClick={() => setFontSize(p => Math.max(22, p - 4))} className={`w-8 h-8 rounded-full border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>−</button>
                     <span className={`text-xs font-bold ${t.textSub} px-1.5 min-w-[2rem] text-center`}>{fontSize}</span>
-                    <button onClick={() => setFontSize(prev => Math.min(64, prev + 4))} className={`w-8 h-8 rounded-full border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>+</button>
+                    <button onClick={() => setFontSize(p => Math.min(64, p + 4))} className={`w-8 h-8 rounded-full border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>+</button>
                   </div>
                 </div>
 
                 <div className={`sticky bottom-1 z-10 p-2 rounded-3xl border ${t.border} ${t.cardBg} flex gap-2 items-stretch`}>
-                  <button
-                    onClick={() => setWordIndex(prev => Math.max(0, prev - (chunkSize * 10)))}
-                    className={`flex-1 py-3 rounded-2xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5`}
-                  >
-                    <i className="fa-solid fa-backward-step"></i> -10
+                  <button onClick={() => setWordIndex(p => Math.max(0, p - (chunkSize * 10)))} className={`flex-1 py-3 rounded-2xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5`}><i className="fa-solid fa-backward-step"></i> -10</button>
+                  <button onClick={() => setIsReadingRunning(!isReadingRunning)} disabled={wordsList.length === 0} className={`flex-[1.6] py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 ${t.accent} disabled:opacity-50`}>
+                    <i className={`fa-solid ${isReadingRunning ? 'fa-pause' : 'fa-play'} text-xs`}></i>{isReadingRunning ? 'To‘xtatish' : 'Boshlash'}
                   </button>
-                  <button
-                    onClick={() => setIsReadingRunning(!isReadingRunning)}
-                    disabled={wordsList.length === 0}
-                    className={`flex-[1.6] py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 ${t.accent} disabled:opacity-50`}
-                  >
-                    <i className={`fa-solid ${isReadingRunning ? 'fa-pause' : 'fa-play'} text-xs`}></i>
-                    {isReadingRunning ? 'To‘xtatish' : 'Boshlash'}
-                  </button>
-                  <button
-                    onClick={() => setWordIndex(prev => Math.min(wordsList.length - 1, prev + (chunkSize * 10)))}
-                    className={`flex-1 py-3 rounded-2xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5`}
-                  >
-                    +10 <i className="fa-solid fa-forward-step"></i>
-                  </button>
+                  <button onClick={() => setWordIndex(p => Math.min(wordsList.length - 1, p + (chunkSize * 10)))} className={`flex-1 py-3 rounded-2xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5`}>+10 <i className="fa-solid fa-forward-step"></i></button>
                 </div>
 
                 <div className={`p-4 rounded-2xl ${t.cardBg} border ${t.border} space-y-2 shadow-sm`}>
-                  <div className="flex justify-between text-xs">
-                    <span className={t.textSub}>O‘qish tezligi</span>
-                    <span className={`font-bold ${t.textMain}`}>{speedWPM} WPM</span>
-                  </div>
+                  <div className="flex justify-between text-xs"><span className={t.textSub}>O‘qish tezligi</span><span className={`font-bold ${t.textMain}`}>{speedWPM} WPM</span></div>
                   <div className="flex gap-1.5 flex-wrap">
                     {[200, 300, 400, 600].map(w => (
-                      <button key={w} onClick={() => setSpeedWPM(w)}
-                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold ${speedWPM === w ? t.accent : `${t.subtleBg}${t.textSub}`}`}>{w}</button>
+                      <button key={w} onClick={() => setSpeedWPM(w)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold ${speedWPM === w ? t.accent : `${t.subtleBg} ${t.textSub}`}`}>{w}</button>
                     ))}
                   </div>
-                  <input
-                    type="range"
-                    min="100"
-                    max="900"
-                    step="50"
-                    value={speedWPM}
-                    onChange={(e) => setSpeedWPM(Number(e.target.value))}
-                    className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`}
-                  />
+                  <input type="range" min="100" max="900" step="50" value={speedWPM} onChange={(e) => setSpeedWPM(Number(e.target.value))} className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
                 </div>
               </div>
             )}
 
-            {/* FOTODAGIDEK 10 TALIK VARIANTLI TEST / VIKTORINA INTERFEYSI */}
             {activeTab === 'ai_exam' && (
               <div className="space-y-4 pt-1 max-w-xl mx-auto">
                 <div className="flex justify-between items-center mb-2">
-                  <span className={`text-xs ${t.textSub}`}>
-                    {selectedBook ? selectedBook.title : "Kitob tanlanmagan"}
-                  </span>
-                  <button onClick={() => setActiveTab('library')} className={`text-xs ${t.textSub} hover:${t.textMain}`}>
-                    Chiqish
-                  </button>
+                  <span className={`text-xs ${t.textSub}`}>{selectedBook ? selectedBook.title : "Kitob tanlanmagan"}</span>
+                  <button onClick={() => setActiveTab('library')} className={`text-xs ${t.textSub}`}>Chiqish</button>
                 </div>
-
                 {!selectedBook ? (
                   <div className="text-center py-12 text-sm text-zinc-500">Iltimos, avval kutubxonadan kitob tanlang yoki yuklang.</div>
                 ) : currentQList.length === 0 ? (
                   <div className="text-center py-12 text-sm text-zinc-500">Kitob hajmi test tuzish uchun yetarli emas.</div>
                 ) : quizFinished ? (
                   <div className={`${t.cardBg} border ${t.border} p-6 rounded-3xl text-center space-y-4 shadow-xl`}>
-                    <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold">
-                      <i className="fa-solid fa-trophy"></i>
-                    </div>
+                    <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold"><i className="fa-solid fa-trophy"></i></div>
                     <h3 className={`text-lg font-black ${t.textMain}`}>Test yakunlandi!</h3>
-                    <p className={`text-sm ${t.textSub}`}>
-                      Siz 10 ta savoldan <span className="font-bold text-emerald-400">{calculateScore()} ta</span> to‘g‘ri javob berdingiz.
-                    </p>
-                    <div className="text-3xl font-black text-amber-400">
-                      {Math.round((calculateScore() / 10) * 100)}%
-                    </div>
-                    <button
-                      onClick={() => {
-                        setQuizIndex(0);
-                        setSelectedAnswers({});
-                        setQuizFinished(false);
-                      }}
-                      className={`w-full py-3 rounded-2xl text-xs font-bold shadow-md ${t.accent}`}
-                    >
-                      Qaytadan topshirish
-                    </button>
+                    <p className={`text-sm ${t.textSub}`}>Siz {currentQList.length} ta savoldan <span className="font-bold text-emerald-400">{calculateScore()} ta</span> to‘g‘ri javob berdingiz.</p>
+                    <div className="text-3xl font-black text-amber-400">{Math.round((calculateScore() / currentQList.length) * 100)}%</div>
+                    <button onClick={() => { setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`w-full py-3 rounded-2xl text-xs font-bold shadow-md ${t.accent}`}>Qaytadan topshirish</button>
                   </div>
                 ) : (
                   <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-5 shadow-sm`}>
-                    
-                    {/* Savol raqami */}
-                    <div className={`text-xs font-medium ${t.textSub}`}>
-                      Savol {quizIndex + 1}/{currentQList.length}
-                    </div>
-
-                    {/* 1 dan 10 gacha indikatorlar */}
+                    <div className={`text-xs font-medium ${t.textSub}`}>Savol {quizIndex + 1}/{currentQList.length}</div>
                     <div className="flex justify-between items-center gap-1.5 overflow-x-auto pb-1">
                       {currentQList.map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setQuizIndex(idx)}
-                          className={`w-7 h-7 rounded-lg text-xs font-bold transition flex items-center justify-center ${
-                            quizIndex === idx
-                              ? 'border-2 border-red-500 text-red-500 bg-red-500/10'
-                              : selectedAnswers[idx] !== undefined
-                              ? 'bg-zinc-700/50 text-zinc-200'
-                              : `${t.subtleBg}${t.textSub}`
-                          }`}
-                        >
-                          {idx + 1}
-                        </button>
+                        <button key={idx} onClick={() => setQuizIndex(idx)}
+                          className={`w-7 h-7 rounded-lg text-xs font-bold transition flex items-center justify-center ${quizIndex === idx ? 'border-2 border-red-500 text-red-500 bg-red-500/10' : selectedAnswers[idx] !== undefined ? 'bg-zinc-700/50 text-zinc-200' : `${t.subtleBg} ${t.textSub}`}`}>{idx + 1}</button>
                       ))}
                     </div>
-
-                    {/* Savol matni */}
-                    <div className="space-y-1">
-                      <p className={`text-sm font-semibold leading-relaxed ${t.textMain}`}>
-                        {currentQList[quizIndex]?.question}
-                      </p>
-                    </div>
-
-                    {/* Variantlar ro'yxati (4 ta variant) */}
+                    <p className={`text-sm font-semibold leading-relaxed whitespace-pre-line ${t.textMain}`}>{currentQList[quizIndex]?.question}</p>
                     <div className="space-y-2.5">
                       {currentQList[quizIndex]?.options.map((opt, oIdx) => {
                         const isSelected = selectedAnswers[quizIndex] === opt;
                         return (
-                          <button
-                            key={oIdx}
-                            onClick={() => setSelectedAnswers(prev => ({ ...prev, [quizIndex]: opt }))}
-                            className={`w-full text-left p-3.5 rounded-2xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${
-                              isSelected
-                                ? 'border-amber-400 bg-amber-400/15 text-white'
-                                : `border-white/5 ${t.subtleBg}${t.textMain} hover:border-white/20`
-                            }`}
-                          >
-                            <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${
-                              isSelected ? 'border-amber-400 bg-amber-400' : 'border-zinc-500'
-                            }`}>
+                          <button key={oIdx} onClick={() => setSelectedAnswers(prev => ({ ...prev, [quizIndex]: opt }))}
+                            className={`w-full text-left p-3.5 rounded-2xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${isSelected ? 'border-amber-400 bg-amber-400/15' : `border-white/5 ${t.subtleBg} ${t.textMain} hover:border-white/20`} ${isSelected ? t.textMain : ''}`}>
+                            <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${isSelected ? 'border-amber-400 bg-amber-400' : 'border-zinc-500'}`}>
                               {isSelected && <div className="w-1.5 h-1.5 bg-zinc-950 rounded-full"></div>}
                             </div>
                             <span className="flex-1">{opt}</span>
@@ -1519,36 +1082,16 @@
                         );
                       })}
                     </div>
-
-                    {/* Ortga va Keyingi tugmalari */}
                     <div className="flex justify-between items-center gap-4 pt-3">
-                      <button
-                        onClick={() => setQuizIndex(prev => Math.max(0, prev - 1))}
-                        disabled={quizIndex === 0}
-                        className={`text-xs font-bold px-4 py-2.5 rounded-xl ${t.textSub} hover:${t.textMain} disabled:opacity-30`}
-                      >
-                        Ortga
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          if (quizIndex < currentQList.length - 1) {
-                            setQuizIndex(prev => prev + 1);
-                          } else {
-                            setQuizFinished(true);
-                          }
-                        }}
-                        className="px-8 py-2.5 rounded-2xl text-xs font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-600/30 active:scale-95 transition"
-                      >
+                      <button onClick={() => setQuizIndex(p => Math.max(0, p - 1))} disabled={quizIndex === 0} className={`text-xs font-bold px-4 py-2.5 rounded-xl ${t.textSub} disabled:opacity-30`}>Ortga</button>
+                      <button onClick={() => { if (quizIndex < currentQList.length - 1) setQuizIndex(p => p + 1); else setQuizFinished(true); }} className="px-8 py-2.5 rounded-2xl text-xs font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-600/30 active:scale-95 transition">
                         {quizIndex === currentQList.length - 1 ? "Yakunlash" : "Keyingi"}
                       </button>
                     </div>
-
                   </div>
                 )}
               </div>
             )}
-
           </div>
 
           <div className={`h-16 mx-3 mb-3 md:w-[30rem] md:self-center rounded-3xl border ${t.border} ${t.cardBg} backdrop-blur-2xl flex justify-around items-center px-2 flex-shrink-0 z-20 shadow-2xl`}>
@@ -1559,13 +1102,8 @@
               { id: 'speed', icon: 'fa-bolt', label: 'Tez O‘qish' },
               { id: 'profile', icon: 'fa-user', label: 'Profil' },
             ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center gap-1 transition px-3 py-1.5 rounded-2xl ${
-                  activeTab === tab.id ? t.accentText + ' font-bold bg-gradient-to-b from-white/30 to-white/5 ring-1 ring-white/30 shadow-md' : `${t.textSub} hover:${t.textMain}`
-                }`}
-              >
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex flex-col items-center gap-1 transition px-3 py-1.5 rounded-2xl ${activeTab === tab.id ? t.accentText + ' font-bold bg-gradient-to-b from-white/30 to-white/5 ring-1 ring-white/30 shadow-md' : t.textSub}`}>
                 <i className={`fa-solid ${tab.icon} text-base`}></i>
                 <span className="text-[10px] tracking-tight">{tab.label}</span>
               </button>
@@ -1579,46 +1117,20 @@
                 <form onSubmit={saveGoalSettings} className="space-y-3.5">
                   <div>
                     <label className={`text-xs ${t.textSub} uppercase font-bold block mb-1.5`}>Maqsad</label>
-                    <input
-                      type="text"
-                      required
-                      value={tempTitle}
-                      onChange={(e) => setTempTitle(e.target.value)}
-                      className={`w-full ${t.subtleBg} border ${t.border} rounded-2xl px-4 py-2.5 text-sm ${t.textMain} focus:outline-none`}
-                    />
+                    <input type="text" required value={tempTitle} onChange={(e) => setTempTitle(e.target.value)} className={`w-full ${t.subtleBg} border ${t.border} rounded-2xl px-4 py-2.5 text-sm ${t.textMain} focus:outline-none`} />
                   </div>
                   <div>
                     <label className={`text-xs ${t.textSub} uppercase font-bold block mb-1.5`}>Muddat (kunlar soni)</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="365"
-                      required
-                      value={tempDays}
-                      onChange={(e) => setTempDays(e.target.value)}
-                      className={`w-full ${t.subtleBg} border ${t.border} rounded-2xl px-4 py-2.5 text-sm ${t.textMain} focus:outline-none`}
-                    />
+                    <input type="number" min="1" max="365" required value={tempDays} onChange={(e) => setTempDays(e.target.value)} className={`w-full ${t.subtleBg} border ${t.border} rounded-2xl px-4 py-2.5 text-sm ${t.textMain} focus:outline-none`} />
                   </div>
                   <div className="flex gap-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsGoalModalOpen(false)}
-                      className={`flex-1 py-2.5 text-xs rounded-xl border ${t.border} ${t.textSub}`}
-                    >
-                      Bekor qilish
-                    </button>
-                    <button
-                      type="submit"
-                      className={`flex-1 py-2.5 text-xs font-bold rounded-xl ${t.accent}`}
-                    >
-                      Saqlash
-                    </button>
+                    <button type="button" onClick={() => setIsGoalModalOpen(false)} className={`flex-1 py-2.5 text-xs rounded-xl border ${t.border} ${t.textSub}`}>Bekor qilish</button>
+                    <button type="submit" className={`flex-1 py-2.5 text-xs font-bold rounded-xl ${t.accent}`}>Saqlash</button>
                   </div>
                 </form>
               </div>
             </div>
           )}
-
         </div>
       );
     }
