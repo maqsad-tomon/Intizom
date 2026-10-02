@@ -21,6 +21,7 @@
     body { font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; }
     button { transition: transform .15s ease, filter .2s ease, background-color .2s ease, box-shadow .2s ease; }
     button:active:not(:disabled) { transform: scale(.96); }
+
     .app-obsidian { background: radial-gradient(650px circle at 12% 0%, rgba(251,191,36,.20), transparent 60%), radial-gradient(550px circle at 100% 35%, rgba(244,63,94,.14), transparent 60%), radial-gradient(500px circle at 0% 100%, rgba(139,92,246,.14), transparent 60%), linear-gradient(160deg,#09090b,#18181b 55%,#0c0a09); }
     .app-light { background: radial-gradient(650px circle at 10% 0%, rgba(99,102,241,.22), transparent 60%), radial-gradient(550px circle at 100% 30%, rgba(236,72,153,.15), transparent 60%), radial-gradient(500px circle at 0% 100%, rgba(14,165,233,.18), transparent 60%), linear-gradient(160deg,#f8fafc,#e0e7ff 60%,#fdf2f8); }
     .app-sepia { background: radial-gradient(650px circle at 10% 0%, rgba(217,119,6,.22), transparent 60%), radial-gradient(550px circle at 100% 40%, rgba(190,90,60,.16), transparent 60%), linear-gradient(160deg,#f8f2e6,#efe2c8 60%,#f6e9d6); }
@@ -44,7 +45,9 @@
     
     .shelf-plank { height:14px; margin:0 -8px; border-radius:6px; background:linear-gradient(180deg,#6d3510 0%, #421c06 60%, #240d02 100%); box-shadow:0 8px 18px rgba(0,0,0,.75), inset 0 2px 0 rgba(255,255,255,.22); border-top: 1px solid #82431d; }
     .spine-gold { position:absolute; left:6px; right:6px; height:2px; background:linear-gradient(90deg,transparent,#fbbf24,transparent); opacity:.8; }
+    
     .rsvp-box { background-image: linear-gradient(rgba(251,191,36,.0), rgba(251,191,36,.0)), radial-gradient(circle at 50% 50%, rgba(244,63,94,.16), transparent 62%); box-shadow: inset 0 0 40px rgba(0,0,0,.35), 0 0 30px rgba(244,63,94,.10); overflow:hidden; }
+    .rsvp-box-light { background-color: rgba(255,255,255,0.7); box-shadow: inset 0 0 20px rgba(0,0,0,.06), 0 10px 25px rgba(0,0,0,.05); }
     .rsvp-box::before, .rsvp-box::after { content:""; position:absolute; left:50%; width:2px; height:16px; background:linear-gradient(#f43f5e,transparent); transform:translateX(-50%); opacity:.7; }
     .rsvp-box::before { top:0; } .rsvp-box::after { bottom:0; transform:translateX(-50%) rotate(180deg); }
     .rsvp-focus { text-shadow: 0 0 14px rgba(244,63,94,.95), 0 0 30px rgba(244,63,94,.6); }
@@ -54,19 +57,17 @@
     .nav-active { box-shadow: 0 0 18px rgba(251,191,36,.35), inset 0 1px 0 rgba(255,255,255,.3); transform: translateY(-3px); }
     .sec-title { letter-spacing:.18em; }
 
-    .brand-title { font-family:"Playfair Display",Georgia,serif; font-weight:800; letter-spacing:.02em; background:linear-gradient(135deg,#fde68a,#d97706 55%,#b45309); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 1px 8px rgba(245,158,11,.3)); }
-    .glass-edge { background-image: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,0) 45%); outline: 1px solid rgba(255,255,255,.04); outline-offset:-1px; }
-    body::after { content:""; position:fixed; inset:0; pointer-events:none; z-index:100; opacity:.05; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-    button.bg-gradient-to-r:hover:not(:disabled) { transform: translateY(-1px); }
+    .brand-title-dark { font-family:"Playfair Display",Georgia,serif; font-weight:800; letter-spacing:.02em; background:linear-gradient(135deg,#fde68a,#d97706 55%,#b45309); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 1px 8px rgba(245,158,11,.3)); }
+    .brand-title-light { font-family:"Playfair Display",Georgia,serif; font-weight:800; letter-spacing:.02em; background:linear-gradient(135deg,#78350f,#b45309 60%,#d97706); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 1px 2px rgba(0,0,0,.15)); }
 
-    /* REALISTIK YOG'OCH JAVON SHAPE VA PROFILI */
+    .glass-edge { outline: 1px solid rgba(255,255,255,.06); outline-offset:-1px; }
+
     .bookcase { 
       padding: 0 14px 16px; 
       border-radius: 36px 36px 24px 24px; 
       background: linear-gradient(90deg, #1b0902 0%, #3e1b07 6%, #2d1305 15%, #2d1305 85%, #3e1b07 94%, #1b0902 100%); 
       box-shadow: 0 28px 50px rgba(0,0,0,.75), inset 0 0 0 2px #512509; 
     }
-    /* 4 BURCHAK EMAS, ARKA VA SHAPE KO'RINISHIDAGI TOJ (CROWN) */
     .bookcase-crown { 
       height: 24px; 
       margin: 0 -14px 12px; 
@@ -93,7 +94,6 @@
     }
     .shelf-books { display:flex; align-items:flex-end; gap:3px; padding:0 8px; min-height:160px; }
     
-    /* 3D CHARM KITOB MUQOVASI VA XATCHO'P */
     .real-spine { 
       position:relative; 
       flex:0 0 auto; 
@@ -114,7 +114,6 @@
     .real-spine.sel { transform: translateY(-15px); box-shadow:0 18px 24px rgba(0,0,0,.7), 0 0 0 1px #fbbf24, 0 0 26px rgba(251,191,36,.55); }
     .spine-title { writing-mode:vertical-rl; font-family:"Playfair Display",Georgia,serif; font-weight:700; color:#fde68a; font-size:11px; letter-spacing:.08em; text-shadow:0 1px 2px rgba(0,0,0,.8); max-height:62%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
     
-    /* ATLAS XATCHO'P */
     .ribbon-tail {
       position: absolute;
       bottom: -13px;
@@ -134,7 +133,7 @@
     .rsvp-box.no-guide::before, .rsvp-box.no-guide::after { display:none; }
   </style>
 </head>
-<body style="height:100dvh" class="bg-zinc-900 flex justify-center items-center h-screen m-0 p-0 text-zinc-100 antialiased selection:bg-amber-500 selection:text-black overflow-hidden">
+<body style="height:100dvh" class="flex justify-center items-center h-screen m-0 p-0 antialiased selection:bg-amber-500 selection:text-black overflow-hidden">
   <div id="root" class="w-full h-full flex justify-center"></div>
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
@@ -153,16 +152,16 @@
 
     const THEMES = {
       obsidian: mk('obsidian','Obsidian (Tungi)',true,'app-obsidian','bg-white/[0.06] backdrop-blur-xl glass-edge shadow-xl shadow-black/20','border-white/10','text-zinc-100','text-zinc-400','bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-lg shadow-amber-500/25 hover:brightness-110','text-amber-400','accent-amber-400','bg-amber-400/10 text-amber-300 border-amber-400/20','bg-white/[0.07] backdrop-blur-md','bg-zinc-800'),
-      light: mk('light','Yorug‘lik (Kunduzgi)',false,'app-light','bg-white/60 backdrop-blur-xl glass-edge shadow-lg shadow-indigo-900/5','border-slate-900/10','text-slate-900','text-slate-500','bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:brightness-110','text-blue-600','accent-blue-600','bg-blue-50 text-blue-700 border-blue-200','bg-white/50 backdrop-blur-md','bg-slate-200'),
-      sepia: mk('sepia','Qog‘oz / Sepia (Kunduzgi)',false,'app-sepia','bg-[#fcf9f2]/60 backdrop-blur-xl glass-edge shadow-lg shadow-amber-900/5','border-[#3c2f1e]/10','text-[#3c2f1e]','text-[#7e6e58]','bg-gradient-to-r from-[#b8743a] to-[#8a4b1f] text-white shadow-lg shadow-amber-900/25 hover:brightness-110','text-[#965a2d]','accent-[#965a2d]','bg-[#ede3d1] text-[#70421e] border-[#dac9b0]','bg-[#fcf9f2]/50 backdrop-blur-md','bg-[#e4dcce]'),
+      light: mk('light','Yorug‘lik (Kunduzgi)',false,'app-light','bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg shadow-indigo-950/5','border-slate-300','text-slate-900','text-slate-600','bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:brightness-110','text-blue-600','accent-blue-600','bg-blue-50 text-blue-800 border-blue-200','bg-slate-100/80 backdrop-blur-md','bg-slate-300'),
+      sepia: mk('sepia','Qog‘oz / Sepia (Kunduzgi)',false,'app-sepia','bg-[#fcf9f2]/85 backdrop-blur-xl border-[#dcd1be] shadow-lg shadow-amber-950/5','border-[#cfc1a8]','text-[#2f2416]','text-[#6e5d48]','bg-gradient-to-r from-[#b8743a] to-[#8a4b1f] text-white shadow-lg shadow-amber-900/25 hover:brightness-110','text-[#8c4f22]','accent-[#8c4f22]','bg-[#ede3d1] text-[#5c3417] border-[#d5c3a6]','bg-[#f4ebe0]/90 backdrop-blur-md','bg-[#dcd0bd]'),
       midnight: mk('midnight','Midnight (Tungi)',true,'app-midnight','bg-blue-300/[0.07] backdrop-blur-xl glass-edge shadow-xl shadow-black/30','border-blue-200/15','text-blue-50','text-blue-300/70','bg-gradient-to-r from-blue-500 to-violet-500 text-white shadow-lg shadow-blue-500/30 hover:brightness-110','text-blue-400','accent-blue-500','bg-blue-500/10 text-blue-300 border-blue-500/20','bg-white/[0.07] backdrop-blur-md','bg-slate-800'),
       emerald: mk('emerald','Zumrad (Tungi)',true,'app-emerald','bg-emerald-300/[0.07] backdrop-blur-xl glass-edge shadow-xl shadow-black/30','border-emerald-200/15','text-emerald-50','text-emerald-300/70','bg-gradient-to-r from-emerald-400 to-teal-400 text-zinc-950 shadow-lg shadow-emerald-500/25 hover:brightness-110','text-emerald-400','accent-emerald-400','bg-emerald-500/10 text-emerald-300 border-emerald-500/20','bg-white/[0.07] backdrop-blur-md','bg-emerald-950')
     };
 
     const BOOK_COLORS = [
-      "from-[#4a1217] via-[#751d24] to-[#360b0f]", // Atom Odatlari
-      "from-[#0d3321] via-[#1a5336] to-[#082216]", // Fokus
-      "from-[#172033] via-[#243556] to-[#0f1624]", // Men bo'lishing uchun
+      "from-[#4a1217] via-[#751d24] to-[#360b0f]",
+      "from-[#0d3321] via-[#1a5336] to-[#082216]",
+      "from-[#172033] via-[#243556] to-[#0f1624]",
       "from-amber-700 via-amber-900 to-stone-950",
       "from-purple-800 via-violet-950 to-stone-950",
       "from-cyan-800 via-blue-950 to-stone-950"
@@ -205,7 +204,6 @@
       return questions;
     }
 
-    // ===== IndexedDB =====
     const idb = {
       db: null,
       open() {
@@ -618,7 +616,7 @@
           <div className={`w-full h-full ${t.appBg} overflow-y-auto font-sans`}>
             <div className="max-w-lg mx-auto p-5 md:p-8 space-y-4">
               <div className="flex items-center justify-between">
-                <h1 className="brand-title text-2xl">Intizom</h1>
+                <h1 className={t.isDark ? "brand-title-dark text-2xl" : "brand-title-light text-2xl"}>Intizom</h1>
                 {authButton}
               </div>
               <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-4 shadow-sm`}>
@@ -651,7 +649,7 @@
           <div className="orb orb-a"></div><div className="orb orb-b"></div>
           <div className={`px-6 md:px-10 py-4 flex justify-between items-center border-b ${t.border} flex-shrink-0`}>
             <div className="flex items-center gap-2">
-              <h1 className="brand-title text-xl">Intizom</h1>
+              <h1 className={t.isDark ? "brand-title-dark text-xl" : "brand-title-light text-xl"}>Intizom</h1>
               {authButton}
             </div>
             <div className={`flex items-center gap-1.5 p-1 rounded-full ${t.cardBg} border ${t.border}`}>
@@ -851,15 +849,14 @@
               </div>
             )}
 
-            {/* KUTUBXONA BO'LIMI: 4 BURCHAK EMAS, SMOOTH SHAPE HEADER VA KAPSULA SEARCH */}
+            {/* KUTUBXONA BO'LIMI */}
             {activeTab === 'library' && (
               <div className="space-y-4">
                 
-                {/* YUQORI SHAPE HEADER & QIDIRUV (4 BURCHAK EMAS, YUMALOQ ARCH SHAKLDA) */}
                 <div className={`p-4 rounded-[32px] border ${t.border} ${t.cardBg} space-y-3.5 shadow-2xl`}>
                   <div className="flex justify-between items-center px-1">
                     <div>
-                      <h2 className="brand-title text-2xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Kitob Javoni</h2>
+                      <h2 className={t.isDark ? "brand-title-dark text-2xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" : "brand-title-light text-2xl"}>Kitob Javoni</h2>
                       <span className={`text-xs ${t.textSub} font-medium`}>Mening kitoblarim ({books.length} ta)</span>
                     </div>
                     <input type="file" accept="application/pdf" ref={fileInputRef} onChange={handlePdfUpload} className="hidden" />
@@ -870,24 +867,22 @@
                     </button>
                   </div>
 
-                  {/* KAPSULA KO'RINISHIDAGI YUMSHOQ SEARCHBAR */}
                   <div className="relative">
                     <i className={`fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-xs ${t.textSub}`}></i>
                     <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} 
                       placeholder="Kitoblardan qidirish..." 
-                      className={`w-full pl-10 pr-4 py-3 text-xs rounded-full bg-black/40 border border-white/10 ${t.textMain} placeholder:opacity-50 focus:outline-none focus:border-amber-400/50 shadow-inner`} />
+                      className={`w-full pl-10 pr-4 py-3 text-xs rounded-full ${t.isDark ? 'bg-black/40 border border-white/10' : 'bg-black/5 border border-black/10'} ${t.textMain} placeholder:${t.textSub} focus:outline-none focus:border-amber-500 shadow-inner`} />
                   </div>
                 </div>
 
                 {books.length === 0 ? (
                   <div className="text-center py-16 space-y-3">
-                    <i className="fa-solid fa-book-open text-4xl text-zinc-600"></i>
+                    <i className={`fa-solid fa-book-open text-4xl ${t.textSub}`}></i>
                     <p className={`text-sm ${t.textSub}`}>Hozircha kitoblar mavjud emas.</p>
                     <button onClick={() => fileInputRef.current.click()} className={`text-xs font-bold px-4 py-2 rounded-xl ${t.accent}`}>+ PDF Kitob Yuklash</button>
                   </div>
                 ) : (
                   <div className="bookcase">
-                    {/* YOG'OCH TOJ: 4 BURCHAKSIZ ARKA SHAPELI CORNICE */}
                     <div className="bookcase-crown"></div>
                     <div className="bookcase-back">
                       {Array.from({ length: Math.max(1, Math.ceil(filteredBooks.length / 5)) }, (_, r) => filteredBooks.slice(r * 5, r * 5 + 5)).map((row, r) => (
@@ -906,7 +901,6 @@
                                   <div className="spine-title relative z-10">{b.title}</div>
                                   <i className="fa-solid fa-feather-pointed text-[9px] text-amber-300/80 relative z-10"></i>
                                   <div className="spine-gold" style={{ bottom: 8 }}></div>
-                                  {/* ATLAS XATCHO'P TAIL */}
                                   <div className="ribbon-tail"></div>
                                 </div>
                               );
@@ -919,7 +913,6 @@
                   </div>
                 )}
 
-                {/* TANLANGAN KITOBNING OLTIN TUGMALARI VA TAFSILOTI */}
                 {selectedBook && (
                   <div className={`${t.cardBg} border ${t.border} p-5 rounded-[32px] space-y-4 shadow-2xl`}>
                     <div className="flex gap-4 items-center pb-1">
@@ -934,13 +927,13 @@
                       <div className="flex-1 min-w-0 space-y-1.5">
                         <div className="flex items-center justify-between">
                           <span className={`text-[10px] uppercase sec-title font-bold ${t.accentText}`}>Tanlangan asar</span>
-                          <button onClick={(e) => deleteBook(selectedBook.id, e)} title="Kitobni o'chirish" className="text-xs text-red-400 hover:text-red-500 font-bold px-2 py-0.5 rounded-lg border border-red-500/20 bg-red-500/10">
+                          <button onClick={(e) => deleteBook(selectedBook.id, e)} title="Kitobni o'chirish" className="text-xs text-red-500 hover:text-red-600 font-bold px-2 py-0.5 rounded-lg border border-red-500/20 bg-red-500/10">
                             <i className="fa-solid fa-trash-can mr-1"></i> O‘chirish
                           </button>
                         </div>
                         <h4 className={`text-sm font-bold truncate ${t.textMain}`}>{selectedBook.title}</h4>
-                        <div className={`text-xs ${t.textSub}`}><i className="fa-regular fa-clock text-amber-400 mr-1.5"></i>≈ {Math.max(1, Math.round(wordsList.length / 250))} daq o‘qish</div>
-                        <div className={`text-xs ${t.textSub}`}><i className="fa-solid fa-align-left text-amber-400 mr-1.5"></i>{wordsList.length.toLocaleString()} so‘z</div>
+                        <div className={`text-xs ${t.textSub}`}><i className="fa-regular fa-clock text-amber-500 mr-1.5"></i>≈ {Math.max(1, Math.round(wordsList.length / 250))} daq o‘qish</div>
+                        <div className={`text-xs ${t.textSub}`}><i className="fa-solid fa-align-left text-amber-500 mr-1.5"></i>{wordsList.length.toLocaleString()} so‘z</div>
                       </div>
                     </div>
                     
@@ -949,8 +942,8 @@
                         <i className="fa-solid fa-bolt text-xs"></i>
                         <span>Tez O‘qish</span>
                       </button>
-                      <button onClick={() => { setActiveTab('ai_exam'); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider border border-white/10 bg-white/[0.04] ${t.textMain} hover:bg-white/[0.08] flex items-center justify-center gap-2 shadow-lg`}>
-                        <i className="fa-solid fa-brain text-amber-400 text-xs"></i>
+                      <button onClick={() => { setActiveTab('ai_exam'); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider border ${t.border} ${t.subtleBg} ${t.textMain} hover:opacity-80 flex items-center justify-center gap-2 shadow-lg`}>
+                        <i className={`fa-solid fa-brain ${t.accentText} text-xs`}></i>
                         <span>Test / Viktorina</span>
                       </button>
                     </div>
@@ -959,14 +952,15 @@
               </div>
             )}
 
+            {/* TEZ O'QISH */}
             {activeTab === 'speed' && (
               <div className="space-y-4 pt-1">
                 <div className={`flex justify-between items-center text-sm ${t.textSub}`}>
                   <span className={`truncate max-w-[200px] font-semibold ${t.textMain}`}>{selectedBook ? selectedBook.title : "Kitob tanlanmagan"}</span>
-                  <span className="font-mono text-xs">{wordsList.length > 0 ? wordIndex + 1 : 0} / {wordsList.length}</span>
+                  <span className={`font-mono text-xs ${t.textSub}`}>{wordsList.length > 0 ? wordIndex + 1 : 0} / {wordsList.length}</span>
                 </div>
 
-                <div className={`w-full h-44 md:h-64 rounded-3xl border ${t.border} ${t.cardBg} rsvp-box ${showFocus ? '' : 'no-guide'} flex items-center justify-center p-5 relative`}>
+                <div className={`w-full h-44 md:h-64 rounded-3xl border ${t.border} ${t.isDark ? 'cardBg rsvp-box' : 'rsvp-box-light'} ${showFocus ? '' : 'no-guide'} flex items-center justify-center p-5 relative shadow-inner`}>
                   {!selectedBook ? (
                     <div className="text-center space-y-2">
                       <p className={`text-sm ${t.textSub}`}>Kutubxonadan kitob tanlang yoki yangi PDF yuklang</p>
@@ -1022,7 +1016,7 @@
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className={`text-xs ${t.textSub} font-bold mr-1`}>Ko‘rinish:</span>
                     {[1, 2, 3].map(n => (
-                      <button key={n} onClick={() => setChunkSize(n)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 ${chunkSize === n ? t.accent : `${t.subtleBg}${t.textSub}`}`}>
+                      <button key={n} onClick={() => setChunkSize(n)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition flex items-center gap-1.5 ${chunkSize === n ? t.accent : `${t.border} ${t.subtleBg}${t.textMain}`}`}>
                         <i className="fa-solid fa-font text-[10px]"></i> {n} ta
                       </button>
                     ))}
@@ -1032,24 +1026,34 @@
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button onClick={() => setFontSize(p => Math.max(22, p - 4))} className={`w-8 h-8 rounded-full border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>−</button>
-                    <span className={`text-xs font-bold ${t.textSub} px-1.5 min-w-[2rem] text-center`}>{fontSize}</span>
+                    <span className={`text-xs font-bold ${t.textMain} px-1.5 min-w-[2rem] text-center`}>{fontSize}</span>
                     <button onClick={() => setFontSize(p => Math.min(64, p + 4))} className={`w-8 h-8 rounded-full border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>+</button>
                   </div>
                 </div>
 
-                <div className={`sticky bottom-1 z-10 p-2 rounded-3xl border ${t.border} ${t.cardBg} flex gap-2 items-stretch`}>
-                  <button onClick={() => setWordIndex(p => Math.max(0, p - (chunkSize * 10)))} className={`flex-1 py-3 rounded-2xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5`}><i className="fa-solid fa-backward-step"></i> -10</button>
-                  <button onClick={() => setIsReadingRunning(!isReadingRunning)} disabled={wordsList.length === 0} className={`flex-[1.6] py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 ${t.accent} disabled:opacity-50`}>
-                    <i className={`fa-solid ${isReadingRunning ? 'fa-pause' : 'fa-play'} text-xs`}></i>{isReadingRunning ? 'To‘xtatish' : 'Boshlash'}
+                <div className={`sticky bottom-1 z-10 p-2 rounded-3xl border ${t.border} ${t.cardBg} flex gap-2 items-stretch shadow-lg`}>
+                  <button onClick={() => setWordIndex(p => Math.max(0, p - (chunkSize * 10)))} className={`flex-1 py-3 rounded-2xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
+                    <i className="fa-solid fa-backward-step"></i> -10
                   </button>
-                  <button onClick={() => setWordIndex(p => Math.min(wordsList.length - 1, p + (chunkSize * 10)))} className={`flex-1 py-3 rounded-2xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5`}>+10 <i className="fa-solid fa-forward-step"></i></button>
+                  <button onClick={() => setIsReadingRunning(!isReadingRunning)} disabled={wordsList.length === 0} className={`flex-[1.6] py-3 rounded-2xl text-sm font-black flex items-center justify-center gap-2 ${t.accent} disabled:opacity-50 active:scale-95 transition`}>
+                    <i className="fa-solid fa-play text-xs"></i>
+                    <span>{isReadingRunning ? 'To‘xtatish' : 'Boshlash'}</span>
+                  </button>
+                  <button onClick={() => setWordIndex(p => Math.min(wordsList.length - 1, p + (chunkSize * 10)))} className={`flex-1 py-3 rounded-2xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
+                    +10 <i className="fa-solid fa-forward-step"></i>
+                  </button>
                 </div>
 
                 <div className={`p-4 rounded-2xl ${t.cardBg} border ${t.border} space-y-2 shadow-sm`}>
-                  <div className="flex justify-between text-xs"><span className={t.textSub}>O‘qish tezligi</span><span className={`font-bold ${t.textMain}`}>{speedWPM} WPM</span></div>
+                  <div className="flex justify-between text-xs">
+                    <span className={t.textSub}>O‘qish tezligi</span>
+                    <span className={`font-bold ${t.textMain}`}>{speedWPM} WPM</span>
+                  </div>
                   <div className="flex gap-1.5 flex-wrap">
                     {[200, 300, 400, 600].map(w => (
-                      <button key={w} onClick={() => setSpeedWPM(w)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold ${speedWPM === w ? t.accent : `${t.subtleBg}${t.textSub}`}`}>{w}</button>
+                      <button key={w} onClick={() => setSpeedWPM(w)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition ${speedWPM === w ? t.accent : `${t.border} ${t.subtleBg}${t.textMain}`}`}>
+                        {w}
+                      </button>
                     ))}
                   </div>
                   <input type="range" min="100" max="900" step="50" value={speedWPM} onChange={(e) => setSpeedWPM(Number(e.target.value))} className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
@@ -1064,9 +1068,9 @@
                   <button onClick={() => setActiveTab('library')} className={`text-xs ${t.textSub}`}>Chiqish</button>
                 </div>
                 {!selectedBook ? (
-                  <div className="text-center py-12 text-sm text-zinc-500">Iltimos, avval kutubxonadan kitob tanlang yoki yuklang.</div>
+                  <div className={`text-center py-12 text-sm ${t.textSub}`}>Iltimos, avval kutubxonadan kitob tanlang yoki yuklang.</div>
                 ) : currentQList.length === 0 ? (
-                  <div className="text-center py-12 text-sm text-zinc-500">Kitob hajmi test tuzish uchun yetarli emas.</div>
+                  <div className={`text-center py-12 text-sm ${t.textSub}`}>Kitob hajmi test tuzish uchun yetarli emas.</div>
                 ) : quizFinished ? (
                   <div className={`${t.cardBg} border ${t.border} p-6 rounded-3xl text-center space-y-4 shadow-xl`}>
                     <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold"><i className="fa-solid fa-trophy"></i></div>
@@ -1081,7 +1085,7 @@
                     <div className="flex justify-between items-center gap-1.5 overflow-x-auto pb-1">
                       {currentQList.map((_, idx) => (
                         <button key={idx} onClick={() => setQuizIndex(idx)}
-                          className={`w-7 h-7 rounded-lg text-xs font-bold transition flex items-center justify-center ${quizIndex === idx ? 'border-2 border-red-500 text-red-500 bg-red-500/10' : selectedAnswers[idx] !== undefined ? 'bg-zinc-700/50 text-zinc-200' : `${t.subtleBg}${t.textSub}`}`}>{idx + 1}</button>
+                          className={`w-7 h-7 rounded-lg text-xs font-bold transition flex items-center justify-center ${quizIndex === idx ? 'border-2 border-red-500 text-red-500 bg-red-500/10' : selectedAnswers[idx] !== undefined ? `${t.subtleBg}${t.textMain}` : `${t.subtleBg}${t.textSub}`}`}>{idx + 1}</button>
                       ))}
                     </div>
                     <p className={`text-sm font-semibold leading-relaxed whitespace-pre-line ${t.textMain}`}>{currentQList[quizIndex]?.question}</p>
@@ -1090,8 +1094,8 @@
                         const isSelected = selectedAnswers[quizIndex] === opt;
                         return (
                           <button key={oIdx} onClick={() => setSelectedAnswers(prev => ({ ...prev, [quizIndex]: opt }))}
-                            className={`w-full text-left p-3.5 rounded-2xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${isSelected ? 'border-amber-400 bg-amber-400/15 shadow-[0_0_20px_rgba(251,191,36,.35)]' : `border-white/5 ${t.subtleBg}${t.textMain} hover:border-white/20`} ${isSelected ? t.textMain : ''}`}>
-                            <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${isSelected ? 'border-amber-400 bg-amber-400' : 'border-zinc-500'}`}>
+                            className={`w-full text-left p-3.5 rounded-2xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${isSelected ? 'border-amber-400 bg-amber-400/15 shadow-[0_0_20px_rgba(251,191,36,.35)]' : `${t.border} ${t.subtleBg}${t.textMain} hover:border-amber-400/40`} ${isSelected ? t.textMain : ''}`}>
+                            <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${isSelected ? 'border-amber-400 bg-amber-400' : 'border-zinc-400'}`}>
                               {isSelected && <div className="w-1.5 h-1.5 bg-zinc-950 rounded-full"></div>}
                             </div>
                             <span className="flex-1">{opt}</span>
