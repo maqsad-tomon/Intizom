@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Intizom - Shaxsiy Rivojlanish</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -17,7 +18,7 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   </script>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; }
+    body { font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; }
     button { transition: transform .15s ease, filter .2s ease, background-color .2s ease, box-shadow .2s ease; }
     button:active:not(:disabled) { transform: scale(.96); }
     .app-obsidian { background: radial-gradient(650px circle at 12% 0%, rgba(251,191,36,.20), transparent 60%), radial-gradient(550px circle at 100% 35%, rgba(244,63,94,.14), transparent 60%), radial-gradient(500px circle at 0% 100%, rgba(139,92,246,.14), transparent 60%), linear-gradient(160deg,#09090b,#18181b 55%,#0c0a09); }
@@ -27,8 +28,110 @@
     .app-emerald { background: radial-gradient(650px circle at 12% 0%, rgba(16,185,129,.26), transparent 60%), radial-gradient(550px circle at 100% 35%, rgba(20,184,166,.20), transparent 60%), radial-gradient(500px circle at 0% 100%, rgba(132,204,22,.12), transparent 60%), linear-gradient(160deg,#03110b,#062016 55%,#04130d); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .library-two-shelf { background: linear-gradient(180deg, #381805 0%, #1c0b02 100%); border: 2px solid #542508; box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.1); }
-    .book-spine-compact { box-shadow: -3px 0 6px rgba(0,0,0,0.4), inset 2px 0 2px rgba(255,255,255,0.2); border-left: 4px solid rgba(0,0,0,0.3); }
+
+    @keyframes tabIn { from { opacity:0; transform: translateY(14px) scale(.985); } to { opacity:1; transform:none; } }
+    .tab-enter > * { animation: tabIn .45s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes floaty { 0%,100% { transform: translate(0,0); } 50% { transform: translate(18px,-26px); } }
+    .orb { position:absolute; border-radius:9999px; filter: blur(70px); pointer-events:none; opacity:.45; animation: floaty 14s ease-in-out infinite; z-index:0; }
+    .orb-a { width:220px; height:220px; background:#f59e0b; top:8%; left:-60px; }
+    .orb-b { width:200px; height:200px; background:#10b981; bottom:14%; right:-60px; animation-delay:-6s; }
+    .hero-pct { font-size:56px; line-height:1; font-weight:900; letter-spacing:-2px; background:linear-gradient(135deg,#fde68a,#f59e0b 45%,#10b981); -webkit-background-clip:text; background-clip:text; color:transparent; filter: drop-shadow(0 0 18px rgba(245,158,11,.45)); }
+    .glow-emerald { box-shadow: 0 0 24px rgba(16,185,129,.25), inset 0 1px 0 rgba(255,255,255,.12); }
+    .glow-amber { box-shadow: 0 0 22px rgba(251,191,36,.35); }
+    .ring-wrap { position:relative; width:250px; height:250px; }
+    .ring-wrap svg { transform: rotate(-90deg); filter: drop-shadow(0 0 14px rgba(251,191,36,.55)); }
+    .ring-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    
+    .shelf-plank { height:14px; margin:0 -8px; border-radius:6px; background:linear-gradient(180deg,#6d3510 0%, #421c06 60%, #240d02 100%); box-shadow:0 8px 18px rgba(0,0,0,.75), inset 0 2px 0 rgba(255,255,255,.22); border-top: 1px solid #82431d; }
+    .spine-gold { position:absolute; left:6px; right:6px; height:2px; background:linear-gradient(90deg,transparent,#fbbf24,transparent); opacity:.8; }
+    .rsvp-box { background-image: linear-gradient(rgba(251,191,36,.0), rgba(251,191,36,.0)), radial-gradient(circle at 50% 50%, rgba(244,63,94,.16), transparent 62%); box-shadow: inset 0 0 40px rgba(0,0,0,.35), 0 0 30px rgba(244,63,94,.10); overflow:hidden; }
+    .rsvp-box::before, .rsvp-box::after { content:""; position:absolute; left:50%; width:2px; height:16px; background:linear-gradient(#f43f5e,transparent); transform:translateX(-50%); opacity:.7; }
+    .rsvp-box::before { top:0; } .rsvp-box::after { bottom:0; transform:translateX(-50%) rotate(180deg); }
+    .rsvp-focus { text-shadow: 0 0 14px rgba(244,63,94,.95), 0 0 30px rgba(244,63,94,.6); }
+    .avatar-ring { padding:3px; border-radius:9999px; background:conic-gradient(from 0deg,#f59e0b,#10b981,#8b5cf6,#f59e0b); box-shadow:0 0 22px rgba(245,158,11,.4); }
+    .archive-card { border-left:4px solid #10b981; }
+    .nav-glass { box-shadow: 0 18px 40px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.06), inset 0 1px 0 rgba(255,255,255,.14); }
+    .nav-active { box-shadow: 0 0 18px rgba(251,191,36,.35), inset 0 1px 0 rgba(255,255,255,.3); transform: translateY(-3px); }
+    .sec-title { letter-spacing:.18em; }
+
+    .brand-title { font-family:"Playfair Display",Georgia,serif; font-weight:800; letter-spacing:.02em; background:linear-gradient(135deg,#fde68a,#d97706 55%,#b45309); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 1px 8px rgba(245,158,11,.3)); }
+    .glass-edge { background-image: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,0) 45%); outline: 1px solid rgba(255,255,255,.04); outline-offset:-1px; }
+    body::after { content:""; position:fixed; inset:0; pointer-events:none; z-index:100; opacity:.05; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+    button.bg-gradient-to-r:hover:not(:disabled) { transform: translateY(-1px); }
+
+    /* REALISTIK YOG'OCH JAVON SHAPE VA PROFILI */
+    .bookcase { 
+      padding: 0 14px 16px; 
+      border-radius: 36px 36px 24px 24px; 
+      background: linear-gradient(90deg, #1b0902 0%, #3e1b07 6%, #2d1305 15%, #2d1305 85%, #3e1b07 94%, #1b0902 100%); 
+      box-shadow: 0 28px 50px rgba(0,0,0,.75), inset 0 0 0 2px #512509; 
+    }
+    /* 4 BURCHAK EMAS, ARKA VA SHAPE KO'RINISHIDAGI TOJ (CROWN) */
+    .bookcase-crown { 
+      height: 24px; 
+      margin: 0 -14px 12px; 
+      border-radius: 36px 36px 8px 8px; 
+      background: linear-gradient(180deg, #854013 0%, #522509 60%, #2f1304 100%); 
+      box-shadow: 0 6px 14px rgba(0,0,0,.6), inset 0 2px 2px rgba(255,255,255,.3); 
+      border-top: 1px solid #a8581f;
+      position: relative;
+    }
+    .bookcase-crown::after {
+      content: "";
+      position: absolute;
+      bottom: 3px;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(251,191,36,0.35), transparent);
+    }
+    .bookcase-back { 
+      background: linear-gradient(180deg, #150701 0%, #0c0400 100%); 
+      border-radius: 20px 20px 10px 10px; 
+      padding: 16px 8px 0; 
+      box-shadow: inset 0 18px 30px rgba(0,0,0,.9), inset 0 0 0 2px rgba(0,0,0,.6); 
+    }
+    .shelf-books { display:flex; align-items:flex-end; gap:3px; padding:0 8px; min-height:160px; }
+    
+    /* 3D CHARM KITOB MUQOVASI VA XATCHO'P */
+    .real-spine { 
+      position:relative; 
+      flex:0 0 auto; 
+      border-radius:4px 3px 3px 4px; 
+      cursor:pointer; 
+      transition:transform .25s ease, box-shadow .25s ease; 
+      box-shadow:3px 0 7px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.09); 
+      overflow:visible; 
+      display:flex; 
+      flex-direction:column; 
+      align-items:center; 
+      justify-content:space-between; 
+      padding:22px 0 16px; 
+    }
+    .real-spine::before { content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; background:linear-gradient(90deg,rgba(255,255,255,.32) 0%,rgba(255,255,255,.05) 18%,rgba(0,0,0,0) 45%,rgba(0,0,0,.55) 100%); }
+    .real-spine::after { content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px); }
+    .real-spine:hover { transform: translateY(-6px); }
+    .real-spine.sel { transform: translateY(-15px); box-shadow:0 18px 24px rgba(0,0,0,.7), 0 0 0 1px #fbbf24, 0 0 26px rgba(251,191,36,.55); }
+    .spine-title { writing-mode:vertical-rl; font-family:"Playfair Display",Georgia,serif; font-weight:700; color:#fde68a; font-size:11px; letter-spacing:.08em; text-shadow:0 1px 2px rgba(0,0,0,.8); max-height:62%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+    
+    /* ATLAS XATCHO'P */
+    .ribbon-tail {
+      position: absolute;
+      bottom: -13px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 13px;
+      height: 18px;
+      background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+      z-index: 30;
+    }
+
+    .book-cover { width:84px; height:118px; border-radius:3px 8px 8px 3px; position:relative; flex-shrink:0; box-shadow:7px 9px 18px rgba(0,0,0,.55), inset 3px 0 0 rgba(0,0,0,.35), inset 6px 0 0 rgba(255,255,255,.12); transform:perspective(500px) rotateY(-14deg); }
+    .cover-frame { position:absolute; inset:7px 7px 7px 12px; border:1px solid rgba(251,191,36,.6); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; padding:4px; text-align:center; }
+    .cover-title { font-family:"Playfair Display",Georgia,serif; font-weight:800; font-size:11px; color:#fde68a; line-height:1.15; overflow:hidden; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; word-break:break-word; }
+    .rsvp-box.no-guide::before, .rsvp-box.no-guide::after { display:none; }
   </style>
 </head>
 <body style="height:100dvh" class="bg-zinc-900 flex justify-center items-center h-screen m-0 p-0 text-zinc-100 antialiased selection:bg-amber-500 selection:text-black overflow-hidden">
@@ -49,18 +152,18 @@
       ({ id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg });
 
     const THEMES = {
-      obsidian: mk('obsidian','Obsidian (Tungi)',true,'app-obsidian','bg-white/[0.06] backdrop-blur-xl shadow-xl shadow-black/20','border-white/10','text-zinc-100','text-zinc-400','bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-lg shadow-amber-500/25 hover:brightness-110','text-amber-400','accent-amber-400','bg-amber-400/10 text-amber-300 border-amber-400/20','bg-white/[0.07] backdrop-blur-md','bg-zinc-800'),
-      light: mk('light','Yorug‘lik (Kunduzgi)',false,'app-light','bg-white/60 backdrop-blur-xl shadow-lg shadow-indigo-900/5','border-slate-900/10','text-slate-900','text-slate-500','bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:brightness-110','text-blue-600','accent-blue-600','bg-blue-50 text-blue-700 border-blue-200','bg-white/50 backdrop-blur-md','bg-slate-200'),
-      sepia: mk('sepia','Qog‘oz / Sepia (Kunduzgi)',false,'app-sepia','bg-[#fcf9f2]/60 backdrop-blur-xl shadow-lg shadow-amber-900/5','border-[#3c2f1e]/10','text-[#3c2f1e]','text-[#7e6e58]','bg-gradient-to-r from-[#b8743a] to-[#8a4b1f] text-white shadow-lg shadow-amber-900/25 hover:brightness-110','text-[#965a2d]','accent-[#965a2d]','bg-[#ede3d1] text-[#70421e] border-[#dac9b0]','bg-[#fcf9f2]/50 backdrop-blur-md','bg-[#e4dcce]'),
-      midnight: mk('midnight','Midnight (Tungi)',true,'app-midnight','bg-blue-300/[0.07] backdrop-blur-xl shadow-xl shadow-black/30','border-blue-200/15','text-blue-50','text-blue-300/70','bg-gradient-to-r from-blue-500 to-violet-500 text-white shadow-lg shadow-blue-500/30 hover:brightness-110','text-blue-400','accent-blue-500','bg-blue-500/10 text-blue-300 border-blue-500/20','bg-white/[0.07] backdrop-blur-md','bg-slate-800'),
-      emerald: mk('emerald','Zumrad (Tungi)',true,'app-emerald','bg-emerald-300/[0.07] backdrop-blur-xl shadow-xl shadow-black/30','border-emerald-200/15','text-emerald-50','text-emerald-300/70','bg-gradient-to-r from-emerald-400 to-teal-400 text-zinc-950 shadow-lg shadow-emerald-500/25 hover:brightness-110','text-emerald-400','accent-emerald-400','bg-emerald-500/10 text-emerald-300 border-emerald-500/20','bg-white/[0.07] backdrop-blur-md','bg-emerald-950')
+      obsidian: mk('obsidian','Obsidian (Tungi)',true,'app-obsidian','bg-white/[0.06] backdrop-blur-xl glass-edge shadow-xl shadow-black/20','border-white/10','text-zinc-100','text-zinc-400','bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-lg shadow-amber-500/25 hover:brightness-110','text-amber-400','accent-amber-400','bg-amber-400/10 text-amber-300 border-amber-400/20','bg-white/[0.07] backdrop-blur-md','bg-zinc-800'),
+      light: mk('light','Yorug‘lik (Kunduzgi)',false,'app-light','bg-white/60 backdrop-blur-xl glass-edge shadow-lg shadow-indigo-900/5','border-slate-900/10','text-slate-900','text-slate-500','bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:brightness-110','text-blue-600','accent-blue-600','bg-blue-50 text-blue-700 border-blue-200','bg-white/50 backdrop-blur-md','bg-slate-200'),
+      sepia: mk('sepia','Qog‘oz / Sepia (Kunduzgi)',false,'app-sepia','bg-[#fcf9f2]/60 backdrop-blur-xl glass-edge shadow-lg shadow-amber-900/5','border-[#3c2f1e]/10','text-[#3c2f1e]','text-[#7e6e58]','bg-gradient-to-r from-[#b8743a] to-[#8a4b1f] text-white shadow-lg shadow-amber-900/25 hover:brightness-110','text-[#965a2d]','accent-[#965a2d]','bg-[#ede3d1] text-[#70421e] border-[#dac9b0]','bg-[#fcf9f2]/50 backdrop-blur-md','bg-[#e4dcce]'),
+      midnight: mk('midnight','Midnight (Tungi)',true,'app-midnight','bg-blue-300/[0.07] backdrop-blur-xl glass-edge shadow-xl shadow-black/30','border-blue-200/15','text-blue-50','text-blue-300/70','bg-gradient-to-r from-blue-500 to-violet-500 text-white shadow-lg shadow-blue-500/30 hover:brightness-110','text-blue-400','accent-blue-500','bg-blue-500/10 text-blue-300 border-blue-500/20','bg-white/[0.07] backdrop-blur-md','bg-slate-800'),
+      emerald: mk('emerald','Zumrad (Tungi)',true,'app-emerald','bg-emerald-300/[0.07] backdrop-blur-xl glass-edge shadow-xl shadow-black/30','border-emerald-200/15','text-emerald-50','text-emerald-300/70','bg-gradient-to-r from-emerald-400 to-teal-400 text-zinc-950 shadow-lg shadow-emerald-500/25 hover:brightness-110','text-emerald-400','accent-emerald-400','bg-emerald-500/10 text-emerald-300 border-emerald-500/20','bg-white/[0.07] backdrop-blur-md','bg-emerald-950')
     };
 
     const BOOK_COLORS = [
+      "from-[#4a1217] via-[#751d24] to-[#360b0f]", // Atom Odatlari
+      "from-[#0d3321] via-[#1a5336] to-[#082216]", // Fokus
+      "from-[#172033] via-[#243556] to-[#0f1624]", // Men bo'lishing uchun
       "from-amber-700 via-amber-900 to-stone-950",
-      "from-rose-800 via-rose-950 to-stone-950",
-      "from-blue-800 via-indigo-950 to-stone-950",
-      "from-emerald-800 via-teal-950 to-stone-950",
       "from-purple-800 via-violet-950 to-stone-950",
       "from-cyan-800 via-blue-950 to-stone-950"
     ];
@@ -102,7 +205,7 @@
       return questions;
     }
 
-    // ===== IndexedDB: qurilmada katta hajmli saqlash =====
+    // ===== IndexedDB =====
     const idb = {
       db: null,
       open() {
@@ -141,7 +244,6 @@
       }
     };
 
-    // ===== Bulutda kitoblarni bo'laklab saqlash =====
     const CHUNK = 300000;
     const userRef = (uid) => firebase.firestore().collection('intizom_users').doc(uid);
 
@@ -168,84 +270,8 @@
       await ref.delete();
     }
 
-    function buildAmbient(ctx, type, master) {
-      let alive = true;
-      const nodes = [], timers = [];
-      const bus = ctx.createGain();
-      bus.gain.setValueAtTime(0.01, ctx.currentTime);
-      bus.connect(master);
-      bus.gain.linearRampToValueAtTime(1, ctx.currentTime + 1);
-      const noise = (brown, freq, gain) => {
-        try {
-          const len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate);
-          const d = buf.getChannelData(0); let last = 0;
-          for (let i = 0; i < len; i++) {
-            const w = Math.random() * 2 - 1;
-            if (brown) { last = (last + 0.02 * w) / 1.02; d[i] = last * 3; } else d[i] = w * 0.3;
-          }
-          const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true;
-          const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = freq;
-          const g = ctx.createGain(); g.gain.value = gain;
-          s.connect(f); f.connect(g); g.connect(bus); s.start(); nodes.push(s);
-        } catch(e) {}
-      };
-      const tone = (freq, dur, vol) => {
-        if (!alive) return;
-        try {
-          const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime;
-          o.type = 'sine'; o.frequency.setValueAtTime(freq, t);
-          g.gain.setValueAtTime(0.001, t);
-          g.gain.linearRampToValueAtTime(vol, t + 0.05);
-          g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-          o.connect(g); g.connect(bus); o.start(t); o.stop(t + dur + 0.1);
-        } catch(e) {}
-      };
-      try {
-        if (type === 'rain') { noise(false, 3000, 0.15); noise(true, 400, 0.4); }
-        else if (type === 'fireplace') {
-          noise(true, 300, 0.55);
-          const crackle = () => {
-            if (!alive) return;
-            try {
-              const bs = Math.floor(ctx.sampleRate * (0.015 + Math.random() * 0.025));
-              const buffer = ctx.createBuffer(1, bs, ctx.sampleRate);
-              const data = buffer.getChannelData(0);
-              for (let i = 0; i < bs; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bs * 0.25));
-              const cn = ctx.createBufferSource(); cn.buffer = buffer;
-              const filter = ctx.createBiquadFilter(); filter.type = 'bandpass';
-              filter.frequency.value = 1200 + Math.random() * 1800; filter.Q.value = 1.2;
-              const gain = ctx.createGain(); gain.gain.value = 0.08 + Math.random() * 0.12;
-              cn.connect(filter); filter.connect(gain); gain.connect(bus); cn.start(); nodes.push(cn);
-            } catch (e) {}
-            timers.push(setTimeout(crackle, 70 + Math.random() * 260));
-          };
-          crackle();
-        } else if (type === 'cafe') { noise(true, 500, 0.35); }
-        else if (type === 'forest') {
-          noise(true, 600, 0.25);
-          const loop = () => { if (!alive) return; tone(2200 + Math.random() * 1200, 0.12, 0.02); timers.push(setTimeout(loop, 2500 + Math.random() * 3000)); };
-          loop();
-        } else if (type === 'ocean') { noise(true, 550, 0.45); }
-        else if (type === 'piano') {
-          const notes = [261.63, 329.63, 392.0, 440.0, 523.25];
-          const loop = () => { if (!alive) return; tone(notes[Math.floor(Math.random() * notes.length)], 2.5, 0.06); timers.push(setTimeout(loop, 2500 + Math.random() * 2500)); };
-          loop();
-        } else { noise(true, 800, 0.5); }
-      } catch(e) {}
-      return {
-        stop() {
-          alive = false;
-          timers.forEach(t => clearTimeout(t));
-          try {
-            bus.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-            setTimeout(() => { nodes.forEach(n => { try { n.stop(); } catch(e) {} }); bus.disconnect(); }, 250);
-          } catch(e) {}
-        }
-      };
-    }
-
     function App() {
-      const [activeTab, setActiveTab] = useState('home');
+      const [activeTab, setActiveTab] = useState('library');
       const [themeKey, setThemeKey] = useState('obsidian');
       const [goalTitle, setGoalTitle] = useState("");
       const [goalDays, setGoalDays] = useState(10);
@@ -272,20 +298,22 @@
       const [pomoMinutes, setPomoMinutes] = useState(25);
       const [secondsLeft, setSecondsLeft] = useState(25 * 60);
       const [isTimerRunning, setIsTimerRunning] = useState(false);
-      const [books, setBooks] = useState([]);
-      const [selectedBook, setSelectedBook] = useState(null);
+      
+      const [books, setBooks] = useState([
+        { id: 1, title: "Atom Odatlari", author: "James Clear", coverColor: "from-[#4a1217] via-[#751d24] to-[#360b0f]", content: "Kichik odatlar har kuni takrorlansa ulkan natijalarga sabab bo'ladi. Intizom bu doimiylik demakdir.", questions: [] },
+        { id: 2, title: "Fokus", author: "Cal Newport", coverColor: "from-[#0d3321] via-[#1a5336] to-[#082216]", content: "Diqqatni jamlash qobiliyati zamonaviy dunyoda eng nodir boylikdir. Chalg'ishlar dunyosida fokus g'alaba kalitidir.", questions: [] },
+        { id: 3, title: "Men Bo'lishing Uchun Yaralganman", author: "Napoleon Hill", coverColor: "from-[#172033] via-[#243556] to-[#0f1624]", content: "Inson ongi nimani tasavvur qilib unga ishona olsa, unga erisha oladi.", questions: [] }
+      ]);
+      const [selectedBook, setSelectedBook] = useState(books[1]);
       const [searchQuery, setSearchQuery] = useState("");
       const [uploadProgress, setUploadProgress] = useState(null);
       const [speedWPM, setSpeedWPM] = useState(300);
       const [fontSize, setFontSize] = useState(36);
       const [chunkSize, setChunkSize] = useState(1);
+      const [showFocus, setShowFocus] = useState(() => { try { return localStorage.getItem('intizom_focus') !== '0'; } catch (e) { return true; } });
+      const toggleFocus = () => setShowFocus(v => { const n = !v; try { localStorage.setItem('intizom_focus', n ? '1' : '0'); } catch (e) {} return n; });
       const [wordIndex, setWordIndex] = useState(0);
       const [isReadingRunning, setIsReadingRunning] = useState(false);
-      const [activeSound, setActiveSound] = useState('none');
-      const [volume, setVolume] = useState(0.5);
-      const ctxRef = useRef(null);
-      const masterRef = useRef(null);
-      const currentRef = useRef(null);
       const [quizIndex, setQuizIndex] = useState(0);
       const [selectedAnswers, setSelectedAnswers] = useState({});
       const [quizFinished, setQuizFinished] = useState(false);
@@ -302,7 +330,6 @@
         if (d.archive) setArchive(d.archive);
         if (d.onboarded !== undefined) setOnboarded(d.onboarded);
         if (d.themeKey) setThemeKey(d.themeKey);
-        // eski formatdagi kitoblar yangi tizimga ko'chiriladi
         if (d.customBooks && d.customBooks.length) legacyBooksRef.current.push(...d.customBooks);
       };
 
@@ -324,7 +351,6 @@
         });
       }, []);
 
-      // Asosiy ma'lumotlarni saqlash (kitoblarsiz — hajm kichik)
       useEffect(() => {
         if (!hydrated) return;
         const data = JSON.parse(JSON.stringify({ goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive }));
@@ -335,7 +361,6 @@
         return () => clearTimeout(id);
       }, [hydrated, user, goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive]);
 
-      // Kitoblarni yuklash: IndexedDB + bulut sinxronizatsiyasi
       useEffect(() => {
         if (!hydrated) return;
         (async () => {
@@ -347,9 +372,11 @@
             }
             legacyBooksRef.current = [];
             const show = () => {
-              const list = Array.from(map.values()).sort((a, b) => a.id - b.id).map(b => ({ ...b, questions: extractEventQuestions(b.content) }));
-              setBooks(list);
-              setSelectedBook(prev => list.find(b => b.id === prev?.id) || list[0] || null);
+              if (map.size > 0) {
+                const list = Array.from(map.values()).sort((a, b) => a.id - b.id).map(b => ({ ...b, questions: extractEventQuestions(b.content) }));
+                setBooks(list);
+                setSelectedBook(prev => list.find(b => b.id === prev?.id) || list[0] || null);
+              }
             };
             show();
             if (user) {
@@ -375,33 +402,6 @@
 
       const fileInputRef = useRef(null);
       const t = THEMES[themeKey] || THEMES.obsidian;
-
-      const handleSoundClick = (sndId) => {
-        try {
-          if (activeSound === sndId) {
-            if (currentRef.current) currentRef.current.stop();
-            currentRef.current = null; setActiveSound('none'); return;
-          }
-          if (currentRef.current) { currentRef.current.stop(); currentRef.current = null; }
-          if (sndId === 'none') { setActiveSound('none'); return; }
-          const AC = window.AudioContext || window.webkitAudioContext;
-          if (!ctxRef.current) {
-            ctxRef.current = new AC();
-            masterRef.current = ctxRef.current.createGain();
-            masterRef.current.gain.value = volume;
-            masterRef.current.connect(ctxRef.current.destination);
-          }
-          if (ctxRef.current.state === 'suspended') ctxRef.current.resume();
-          currentRef.current = buildAmbient(ctxRef.current, sndId, masterRef.current);
-          setActiveSound(sndId);
-        } catch (err) { setActiveSound('none'); }
-      };
-
-      useEffect(() => {
-        if (masterRef.current && ctxRef.current) {
-          try { masterRef.current.gain.setValueAtTime(volume, ctxRef.current.currentTime); } catch(e) {}
-        }
-      }, [volume]);
 
       const filteredBooks = useMemo(() => {
         if (!searchQuery.trim()) return books;
@@ -618,7 +618,7 @@
           <div className={`w-full h-full ${t.appBg} overflow-y-auto font-sans`}>
             <div className="max-w-lg mx-auto p-5 md:p-8 space-y-4">
               <div className="flex items-center justify-between">
-                <h1 className={`text-xl font-black ${t.textMain}`}>Intizom</h1>
+                <h1 className="brand-title text-2xl">Intizom</h1>
                 {authButton}
               </div>
               <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-4 shadow-sm`}>
@@ -648,9 +648,10 @@
 
       return (
         <div className={`w-full h-full ${t.appBg} flex flex-col overflow-hidden relative transition-colors duration-300 font-sans`}>
+          <div className="orb orb-a"></div><div className="orb orb-b"></div>
           <div className={`px-6 md:px-10 py-4 flex justify-between items-center border-b ${t.border} flex-shrink-0`}>
             <div className="flex items-center gap-2">
-              <h1 className={`text-lg font-black tracking-tight ${t.textMain}`}>Intizom</h1>
+              <h1 className="brand-title text-xl">Intizom</h1>
               {authButton}
             </div>
             <div className={`flex items-center gap-1.5 p-1 rounded-full ${t.cardBg} border ${t.border}`}>
@@ -667,17 +668,20 @@
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-4 max-w-xl md:max-w-3xl xl:max-w-4xl mx-auto w-full md:p-8">
+          <div key={activeTab} className="tab-enter relative z-10 flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-4 max-w-xl md:max-w-3xl xl:max-w-4xl mx-auto w-full md:p-8">
 
             {activeTab === 'home' && (
               <div className="space-y-4">
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-3 shadow-sm`}>
-                  <div className="flex justify-between items-center">
-                    <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Maqsad statistikasi</span>
-                    <span className={`text-sm font-black ${overallPct === 100 ? 'text-emerald-500' : t.accentText}`}>{overallPct}%</span>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <span className={`text-[11px] font-bold uppercase sec-title ${t.textSub}`}>Maqsad statistikasi</span>
+                      <div className={`text-xs mt-1 ${t.textSub}`}>{goalTitle}</div>
+                    </div>
+                    <span className="hero-pct">{overallPct}<span className="text-2xl">%</span></span>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-2xl p-3 bg-emerald-500/10 border border-emerald-500/20">
+                    <div className="rounded-2xl p-3 bg-emerald-500/10 border border-emerald-500/30 glow-emerald">
                       <div className="text-2xl font-black text-emerald-500">{doneCount}</div>
                       <div className={`text-xs font-semibold ${t.textSub}`}>Yakunlangan kun (to‘liq: {fullDays})</div>
                     </div>
@@ -687,7 +691,7 @@
                     </div>
                   </div>
                   <div className={`w-full h-2.5 rounded-full ${t.sliderBg} overflow-hidden`}>
-                    <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${overallPct}%` }}></div>
+                    <div className="h-full bg-gradient-to-r from-emerald-400 to-amber-400 transition-all duration-500 shadow-[0_0_12px_rgba(16,185,129,.8)]" style={{ width: `${overallPct}%` }}></div>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {Array.from({ length: goalDays }, (_, i) => i + 1).map(d => (
@@ -771,7 +775,7 @@
                   {user ? (
                     <>
                       <div className="flex items-center gap-3">
-                        {user.photoURL ? <img src={user.photoURL} referrerPolicy="no-referrer" className="w-14 h-14 rounded-full" /> : <i className={`fa-solid fa-circle-user text-5xl ${t.textSub}`}></i>}
+                        {user.photoURL ? <div className="avatar-ring"><img src={user.photoURL} referrerPolicy="no-referrer" className="w-14 h-14 rounded-full" /></div> : <i className={`fa-solid fa-circle-user text-5xl ${t.textSub}`}></i>}
                         <div className="min-w-0">
                           <div className={`font-bold text-sm truncate ${t.textMain}`}>{user.displayName || "Foydalanuvchi"}</div>
                           <div className={`text-xs truncate ${t.textSub}`}>{user.email}</div>
@@ -797,7 +801,7 @@
                   {archive.length === 0 ? (
                     <div className={`text-center text-sm py-3 ${t.textSub}`}>Hozircha arxiv bo‘sh.</div>
                   ) : [...archive].reverse().map(a => (
-                    <div key={a.id} className={`rounded-2xl p-3 border ${t.border} ${t.subtleBg} space-y-2`}>
+                    <div key={a.id} className={`archive-card rounded-2xl p-3 border ${t.border} ${t.subtleBg} space-y-2`}>
                       <div className="flex justify-between items-start gap-2">
                         <div className="min-w-0">
                           <div className={`text-sm font-bold ${t.textMain}`}>{a.title}</div>
@@ -820,11 +824,16 @@
             {activeTab === 'timer' && (
               <div className="flex flex-col items-center justify-center space-y-6 pt-5">
                 <span className={`text-xs font-bold uppercase tracking-widest ${t.textSub}`}>Chuqur Ishlash Rejimi</span>
-                <div className={`w-60 h-60 md:w-72 md:h-72 rounded-full border-4 ${t.border} ${t.cardBg} flex flex-col items-center justify-center shadow-lg relative`}>
-                  <span className={`text-6xl font-black tracking-tight font-mono ${t.textMain}`}>
-                    {Math.floor(secondsLeft / 60).toString().padStart(2, '0')}:{(secondsLeft % 60).toString().padStart(2, '0')}
-                  </span>
-                  <span className={`text-xs ${t.textSub} font-medium mt-1.5`}>Fokus seansi</span>
+                <div className="ring-wrap">
+                  <svg width="250" height="250" viewBox="0 0 250 250">
+                    <circle cx="125" cy="125" r="108" fill="none" stroke="rgba(255,255,255,.08)" strokeWidth="12" />
+                    <circle cx="125" cy="125" r="108" fill="none" stroke="url(#tg)" strokeWidth="12" strokeLinecap="round" strokeDasharray={2*Math.PI*108} strokeDashoffset={2*Math.PI*108*(1 - secondsLeft/(pomoMinutes*60))} style={{ transition: 'stroke-dashoffset 1s linear' }} />
+                    <defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#fbbf24" /><stop offset="100%" stopColor="#10b981" /></linearGradient></defs>
+                  </svg>
+                  <div className="ring-center">
+                    <span className={`text-6xl font-black tracking-tight font-mono ${t.textMain}`}>{Math.floor(secondsLeft / 60).toString().padStart(2, '0')}:{(secondsLeft % 60).toString().padStart(2, '0')}</span>
+                    <span className={`text-xs ${t.textSub} font-medium mt-1.5`}>Fokus seansi</span>
+                  </div>
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => setIsTimerRunning(!isTimerRunning)} className={`px-8 py-3 rounded-2xl font-bold text-sm shadow-lg ${t.accent}`}>{isTimerRunning ? 'To‘xtatish' : 'Boshlash'}</button>
@@ -842,23 +851,31 @@
               </div>
             )}
 
+            {/* KUTUBXONA BO'LIMI: 4 BURCHAK EMAS, SMOOTH SHAPE HEADER VA KAPSULA SEARCH */}
             {activeTab === 'library' && (
               <div className="space-y-4">
-                <div className={`sticky top-0 z-30 ${t.appBg} pt-2 pb-3 space-y-3 border-b ${t.border}`}>
-                  <div className="flex justify-between items-center">
+                
+                {/* YUQORI SHAPE HEADER & QIDIRUV (4 BURCHAK EMAS, YUMALOQ ARCH SHAKLDA) */}
+                <div className={`p-4 rounded-[32px] border ${t.border} ${t.cardBg} space-y-3.5 shadow-2xl`}>
+                  <div className="flex justify-between items-center px-1">
                     <div>
-                      <h2 className={`font-black text-base tracking-wide ${t.textMain}`}>Kitob Javoni</h2>
-                      <span className={`text-xs ${t.textSub}`}>Mening kitoblarim ({books.length} ta)</span>
+                      <h2 className="brand-title text-2xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Kitob Javoni</h2>
+                      <span className={`text-xs ${t.textSub} font-medium`}>Mening kitoblarim ({books.length} ta)</span>
                     </div>
                     <input type="file" accept="application/pdf" ref={fileInputRef} onChange={handlePdfUpload} className="hidden" />
-                    <button onClick={() => fileInputRef.current.click()} disabled={uploadProgress !== null} className={`text-xs px-4 py-2 rounded-xl font-bold flex items-center gap-2 shadow-md ${t.accent}`}>
+                    <button onClick={() => fileInputRef.current.click()} disabled={uploadProgress !== null} 
+                      className={`text-xs px-4 py-2.5 rounded-2xl font-bold flex items-center gap-2.5 shadow-xl ${t.accent} active:scale-95 transition`}>
                       <i className="fa-solid fa-file-pdf text-xs"></i>
                       <span>{uploadProgress !== null ? `${uploadProgress}%` : "+ PDF Qo‘shish"}</span>
                     </button>
                   </div>
+
+                  {/* KAPSULA KO'RINISHIDAGI YUMSHOQ SEARCHBAR */}
                   <div className="relative">
-                    <i className={`fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-xs ${t.textSub}`}></i>
-                    <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Kitoblardan qidirish..." className={`w-full pl-9 pr-4 py-2.5 text-xs rounded-2xl ${t.cardBg} border ${t.border} ${t.textMain} placeholder:opacity-50 focus:outline-none`} />
+                    <i className={`fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-xs ${t.textSub}`}></i>
+                    <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} 
+                      placeholder="Kitoblardan qidirish..." 
+                      className={`w-full pl-10 pr-4 py-3 text-xs rounded-full bg-black/40 border border-white/10 ${t.textMain} placeholder:opacity-50 focus:outline-none focus:border-amber-400/50 shadow-inner`} />
                   </div>
                 </div>
 
@@ -869,49 +886,73 @@
                     <button onClick={() => fileInputRef.current.click()} className={`text-xs font-bold px-4 py-2 rounded-xl ${t.accent}`}>+ PDF Kitob Yuklash</button>
                   </div>
                 ) : (
-                  <div className="library-two-shelf p-3 rounded-2xl space-y-3">
-                    <div className="grid grid-cols-3 gap-2.5">
-                      {filteredBooks.map(b => {
-                        const isCurrent = selectedBook?.id === b.id;
-                        return (
-                          <div key={b.id}
-                            onClick={() => { setSelectedBook(b); setWordIndex(0); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }}
-                            className={`book-spine-compact cursor-pointer transition-all duration-200 transform hover:-translate-y-1 rounded-r-md bg-gradient-to-br ${b.coverColor} p-2 text-white flex flex-col justify-between h-32 select-none relative group ${isCurrent ? 'ring-2 ring-amber-400 shadow-xl scale-105' : 'opacity-95'}`}>
-                            <div className="w-1 h-full absolute left-0 top-0 border-r border-black/20"></div>
-                            <div className="pl-1.5 flex justify-between items-center">
-                              <i className="fa-solid fa-bookmark text-[8px] text-amber-400/80"></i>
-                              <div className="flex items-center gap-1">
-                                {isCurrent && <span className="text-[7px] font-black uppercase px-1 bg-amber-400 text-zinc-950 rounded">Faol</span>}
-                                <button onClick={(e) => deleteBook(b.id, e)} title="Kitobni o'chirish" className="w-4 h-4 rounded-full bg-black/40 hover:bg-red-600 text-white/80 hover:text-white flex items-center justify-center transition text-[8px]"><i className="fa-solid fa-xmark"></i></button>
-                              </div>
-                            </div>
-                            <div className="pl-1.5 pr-1 text-center my-auto">
-                              <div className="text-[10px] font-black leading-tight line-clamp-2">{b.title}</div>
-                              <div className="text-[8px] text-zinc-300 mt-1 truncate">{b.author}</div>
-                            </div>
-                            <div className="pl-1.5 h-1"></div>
+                  <div className="bookcase">
+                    {/* YOG'OCH TOJ: 4 BURCHAKSIZ ARKA SHAPELI CORNICE */}
+                    <div className="bookcase-crown"></div>
+                    <div className="bookcase-back">
+                      {Array.from({ length: Math.max(1, Math.ceil(filteredBooks.length / 5)) }, (_, r) => filteredBooks.slice(r * 5, r * 5 + 5)).map((row, r) => (
+                        <div key={r}>
+                          <div className="shelf-books">
+                            {row.map(b => {
+                              const isCurrent = selectedBook?.id === b.id;
+                              const w = 46 + ((b.title || '').length % 3) * 8;
+                              return (
+                                <div key={b.id} title={b.title}
+                                  style={{ height: 120 + (b.id % 4) * 12, width: w }}
+                                  onClick={() => { setSelectedBook(b); setWordIndex(0); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }}
+                                  className={`real-spine bg-gradient-to-b ${b.coverColor} ${isCurrent ? 'sel' : ''}`}>
+                                  <div className="spine-gold" style={{ top: 8 }}></div>
+                                  <div className="spine-gold" style={{ top: 12 }}></div>
+                                  <div className="spine-title relative z-10">{b.title}</div>
+                                  <i className="fa-solid fa-feather-pointed text-[9px] text-amber-300/80 relative z-10"></i>
+                                  <div className="spine-gold" style={{ bottom: 8 }}></div>
+                                  {/* ATLAS XATCHO'P TAIL */}
+                                  <div className="ribbon-tail"></div>
+                                </div>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
+                          <div className="shelf-plank"></div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
 
+                {/* TANLANGAN KITOBNING OLTIN TUGMALARI VA TAFSILOTI */}
                 {selectedBook && (
-                  <div className={`${t.cardBg} border ${t.border} p-4 rounded-3xl space-y-3 shadow-sm`}>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className={`text-sm font-bold ${t.textMain}`}>{selectedBook.title}</h4>
-                        <p className={`text-xs ${t.textSub} mt-0.5`}>Muallif: {selectedBook.author} • {wordsList.length.toLocaleString()} ta so‘z</p>
+                  <div className={`${t.cardBg} border ${t.border} p-5 rounded-[32px] space-y-4 shadow-2xl`}>
+                    <div className="flex gap-4 items-center pb-1">
+                      <div className={`book-cover bg-gradient-to-br ${selectedBook.coverColor}`}>
+                        <div className="cover-frame">
+                          <div className="text-[7px] tracking-[.3em] text-amber-300/80 uppercase">Kitob</div>
+                          <div className="cover-title">{selectedBook.title}</div>
+                          <div className="w-6 h-px bg-amber-300/70"></div>
+                          <div className="text-[7px] text-amber-200/80">{selectedBook.author}</div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${t.badge}`}>Tanlangan</span>
-                        <button onClick={(e) => deleteBook(selectedBook.id, e)} title="Kitobni o'chirish" className="px-2 py-0.5 text-xs text-red-400 hover:text-red-500 font-bold"><i className="fa-solid fa-trash-can mr-1"></i> O‘chirish</button>
+                      <div className="flex-1 min-w-0 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-[10px] uppercase sec-title font-bold ${t.accentText}`}>Tanlangan asar</span>
+                          <button onClick={(e) => deleteBook(selectedBook.id, e)} title="Kitobni o'chirish" className="text-xs text-red-400 hover:text-red-500 font-bold px-2 py-0.5 rounded-lg border border-red-500/20 bg-red-500/10">
+                            <i className="fa-solid fa-trash-can mr-1"></i> O‘chirish
+                          </button>
+                        </div>
+                        <h4 className={`text-sm font-bold truncate ${t.textMain}`}>{selectedBook.title}</h4>
+                        <div className={`text-xs ${t.textSub}`}><i className="fa-regular fa-clock text-amber-400 mr-1.5"></i>≈ {Math.max(1, Math.round(wordsList.length / 250))} daq o‘qish</div>
+                        <div className={`text-xs ${t.textSub}`}><i className="fa-solid fa-align-left text-amber-400 mr-1.5"></i>{wordsList.length.toLocaleString()} so‘z</div>
                       </div>
                     </div>
-                    <div className="flex gap-2 pt-1">
-                      <button onClick={() => { setWordIndex(0); setActiveTab('speed'); }} className={`flex-1 py-2 rounded-2xl text-xs font-bold flex items-center justify-center gap-1.5 ${t.accent}`}><i className="fa-solid fa-bolt text-xs"></i><span>Tez O‘qish</span></button>
-                      <button onClick={() => { setActiveTab('ai_exam'); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`px-4 py-2 rounded-2xl text-xs font-bold border ${t.border} ${t.textMain} hover:opacity-80 flex items-center gap-1.5`}><i className="fa-solid fa-brain text-amber-500"></i><span>Test / Viktorina</span></button>
+                    
+                    <div className="grid grid-cols-2 gap-3 pt-1">
+                      <button onClick={() => { setWordIndex(0); setActiveTab('speed'); }} className={`py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg ${t.accent}`}>
+                        <i className="fa-solid fa-bolt text-xs"></i>
+                        <span>Tez O‘qish</span>
+                      </button>
+                      <button onClick={() => { setActiveTab('ai_exam'); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider border border-white/10 bg-white/[0.04] ${t.textMain} hover:bg-white/[0.08] flex items-center justify-center gap-2 shadow-lg`}>
+                        <i className="fa-solid fa-brain text-amber-400 text-xs"></i>
+                        <span>Test / Viktorina</span>
+                      </button>
                     </div>
                   </div>
                 )}
@@ -925,34 +966,7 @@
                   <span className="font-mono text-xs">{wordsList.length > 0 ? wordIndex + 1 : 0} / {wordsList.length}</span>
                 </div>
 
-                <div className={`${t.cardBg} border ${t.border} p-3 rounded-2xl space-y-2.5 shadow-sm`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2"><i className="fa-solid fa-headphones text-amber-400 text-xs"></i><span className={`text-xs font-bold ${t.textMain}`}>Fon tovushi</span></div>
-                    <div className="flex items-center gap-2">
-                      <i className={`fa-solid ${volume === 0 ? 'fa-volume-xmark' : 'fa-volume-low'} text-[10px] ${t.textSub}`}></i>
-                      <input type="range" min="0" max="1" step="0.05" value={volume} onChange={(e) => setVolume(Number(e.target.value))} className={`w-24 h-1.5 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { id: 'none', label: 'O‘chiq', icon: 'fa-volume-xmark' },
-                      { id: 'piano', label: 'Musiqa', icon: 'fa-music' },
-                      { id: 'rain', label: 'Yomg‘ir', icon: 'fa-cloud-rain' },
-                      { id: 'fireplace', label: 'Olov', icon: 'fa-fire' },
-                      { id: 'cafe', label: 'Kafe', icon: 'fa-mug-hot' },
-                      { id: 'forest', label: 'O‘rmon', icon: 'fa-tree' },
-                      { id: 'ocean', label: 'Dengiz', icon: 'fa-water' },
-                      { id: 'brown', label: 'Shovqin', icon: 'fa-wind' }
-                    ].map(snd => (
-                      <button key={snd.id} type="button" onClick={() => handleSoundClick(snd.id)}
-                        className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition flex items-center gap-1.5 ${activeSound === snd.id ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-lg shadow-amber-500/25' : `${t.subtleBg} ${t.textSub}`}`}>
-                        <i className={`fa-solid ${snd.icon} text-[10px]`}></i><span>{snd.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className={`w-full h-44 md:h-64 rounded-3xl border ${t.border} ${t.cardBg} flex items-center justify-center p-5 relative shadow-inner`}>
+                <div className={`w-full h-44 md:h-64 rounded-3xl border ${t.border} ${t.cardBg} rsvp-box ${showFocus ? '' : 'no-guide'} flex items-center justify-center p-5 relative`}>
                   {!selectedBook ? (
                     <div className="text-center space-y-2">
                       <p className={`text-sm ${t.textSub}`}>Kutubxonadan kitob tanlang yoki yangi PDF yuklang</p>
@@ -971,14 +985,14 @@
                         if (chunkSize === 1) {
                           const chars = Array.from(chunk[0]);
                           const mid = Math.floor((chars.length - 1) / 2);
-                          return (<span>{chars.slice(0, mid).join("")}<span className="text-red-500">{chars[mid]}</span>{chars.slice(mid + 1).join("")}</span>);
+                          return (<span>{chars.slice(0, mid).join("")}<span className={showFocus ? "text-red-500 rsvp-focus" : ""}>{chars[mid]}</span>{chars.slice(mid + 1).join("")}</span>);
                         }
                         if (chunkSize === 2) return <span>{chunk.join(" ")}</span>;
                         if (chunkSize === 3) {
                           return (
                             <span>
                               {chunk[0]}
-                              {chunk.length > 1 && (<>{" "}<span className="text-red-500">{chunk[1]}</span></>)}
+                              {chunk.length > 1 && (<>{" "}<span className={showFocus ? "text-red-500 rsvp-focus" : ""}>{chunk[1]}</span></>)}
                               {chunk.length > 2 && (<>{" "}{chunk.slice(2).join(" ")}</>)}
                             </span>
                           );
@@ -1008,10 +1022,13 @@
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className={`text-xs ${t.textSub} font-bold mr-1`}>Ko‘rinish:</span>
                     {[1, 2, 3].map(n => (
-                      <button key={n} onClick={() => setChunkSize(n)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 ${chunkSize === n ? t.accent : `${t.subtleBg} ${t.textSub}`}`}>
+                      <button key={n} onClick={() => setChunkSize(n)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 ${chunkSize === n ? t.accent : `${t.subtleBg}${t.textSub}`}`}>
                         <i className="fa-solid fa-font text-[10px]"></i> {n} ta
                       </button>
                     ))}
+                    <button onClick={toggleFocus} title="Markazdagi qizil harfni yoqish/o‘chirish" className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border ${showFocus ? 'border-red-500/50 bg-red-500/15 text-red-500' : `${t.border} ${t.subtleBg}${t.textSub}`}`}>
+                      <i className={`fa-solid ${showFocus ? 'fa-eye' : 'fa-eye-slash'} text-[10px]`}></i> Qizil: {showFocus ? 'Yoq' : 'O‘chiq'}
+                    </button>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button onClick={() => setFontSize(p => Math.max(22, p - 4))} className={`w-8 h-8 rounded-full border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>−</button>
@@ -1032,7 +1049,7 @@
                   <div className="flex justify-between text-xs"><span className={t.textSub}>O‘qish tezligi</span><span className={`font-bold ${t.textMain}`}>{speedWPM} WPM</span></div>
                   <div className="flex gap-1.5 flex-wrap">
                     {[200, 300, 400, 600].map(w => (
-                      <button key={w} onClick={() => setSpeedWPM(w)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold ${speedWPM === w ? t.accent : `${t.subtleBg} ${t.textSub}`}`}>{w}</button>
+                      <button key={w} onClick={() => setSpeedWPM(w)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold ${speedWPM === w ? t.accent : `${t.subtleBg}${t.textSub}`}`}>{w}</button>
                     ))}
                   </div>
                   <input type="range" min="100" max="900" step="50" value={speedWPM} onChange={(e) => setSpeedWPM(Number(e.target.value))} className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
@@ -1064,7 +1081,7 @@
                     <div className="flex justify-between items-center gap-1.5 overflow-x-auto pb-1">
                       {currentQList.map((_, idx) => (
                         <button key={idx} onClick={() => setQuizIndex(idx)}
-                          className={`w-7 h-7 rounded-lg text-xs font-bold transition flex items-center justify-center ${quizIndex === idx ? 'border-2 border-red-500 text-red-500 bg-red-500/10' : selectedAnswers[idx] !== undefined ? 'bg-zinc-700/50 text-zinc-200' : `${t.subtleBg} ${t.textSub}`}`}>{idx + 1}</button>
+                          className={`w-7 h-7 rounded-lg text-xs font-bold transition flex items-center justify-center ${quizIndex === idx ? 'border-2 border-red-500 text-red-500 bg-red-500/10' : selectedAnswers[idx] !== undefined ? 'bg-zinc-700/50 text-zinc-200' : `${t.subtleBg}${t.textSub}`}`}>{idx + 1}</button>
                       ))}
                     </div>
                     <p className={`text-sm font-semibold leading-relaxed whitespace-pre-line ${t.textMain}`}>{currentQList[quizIndex]?.question}</p>
@@ -1073,7 +1090,7 @@
                         const isSelected = selectedAnswers[quizIndex] === opt;
                         return (
                           <button key={oIdx} onClick={() => setSelectedAnswers(prev => ({ ...prev, [quizIndex]: opt }))}
-                            className={`w-full text-left p-3.5 rounded-2xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${isSelected ? 'border-amber-400 bg-amber-400/15' : `border-white/5 ${t.subtleBg} ${t.textMain} hover:border-white/20`} ${isSelected ? t.textMain : ''}`}>
+                            className={`w-full text-left p-3.5 rounded-2xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${isSelected ? 'border-amber-400 bg-amber-400/15 shadow-[0_0_20px_rgba(251,191,36,.35)]' : `border-white/5 ${t.subtleBg}${t.textMain} hover:border-white/20`} ${isSelected ? t.textMain : ''}`}>
                             <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${isSelected ? 'border-amber-400 bg-amber-400' : 'border-zinc-500'}`}>
                               {isSelected && <div className="w-1.5 h-1.5 bg-zinc-950 rounded-full"></div>}
                             </div>
@@ -1094,7 +1111,7 @@
             )}
           </div>
 
-          <div className={`h-16 mx-3 mb-3 md:w-[30rem] md:self-center rounded-3xl border ${t.border} ${t.cardBg} backdrop-blur-2xl flex justify-around items-center px-2 flex-shrink-0 z-20 shadow-2xl`}>
+          <div className={`h-16 mx-3 mb-3 md:w-[30rem] md:self-center rounded-3xl border ${t.border} ${t.cardBg} backdrop-blur-2xl nav-glass flex justify-around items-center px-2 flex-shrink-0 z-20 shadow-2xl`}>
             {[
               { id: 'home', icon: 'fa-house', label: 'Asosiy' },
               { id: 'timer', icon: 'fa-stopwatch', label: 'Fokus' },
@@ -1103,7 +1120,7 @@
               { id: 'profile', icon: 'fa-user', label: 'Profil' },
             ].map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center gap-1 transition px-3 py-1.5 rounded-2xl ${activeTab === tab.id ? t.accentText + ' font-bold bg-gradient-to-b from-white/30 to-white/5 ring-1 ring-white/30 shadow-md' : t.textSub}`}>
+                className={`flex flex-col items-center gap-1 transition px-3 py-1.5 rounded-2xl ${activeTab === tab.id ? t.accentText + ' nav-active font-bold bg-gradient-to-b from-white/30 to-white/5 ring-1 ring-white/30 shadow-md' : t.textSub}`}>
                 <i className={`fa-solid ${tab.icon} text-base`}></i>
                 <span className="text-[10px] tracking-tight">{tab.label}</span>
               </button>
