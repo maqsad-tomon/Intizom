@@ -155,10 +155,11 @@
       return (w || '').toLowerCase().replace(/[^a-z0-9а-яёўқғҳʻʼo'g']/gi, '').trim();
     }
 
+    // 4 TALIK VARIANTLI TEST SAVOLLARI TUZISH MEXANIZMI
     function extractEventQuestions(content) {
       if (!content) return [];
       const cleaned = content.replace(/\s+/g, ' ');
-      const startOffset = Math.floor(cleaned.length * 0.04);
+      const startOffset = Math.floor(cleaned.length * 0.03);
       const mainBody = cleaned.substring(startOffset);
 
       const rawSentences = mainBody.split(/(?<=[.!?])\s+/);
@@ -167,123 +168,46 @@
         return words.length >= 10 && words.length <= 40 && !s.includes('@') && !s.includes('http');
       });
 
-      if (qualitySentences.length < 5) {
-        return [
-          {
-            type: "Fikr tahlili",
-            prompt: "Ushbu asardagi muallif ilgari surgan asosiy g‘oya, fakt yoki xulosalarni bayon eting.",
-            targetFacts: cleaned.split(/\s+/).filter(w => w.length > 4).slice(0, 15).map(cleanWord),
-            fullEvent: cleaned.substring(0, 300)
-          }
-        ];
+      if (qualitySentences.length < 10) {
+        return [];
       }
 
       const questions = [];
-      const step = Math.max(1, Math.floor(qualitySentences.length / 5));
+      const step = Math.max(1, Math.floor(qualitySentences.length / 10));
 
-      const questionTemplates = [
-        {
-          label: "Mantiqiy yakun va g‘oya",
-          text: (ctx) => `Muallif quyidagi fikrni bayon qiladi:\n«${ctx}...»\nUshbu mulohaza kitobda qanday mantiqiy xulosa yoki voqea bilan yakunlanadi?`
-        },
-        {
-          label: "Sabab va oqibat tahlili",
-          text: (ctx) => `Kitobdagi muhim qism:\n«${ctx}...»\nMuallif fikricha, ushbu holat qanday natijaga yoki oqibatga olib keladi?`
-        },
-        {
-          label: "Asosiy qoida / Ta'rif",
-          text: (ctx) => `Asardagi tushunchaga ko‘ra:\n«${ctx}...»\nBu yerda ilgari surilgan asosiy fakt yoki fikr nima edi?`
-        },
-        {
-          label: "Faktlar va dalillar",
-          text: (ctx) => `Muallif ta'kidlaganidek:\n«${ctx}...»\nUshbu jumlani kitobdagi haqiqiy faktlar bilan yakunlang:`
-        },
-        {
-          label: "Xulosa va xarakteristika",
-          text: (ctx) => `Ushbu parchaga e'tibor bering:\n«${ctx}...»\nKitobda bu holatdan keyin aynan nima yuz beradi yoki qanday yakun beriladi?`
-        }
-      ];
+      // Asardan xarakterli so'zlar va iboralarni yig'ib olish (noto'g'ri variantlar uchun)
+      const allWords = cleaned.split(/\s+/).map(cleanWord).filter(w => w.length >= 4);
+      const pool = Array.from(new Set(allWords)).slice(100, 300);
 
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 10; i++) {
         const sentence = qualitySentences[Math.min(qualitySentences.length - 1, i * step)];
         if (!sentence) continue;
 
         const words = sentence.split(/\s+/);
-        const splitIndex = Math.floor(words.length * 0.45);
-        const eventContext = words.slice(0, splitIndex).join(' ');
-        const eventAnswer = words.slice(splitIndex).join(' ');
+        const splitIndex = Math.floor(words.length * 0.6);
+        const context = words.slice(0, splitIndex).join(' ');
+        const correctAnswer = words.slice(splitIndex).join(' ').replace(/[.!?]/g, '');
 
-        const stopWords = ["bilan", "uchun", "hamda", "ammo", "lekin", "chunki", "faqat", "edi", "emas", "kerak", "ham", "yoki", "deb", "esa"];
-        const targetFacts = words
-          .slice(splitIndex)
-          .map(cleanWord)
-          .filter(w => w.length >= 4 && !stopWords.includes(w));
+        // Noto'g'ri variantlar generatsiyasi
+        const r1 = pool[(i * 3 + 1) % pool.length] + " " + pool[(i * 3 + 2) % pool.length];
+        const r2 = pool[(i * 3 + 4) % pool.length] + " bilan bog‘liq hodisa";
+        const r3 = pool[(i * 3 + 7) % pool.length] + " holati yuz berdi";
 
-        const tmpl = questionTemplates[i % questionTemplates.length];
+        const options = [correctAnswer, r1, r2, r3];
+        // Variantlarni aralashtirish
+        options.sort(() => Math.random() - 0.5);
 
         questions.push({
-          type: tmpl.label,
-          prompt: tmpl.text(eventContext),
-          targetFacts: targetFacts,
-          fullEvent: sentence,
-          eventAnswer: eventAnswer
+          id: i + 1,
+          question: `Asarda keltirilishicha:\n"${context}..."\nUshbu holatdan keyin kitobda qanday voqea sodir bo‘ldi yoki jumla qanday yakunlandi?`,
+          options: options,
+          correctAnswer: correctAnswer
         });
       }
 
       return questions;
     }
 
-    function evaluateAnswerLocally(userText, questionObj) {
-      const userWords = userText.split(/\s+/).map(cleanWord).filter(w => w.length >= 3);
-      const targetFacts = questionObj.targetFacts || [];
-
-      if (userWords.length < 3) {
-        return {
-          score: 10,
-          verdict: "Juda qisqa yoki yetarli emas",
-          praise: "Javobingiz juda qisqa yozilgan, fikrni to'liqroq bayon qiling.",
-          missing: `Kitobdagi asl parcha: «${questionObj.fullEvent}»`
-        };
-      }
-
-      let matchedCount = 0;
-      const foundWords = [];
-
-      targetFacts.forEach(fact => {
-        const found = userWords.some(uw => uw.includes(fact) || fact.includes(uw));
-        if (found && !foundWords.includes(fact)) {
-          matchedCount++;
-          foundWords.push(fact);
-        }
-      });
-
-      const factRatio = targetFacts.length > 0 ? (matchedCount / targetFacts.length) : 0;
-      let calculatedScore = 0;
-      let verdict = "";
-      let praise = "";
-      let missing = "";
-
-      if (matchedCount >= 3 || factRatio >= 0.45) {
-        calculatedScore = Math.min(100, Math.round(75 + (factRatio * 25)));
-        verdict = "A'lo darajada! To‘g‘ri tushungansiz";
-        praise = `Kitobdagi asosiy mazmunni (${foundWords.slice(0, 4).join(', ')}) juda aniq ifodalab berdingiz.`;
-        missing = `To‘liq kitob parchasi: «${questionObj.fullEvent}»`;
-      } else if (matchedCount >= 1 || factRatio >= 0.2) {
-        calculatedScore = Math.min(65, Math.round(40 + (factRatio * 30)));
-        verdict = "Qisman to‘g‘ri, lekin detallar yetishmaydi";
-        praise = `Mazmunning ayrim qismlarini to‘g‘ri ilg‘agansiz.`;
-        missing = `Kitobdagi asl yakun: «${questionObj.eventAnswer}».`;
-      } else {
-        calculatedScore = 15;
-        verdict = "Mazmunga to‘liq mos kelmadi";
-        praise = "Kiritilgan javob kitobdagi aynan ushbu fikrga to‘g‘ri kelmadi.";
-        missing = `Aslida kitobda quyidagicha keltirilgan: «${questionObj.fullEvent}»`;
-      }
-
-      return { score: calculatedScore, verdict, praise, missing };
-    }
-
-    // YAXSHILANGAN VA TABIIY FON TOVUSHLARI
     function buildAmbient(ctx, type, master) {
       let alive = true;
       const nodes = [], timers = [];
@@ -324,10 +248,7 @@
           noise(false, 3000, 0.15);
           noise(true, 400, 0.4);
         } else if (type === 'fireplace') {
-          // 1. Olovning past g'uvullashi (tabiiy olov foni)
           noise(true, 300, 0.55);
-
-          // 2. Mayin o'tin chirsillashi (elektron tut-tut signallar o'rniga tabiiy mikrotortishuv)
           const crackle = () => {
             if (!alive) return;
             try {
@@ -339,23 +260,18 @@
               }
               const crackleNode = ctx.createBufferSource();
               crackleNode.buffer = buffer;
-
               const filter = ctx.createBiquadFilter();
               filter.type = 'bandpass';
               filter.frequency.value = 1200 + Math.random() * 1800;
               filter.Q.value = 1.2;
-
               const gain = ctx.createGain();
               gain.gain.value = 0.08 + Math.random() * 0.12;
-
               crackleNode.connect(filter);
               filter.connect(gain);
               gain.connect(bus);
-
               crackleNode.start();
               nodes.push(crackleNode);
             } catch (e) {}
-
             timers.push(setTimeout(crackle, 70 + Math.random() * 260));
           };
           crackle();
@@ -447,9 +363,10 @@
       const masterRef = useRef(null);
       const currentRef = useRef(null);
 
-      const [currentQIndex, setCurrentQIndex] = useState(0);
-      const [userAnswer, setUserAnswer] = useState("");
-      const [examFeedback, setExamFeedback] = useState(null);
+      // VIKTORINA TEST STATELARI (10 ta savol va variantlar)
+      const [quizIndex, setQuizIndex] = useState(0);
+      const [selectedAnswers, setSelectedAnswers] = useState({});
+      const [quizFinished, setQuizFinished] = useState(false);
 
       const cloudReady = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId && window.firebase);
 
@@ -652,16 +569,16 @@
       const deleteBook = (id, e) => {
         if (e) e.stopPropagation();
         const bookToDelete = books.find(b => b.id === id);
-        if (!confirm(`"${bookToDelete?.title || 'Ushbu'}" kitobini haqiqatdan ham kutubxonadan o‘chirmoqchimisiz?`)) return;
+        if (!confirm(`"${bookToDelete?.title || 'Ushbu'}" kitobini kutubxonadan o‘chirmoqchimisiz?`)) return;
         
         const newBooks = books.filter(b => b.id !== id);
         setBooks(newBooks);
         if (selectedBook?.id === id) {
           setSelectedBook(newBooks[0] || null);
           setWordIndex(0);
-          setCurrentQIndex(0);
-          setUserAnswer("");
-          setExamFeedback(null);
+          setQuizIndex(0);
+          setSelectedAnswers({});
+          setQuizFinished(false);
         }
       };
 
@@ -702,9 +619,9 @@
               setBooks(prev => [...prev, newBook]);
               setSelectedBook(newBook);
               setWordIndex(0);
-              setCurrentQIndex(0);
-              setUserAnswer("");
-              setExamFeedback(null);
+              setQuizIndex(0);
+              setSelectedAnswers({});
+              setQuizFinished(false);
               setUploadProgress(null);
               e.target.value = "";
               alert(`"${bookTitle}" kitobi muvaffaqiyatli yuklandi!`);
@@ -720,18 +637,18 @@
         }
       };
 
-      const handleCheckAnswer = () => {
-        if (!userAnswer.trim()) {
-          alert("Iltimos, avval o'z javobingizni yozing!");
-          return;
-        }
-
-        const currentQ = selectedBook.questions[currentQIndex];
-        const result = evaluateAnswerLocally(userAnswer, currentQ);
-        setExamFeedback(result);
-      };
-
       const currentQList = selectedBook?.questions || [];
+
+      // Test natijasini hisoblash
+      const calculateScore = () => {
+        let correctCount = 0;
+        currentQList.forEach((q, i) => {
+          if (selectedAnswers[i] === q.correctAnswer) {
+            correctCount++;
+          }
+        });
+        return correctCount;
+      };
 
       const finishedDays = completedDays.filter(d => d <= goalDays);
       const doneCount = finishedDays.length;
@@ -1203,9 +1120,9 @@
                             onClick={() => { 
                               setSelectedBook(b); 
                               setWordIndex(0);
-                              setCurrentQIndex(0); 
-                              setExamFeedback(null); 
-                              setUserAnswer(""); 
+                              setQuizIndex(0);
+                              setSelectedAnswers({});
+                              setQuizFinished(false);
                             }}
                             className={`book-spine-compact cursor-pointer transition-all duration-200 transform hover:-translate-y-1 rounded-r-md bg-gradient-to-br ${b.coverColor} p-2 text-white flex flex-col justify-between h-32 select-none relative group ${
                               isCurrent ? 'ring-2 ring-amber-400 shadow-xl scale-105' : 'opacity-95'
@@ -1273,13 +1190,14 @@
                       <button
                         onClick={() => { 
                           setActiveTab('ai_exam'); 
-                          setExamFeedback(null); 
-                          setUserAnswer(""); 
+                          setQuizIndex(0);
+                          setSelectedAnswers({});
+                          setQuizFinished(false);
                         }}
                         className={`px-4 py-2 rounded-2xl text-xs font-bold border ${t.border} ${t.textMain} hover:opacity-80 flex items-center gap-1.5`}
                       >
                         <i className="fa-solid fa-brain text-amber-500"></i>
-                        <span>Mazmun Imtihoni</span>
+                        <span>Test / Viktorina</span>
                       </button>
                     </div>
                   </div>
@@ -1349,7 +1267,7 @@
                     <div className="text-center space-y-3">
                       <span className="text-sm font-bold text-emerald-500 block">Kitob to‘liq mutolaa qilindi! 🎉</span>
                       <button onClick={() => setActiveTab('ai_exam')} className={`px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg ${t.accent}`}>
-                        Imtihonni Boshlash
+                        Testni Boshlash
                       </button>
                     </div>
                   ) : (
@@ -1504,15 +1422,13 @@
               </div>
             )}
 
+            {/* FOTODAGIDEK 10 TALIK VARIANTLI TEST / VIKTORINA INTERFEYSI */}
             {activeTab === 'ai_exam' && (
-              <div className="space-y-4 pt-1">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className={`text-sm font-bold ${t.textMain} truncate max-w-[220px]`}>
-                      {selectedBook ? selectedBook.title : "Kitob tanlanmagan"}
-                    </h3>
-                    <p className={`text-xs ${t.textSub}`}>Mazmun va tushunish imtihoni</p>
-                  </div>
+              <div className="space-y-4 pt-1 max-w-xl mx-auto">
+                <div className="flex justify-between items-center mb-2">
+                  <span className={`text-xs ${t.textSub}`}>
+                    {selectedBook ? selectedBook.title : "Kitob tanlanmagan"}
+                  </span>
                   <button onClick={() => setActiveTab('library')} className={`text-xs ${t.textSub} hover:${t.textMain}`}>
                     Chiqish
                   </button>
@@ -1520,95 +1436,115 @@
 
                 {!selectedBook ? (
                   <div className="text-center py-12 text-sm text-zinc-500">Iltimos, avval kutubxonadan kitob tanlang yoki yuklang.</div>
-                ) : currentQList.length > 0 ? (
-                  <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-4 shadow-sm`}>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className={t.textSub}>Savol {currentQIndex + 1} / {currentQList.length}</span>
-                      <div className="flex gap-1.5">
-                        {currentQList.map((_, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => { setCurrentQIndex(idx); setExamFeedback(null); setUserAnswer(""); }}
-                            className={`w-7 h-7 rounded-lg text-xs font-bold ${
-                              currentQIndex === idx ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-lg shadow-amber-500/25' : `${t.subtleBg}${t.textSub}`
-                            }`}
-                          >
-                            {idx + 1}
-                          </button>
-                        ))}
-                      </div>
+                ) : currentQList.length === 0 ? (
+                  <div className="text-center py-12 text-sm text-zinc-500">Kitob hajmi test tuzish uchun yetarli emas.</div>
+                ) : quizFinished ? (
+                  <div className={`${t.cardBg} border ${t.border} p-6 rounded-3xl text-center space-y-4 shadow-xl`}>
+                    <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold">
+                      <i className="fa-solid fa-trophy"></i>
+                    </div>
+                    <h3 className={`text-lg font-black ${t.textMain}`}>Test yakunlandi!</h3>
+                    <p className={`text-sm ${t.textSub}`}>
+                      Siz 10 ta savoldan <span className="font-bold text-emerald-400">{calculateScore()} ta</span> to‘g‘ri javob berdingiz.
+                    </p>
+                    <div className="text-3xl font-black text-amber-400">
+                      {Math.round((calculateScore() / 10) * 100)}%
+                    </div>
+                    <button
+                      onClick={() => {
+                        setQuizIndex(0);
+                        setSelectedAnswers({});
+                        setQuizFinished(false);
+                      }}
+                      className={`w-full py-3 rounded-2xl text-xs font-bold shadow-md ${t.accent}`}
+                    >
+                      Qaytadan topshirish
+                    </button>
+                  </div>
+                ) : (
+                  <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-5 shadow-sm`}>
+                    
+                    {/* Savol raqami */}
+                    <div className={`text-xs font-medium ${t.textSub}`}>
+                      Savol {quizIndex + 1}/{currentQList.length}
                     </div>
 
-                    <div className={`p-4 rounded-2xl ${t.subtleBg} border ${t.border}`}>
-                      <span className="text-xs text-amber-500 font-bold block mb-1.5 flex items-center gap-1.5">
-                        <i className="fa-solid fa-circle-question"></i> {currentQList[currentQIndex]?.type || "Kitobdagi mazmun"}:
-                      </span>
-                      <p className={`text-sm font-semibold leading-relaxed ${t.textMain} whitespace-pre-line`}>
-                        {currentQList[currentQIndex]?.prompt}
+                    {/* 1 dan 10 gacha indikatorlar */}
+                    <div className="flex justify-between items-center gap-1.5 overflow-x-auto pb-1">
+                      {currentQList.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setQuizIndex(idx)}
+                          className={`w-7 h-7 rounded-lg text-xs font-bold transition flex items-center justify-center ${
+                            quizIndex === idx
+                              ? 'border-2 border-red-500 text-red-500 bg-red-500/10'
+                              : selectedAnswers[idx] !== undefined
+                              ? 'bg-zinc-700/50 text-zinc-200'
+                              : `${t.subtleBg}${t.textSub}`
+                          }`}
+                        >
+                          {idx + 1}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Savol matni */}
+                    <div className="space-y-1">
+                      <p className={`text-sm font-semibold leading-relaxed ${t.textMain}`}>
+                        {currentQList[quizIndex]?.question}
                       </p>
                     </div>
 
-                    <div>
-                      <label className={`text-xs ${t.textSub} font-bold block mb-1.5`}>
-                        O‘z so‘zingiz bilan kitobdagi fikrni to‘liq davom ettiring yoki xulosalang:
-                      </label>
-                      <textarea
-                        rows="4"
-                        value={userAnswer}
-                        onChange={(e) => setUserAnswer(e.target.value)}
-                        placeholder="Kitob mazmunidan kelib chiqib, aniq fikr yoki faktni yozing..."
-                        className={`w-full ${t.subtleBg} border ${t.border} rounded-2xl p-3.5 text-sm leading-relaxed ${t.textMain} focus:outline-none placeholder:opacity-40`}
-                      />
+                    {/* Variantlar ro'yxati (4 ta variant) */}
+                    <div className="space-y-2.5">
+                      {currentQList[quizIndex]?.options.map((opt, oIdx) => {
+                        const isSelected = selectedAnswers[quizIndex] === opt;
+                        return (
+                          <button
+                            key={oIdx}
+                            onClick={() => setSelectedAnswers(prev => ({ ...prev, [quizIndex]: opt }))}
+                            className={`w-full text-left p-3.5 rounded-2xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${
+                              isSelected
+                                ? 'border-amber-400 bg-amber-400/15 text-white'
+                                : `border-white/5 ${t.subtleBg}${t.textMain} hover:border-white/20`
+                            }`}
+                          >
+                            <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${
+                              isSelected ? 'border-amber-400 bg-amber-400' : 'border-zinc-500'
+                            }`}>
+                              {isSelected && <div className="w-1.5 h-1.5 bg-zinc-950 rounded-full"></div>}
+                            </div>
+                            <span className="flex-1">{opt}</span>
+                          </button>
+                        );
+                      })}
                     </div>
 
-                    <button
-                      onClick={handleCheckAnswer}
-                      className={`w-full py-3.5 rounded-2xl text-xs font-bold shadow-md flex items-center justify-center gap-2 ${t.accent}`}
-                    >
-                      <i className="fa-solid fa-check-double"></i>
-                      <span>Javobni Tekshirish</span>
-                    </button>
+                    {/* Ortga va Keyingi tugmalari */}
+                    <div className="flex justify-between items-center gap-4 pt-3">
+                      <button
+                        onClick={() => setQuizIndex(prev => Math.max(0, prev - 1))}
+                        disabled={quizIndex === 0}
+                        className={`text-xs font-bold px-4 py-2.5 rounded-xl ${t.textSub} hover:${t.textMain} disabled:opacity-30`}
+                      >
+                        Ortga
+                      </button>
 
-                    {examFeedback && (
-                      <div className={`mt-3 p-4 rounded-2xl border ${
-                        examFeedback.score >= 75 ? 'border-emerald-500/40 bg-emerald-500/10' :
-                        examFeedback.score >= 40 ? 'border-amber-500/40 bg-amber-500/10' :
-                        'border-rose-500/40 bg-rose-500/10'
-                      } space-y-2.5 transition-all`}>
-                        
-                        <div className="flex justify-between items-center">
-                          <span className={`text-xs font-black uppercase ${
-                            examFeedback.score >= 75 ? 'text-emerald-400' :
-                            examFeedback.score >= 40 ? 'text-amber-400' : 'text-rose-400'
-                          }`}>
-                            {examFeedback.verdict}
-                          </span>
-                          <span className="text-sm font-black font-mono">
-                            {examFeedback.score} / 100 ball
-                          </span>
-                        </div>
-
-                        <div className="text-xs space-y-1">
-                          <span className="font-bold flex items-center gap-1.5 text-zinc-300">
-                            <i className="fa-solid fa-circle-info text-amber-400"></i> Baholash xulosasi:
-                          </span>
-                          <p className={`text-xs leading-relaxed ${t.textMain}`}>{examFeedback.praise}</p>
-                        </div>
-
-                        <div className="text-xs space-y-1 pt-2 border-t border-black/10">
-                          <span className="font-bold flex items-center gap-1.5 text-amber-400">
-                            <i className="fa-solid fa-book-open"></i> Asl kitobdagi matn:
-                          </span>
-                          <p className={`text-xs leading-relaxed italic opacity-90 ${t.textMain}`}>
-                            {examFeedback.missing}
-                          </p>
-                        </div>
-                      </div>
-                    )}
+                      <button
+                        onClick={() => {
+                          if (quizIndex < currentQList.length - 1) {
+                            setQuizIndex(prev => prev + 1);
+                          } else {
+                            setQuizFinished(true);
+                          }
+                        }}
+                        className="px-8 py-2.5 rounded-2xl text-xs font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-600/30 active:scale-95 transition"
+                      >
+                        {quizIndex === currentQList.length - 1 ? "Yakunlash" : "Keyingi"}
+                      </button>
+                    </div>
 
                   </div>
-                ) : (
-                  <div className="text-center py-12 text-sm text-zinc-500">Kitob tahlil qilinmoqda...</div>
                 )}
               </div>
             )}
