@@ -19,13 +19,39 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   </script>
   <style>
-    body { font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:#09090b; }
+    body { 
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+      background: #09090b; 
+    }
     button { transition: transform .15s ease, filter .2s ease, background-color .2s ease, box-shadow .2s ease; }
     button:active:not(:disabled) { transform: scale(.96); }
     input, textarea { color: inherit; }
     input::placeholder, textarea::placeholder { color: currentColor; opacity: .45; }
 
-    /* SOLID TOZA TEMALAR (Glass va Blur umuman yo'q) */
+    .header-safe {
+      padding-top: max(env(safe-area-inset-top), 18px);
+    }
+
+    .prayer-time-input {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      margin: 0 auto;
+      line-height: normal;
+    }
+    .prayer-time-input::-webkit-calendar-picker-indicator {
+      display: none;
+      -webkit-appearance: none;
+    }
+    .prayer-time-input::-webkit-date-and-time-value {
+      text-align: center;
+    }
+
     .app-obsidian { background: #09090b; }
     .app-light { background: #f8fafc; }
     .app-sepia { background: #f5eedf; }
@@ -47,7 +73,6 @@
     .shelf-plank { height:14px; margin:0 -8px; border-radius:6px; background:linear-gradient(180deg,#6d3510 0%, #421c06 60%, #240d02 100%); box-shadow:0 8px 18px rgba(0,0,0,.75); border-top: 1px solid #82431d; }
     .spine-gold { position:absolute; left:6px; right:6px; height:2px; background:linear-gradient(90deg,transparent,#fbbf24,transparent); opacity:.8; }
 
-    /* SOLID RSVP O'QISH QUTISI */
     .rsvp-box-solid-dark { background-color: #121215; border: 1px solid #27272a; box-shadow: inset 0 2px 6px rgba(0,0,0,0.5); }
     .rsvp-box-solid-light { background-color: #ffffff; border: 1px solid #e2e8f0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.03); }
     .rsvp-focus { text-shadow: 0 0 10px rgba(239,68,68,.7); }
@@ -74,7 +99,6 @@
     .cover-frame { position:absolute; inset:6px; border:1px solid rgba(251,191,36,.6); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; padding:4px; text-align:center; }
     .cover-title { font-family:"Playfair Display",Georgia,serif; font-weight:800; font-size:11px; color:#fde68a; line-height:1.15; overflow:hidden; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; word-break:break-word; }
 
-    /* MOTION LOGO ANIMATIONS */
     @keyframes splashPulse {
       0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(245,158,11,0.3)); }
       50% { transform: scale(1.05); filter: drop-shadow(0 0 28px rgba(245,158,11,0.6)); }
@@ -104,7 +128,6 @@
     const mk = (id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg, navBg) =>
       ({ id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg, navBg });
 
-    // SOLID, TOZA, LOYQALANMAYDIGAN XUSUSIYATLAR
     const THEMES = {
       obsidian: mk(
         'obsidian', 'Obsidian Qora', true,
@@ -263,7 +286,6 @@
       await ref.delete();
     }
 
-    // Zamonaviy Motion Emblem Logo
     function IntizomLogo({ size = 32, animated = false }) {
       return (
         <div className={`relative flex items-center justify-center flex-shrink-0 ${animated ? 'splash-logo-anim' : ''}`} style={{ width: size, height: size }}>
@@ -287,6 +309,15 @@
         </div>
       );
     }
+
+    const PRAYER_LIST = [
+      { id: "bomdod", name: "Bomdod", defaultTime: "05:15" },
+      { id: "peshin", name: "Peshin", defaultTime: "12:40" },
+      { id: "asr", name: "Asr", defaultTime: "16:25" },
+      { id: "shom", name: "Shom", defaultTime: "18:20" },
+      { id: "xufton", name: "Xufton", defaultTime: "19:50" },
+      { id: "vitr", name: "Vitr vojib", defaultTime: "20:15" }
+    ];
 
     function App() {
       const cachedData = useMemo(() => {
@@ -330,10 +361,9 @@
 
       const [books, setBooks] = useState([
         { id: 1, title: "Atom Odatlari", author: "James Clear", coverColor: "from-[#4a1217] via-[#751d24] to-[#360b0f]", content: "Kichik odatlar har kuni takrorlansa ulkan natijalarga sabab bo'ladi. Intizom bu doimiylik demakdir.", questions: [] },
-        { id: 2, title: "Fokus", author: "Cal Newport", coverColor: "from-[#0d3321] via-[#1a5336] to-[#082216]", content: "Diqqatni jamlash qobiliyati zamonaviy dunyoda eng nodir boylikdir. Chalg'ishlar dunyosida fokus g'alaba kalitidir.", questions: [] },
-        { id: 3, title: "Men Bo'lishing Uchun Yaralganman", author: "Napoleon Hill", coverColor: "from-[#172033] via-[#243556] to-[#0f1624]", content: "Inson ongi nimani tasavvur qilib unga ishona olsa, unga erisha oladi.", questions: [] }
+        { id: 2, title: "Fokus", author: "Cal Newport", coverColor: "from-[#0d3321] via-[#1a5336] to-[#082216]", content: "Diqqatni jamlash qobiliyati zamonaviy dunyoda eng nodir boylikdir. Chalg'ishlar dunyosida fokus g'alaba kalitidir.", questions: [] }
       ]);
-      const [selectedBook, setSelectedBook] = useState(books[1]);
+      const [selectedBook, setSelectedBook] = useState(books[0]);
       const [searchQuery, setSearchQuery] = useState("");
       const [uploadProgress, setUploadProgress] = useState(null);
       const [speedWPM, setSpeedWPM] = useState(300);
@@ -341,13 +371,250 @@
       const [chunkSize, setChunkSize] = useState(1);
       const [showFocus, setShowFocus] = useState(() => { try { return localStorage.getItem('intizom_focus') !== '0'; } catch (e) { return true; } });
       const toggleFocus = () => setShowFocus(v => { const n = !v; try { localStorage.setItem('intizom_focus', n ? '1' : '0'); } catch (e) {} return n; });
+      
+      const [bookProgressMap, setBookProgressMap] = useState(() => {
+        try {
+          const raw = localStorage.getItem('intizom_bookmarks');
+          return raw ? JSON.parse(raw) : {};
+        } catch(e) { return {}; }
+      });
       const [wordIndex, setWordIndex] = useState(0);
       const [isReadingRunning, setIsReadingRunning] = useState(false);
       const [quizIndex, setQuizIndex] = useState(0);
       const [selectedAnswers, setSelectedAnswers] = useState({});
       const [quizFinished, setQuizFinished] = useState(false);
 
+      const [qazoCounts, setQazoCounts] = useState(cachedData?.qazoCounts || {
+        bomdod: 0, peshin: 0, asr: 0, shom: 0, xufton: 0, vitr: 0
+      });
+      const [prayerTimes, setPrayerTimes] = useState(() => {
+        if (cachedData?.prayerTimes) return cachedData.prayerTimes;
+        const initTimes = {};
+        PRAYER_LIST.forEach(p => { initTimes[p.id] = p.defaultTime; });
+        return initTimes;
+      });
+      const [activePrayerReminder, setActivePrayerReminder] = useState(null);
+      const [calcCurrentAge, setCalcCurrentAge] = useState(26);
+      const [calcStartAge, setCalcStartAge] = useState(12);
+
+      const [todayReadQazo, setTodayReadQazo] = useState(() => {
+        try {
+          const raw = localStorage.getItem('intizom_today_qazo');
+          if (!raw) return 0;
+          const parsed = JSON.parse(raw);
+          if (parsed.date === new Date().toDateString()) return parsed.count || 0;
+          return 0;
+        } catch(e) { return 0; }
+      });
+
+      const notifiedTodayRef = useRef({});
       const cloudReady = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId && window.firebase);
+
+      useEffect(() => {
+        if (selectedBook) {
+          const savedIndex = bookProgressMap[selectedBook.id] || 0;
+          setWordIndex(savedIndex);
+        }
+      }, [selectedBook?.id]);
+
+      useEffect(() => {
+        if (selectedBook) {
+          setBookProgressMap(prev => {
+            const next = { ...prev, [selectedBook.id]: wordIndex };
+            try { localStorage.setItem('intizom_bookmarks', JSON.stringify(next)); } catch(e) {}
+            return next;
+          });
+        }
+      }, [wordIndex]);
+
+      const recordQazoRead = () => {
+        setTodayReadQazo(prev => {
+          const next = prev + 1;
+          try {
+            localStorage.setItem('intizom_today_qazo', JSON.stringify({
+              date: new Date().toDateString(),
+              count: next
+            }));
+          } catch(e) {}
+          return next;
+        });
+      };
+
+      const nextPrayerInfo = useMemo(() => {
+        const now = new Date();
+        const curMins = now.getHours() * 60 + now.getMinutes();
+
+        const sorted = PRAYER_LIST.map(p => {
+          const tStr = prayerTimes[p.id] || p.defaultTime;
+          const [h, m] = tStr.split(':').map(Number);
+          return { prayer: p, totalMins: h * 60 + m, timeStr: tStr };
+        }).sort((a, b) => a.totalMins - b.totalMins);
+
+        let target = sorted.find(x => x.totalMins > curMins);
+        let diff = 0;
+        if (target) {
+          diff = target.totalMins - curMins;
+        } else {
+          target = sorted[0];
+          diff = (24 * 60 - curMins) + target.totalMins;
+        }
+
+        const remH = Math.floor(diff / 60);
+        const remM = diff % 60;
+        return {
+          name: target.prayer.name,
+          timeStr: target.timeStr,
+          remStr: `${remH > 0 ? remH + ' soat ' : ''}${remM} daqiqa`
+        };
+      }, [prayerTimes]);
+
+      useEffect(() => {
+        if ("Notification" in window && Notification.permission === "default") {
+          Notification.requestPermission().catch(() => {});
+        }
+      }, []);
+
+      useEffect(() => {
+        const checkPrayerClock = () => {
+          const now = new Date();
+          const hh = String(now.getHours()).padStart(2, '0');
+          const mm = String(now.getMinutes()).padStart(2, '0');
+          const currentHM = `${hh}:${mm}`;
+          const todayDateKey = now.toDateString();
+
+          PRAYER_LIST.forEach(p => {
+            const targetTime = prayerTimes[p.id] || p.defaultTime;
+            const notifKey = `${todayDateKey}_${p.id}_${targetTime}`;
+
+            if (currentHM === targetTime && !notifiedTodayRef.current[notifKey]) {
+              notifiedTodayRef.current[notifKey] = true;
+              triggerPrayerReminder(p);
+
+              if ("Notification" in window && Notification.permission === "granted") {
+                try {
+                  new Notification(`${p.name} vaqti kirdi!`, {
+                    body: "Namozni hozir ado etasizmi yoki qazoga qoldirasizmi?",
+                    icon: "https://cdn-icons-png.flaticon.com/512/2855/2855502.png"
+                  });
+                } catch (e) {}
+              }
+            }
+          });
+        };
+
+        checkPrayerClock();
+        const clockInterval = setInterval(checkPrayerClock, 15000);
+        return () => clearInterval(clockInterval);
+      }, [prayerTimes]);
+
+      const playPrayerChime = () => {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          const ctx = new AudioCtx();
+          if (ctx.state === 'suspended') ctx.resume();
+
+          const chime = (freq, start, dur) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+            gain.gain.setValueAtTime(0.001, ctx.currentTime + start);
+            gain.gain.linearRampToValueAtTime(0.28, ctx.currentTime + start + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime + start);
+            osc.stop(ctx.currentTime + start + dur + 0.1);
+          };
+
+          chime(523.25, 0, 1.2);
+          chime(659.25, 0.25, 1.2);
+          chime(783.99, 0.5, 1.8);
+        } catch (e) {}
+      };
+
+      const triggerPrayerReminder = (p) => {
+        playPrayerChime();
+        setActivePrayerReminder(p);
+      };
+
+      const handlePrayerRead = () => {
+        const pName = activePrayerReminder?.name || "Namoz";
+        setActivePrayerReminder(null);
+        alert(`${pName} namozini o‘qishga kirishdingiz. Alloh qabul qilsin!`);
+      };
+
+      const handlePrayerMissed = () => {
+        if (!activePrayerReminder) return;
+        const id = activePrayerReminder.id;
+        setQazoCounts(prev => ({
+          ...prev,
+          [id]: (prev[id] || 0) + 1
+        }));
+        setActivePrayerReminder(null);
+      };
+
+      const handlePrayerSnooze = () => {
+        const p = activePrayerReminder;
+        setActivePrayerReminder(null);
+        alert("Eslatma 10 daqiqaga kechiktirildi.");
+        setTimeout(() => {
+          if (p) triggerPrayerReminder(p);
+        }, 10 * 60 * 1000);
+      };
+
+      const changeSingleQazo = (id, delta) => {
+        setQazoCounts(prev => {
+          const cur = prev[id] || 0;
+          if (delta < 0 && cur > 0) recordQazoRead();
+          return {
+            ...prev,
+            [id]: Math.max(0, cur + delta)
+          };
+        });
+      };
+
+      const updatePrayerTime = (id, val) => {
+        setPrayerTimes(prev => ({
+          ...prev,
+          [id]: val
+        }));
+      };
+
+      const completeOneFullDayQazo = () => {
+        if (window.confirm("Barcha 6 ta namozdan 1 tadan (jami 1 to‘liq kunlik qazo) ayirilsinmi?")) {
+          setQazoCounts(prev => {
+            const next = { ...prev };
+            PRAYER_LIST.forEach(p => {
+              if ((next[p.id] || 0) > 0) recordQazoRead();
+              next[p.id] = Math.max(0, (next[p.id] || 0) - 1);
+            });
+            return next;
+          });
+        }
+      };
+
+      const calculatePastQazos = () => {
+        const cur = Number(calcCurrentAge);
+        const start = Number(calcStartAge);
+        if (cur <= start) {
+          alert("Hozirgi yoshingiz qazo boshlangan yoshdan katta bo‘lishi kerak.");
+          return;
+        }
+        const missedYears = cur - start;
+        const missedDays = Math.round(missedYears * 365.25);
+        if (window.confirm(`${missedYears} yil = taxminan ${missedDays} kunlik qazo hisoblandi. Ushbu miqdor har bir namoz qazosiga belgilansinmi?`)) {
+          setQazoCounts({
+            bomdod: missedDays,
+            peshin: missedDays,
+            asr: missedDays,
+            shom: missedDays,
+            xufton: missedDays,
+            vitr: missedDays
+          });
+        }
+      };
 
       const applyData = (d) => {
         if (!d) return;
@@ -359,6 +626,8 @@
         if (d.archive) setArchive(d.archive);
         if (d.onboarded !== undefined) setOnboarded(d.onboarded);
         if (d.themeKey) setThemeKey(d.themeKey);
+        if (d.qazoCounts) setQazoCounts(d.qazoCounts);
+        if (d.prayerTimes) setPrayerTimes(d.prayerTimes);
         if (d.customBooks && d.customBooks.length) legacyBooksRef.current.push(...d.customBooks);
       };
 
@@ -394,7 +663,9 @@
       }, []);
 
       useEffect(() => {
-        const data = JSON.parse(JSON.stringify({ goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive }));
+        const data = JSON.parse(JSON.stringify({ 
+          goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive, qazoCounts, prayerTimes 
+        }));
         const id = setTimeout(() => {
           try { localStorage.setItem('intizom_v1', JSON.stringify(data)); } catch (e) {}
           if (user && cloudLoadedRef.current) {
@@ -402,7 +673,7 @@
           }
         }, 600);
         return () => clearTimeout(id);
-      }, [user, goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive]);
+      }, [user, goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive, qazoCounts, prayerTimes]);
 
       useEffect(() => {
         (async () => {
@@ -640,7 +911,6 @@
         </button>
       );
 
-      // TOZA SOLID SPLASH SCREEN
       const splashOverlay = splashActive ? (
         <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-400 ease-out bg-[#09090b] ${splashFading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="flex flex-col items-center justify-center gap-5">
@@ -656,6 +926,8 @@
           </div>
         </div>
       ) : null;
+
+      const totalQazoAmount = Object.values(qazoCounts).reduce((a, b) => a + (Number(b) || 0), 0);
 
       if (!onboarded || creatingNew) {
         const submitSetup = () => {
@@ -676,7 +948,7 @@
         return (
           <div className={`w-full h-full ${t.appBg} ${t.textMain} overflow-y-auto font-sans relative`}>
             {splashOverlay}
-            <div className="max-w-lg mx-auto p-5 md:p-8 pb-28 space-y-4">
+            <div className="max-w-lg mx-auto p-5 md:p-8 pb-32 space-y-4 header-safe">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <IntizomLogo size={28} />
@@ -705,24 +977,6 @@
                 {creatingNew && <button onClick={() => setCreatingNew(false)} className={`w-full py-2.5 rounded-xl text-xs font-bold border ${t.border} ${t.textSub}`}>Bekor qilish</button>}
               </div>
             </div>
-            {!creatingNew && (
-              <div className={`fixed bottom-3 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[30rem] h-16 rounded-2xl border ${t.border} ${t.navBg} flex justify-around items-center px-2 z-20`}>
-                {[
-                  { id: 'home', icon: 'fa-house', label: 'Asosiy' },
-                  { id: 'timer', icon: 'fa-stopwatch', label: 'Fokus' },
-                  { id: 'library', icon: 'fa-book-bookmark', label: 'Kutubxona' },
-                  { id: 'speed', icon: 'fa-bolt', label: 'Tez O‘qish' },
-                  { id: 'profile', icon: 'fa-user', label: 'Profil' },
-                ].map(tab => (
-                  <button key={tab.id} onClick={() => { if (tab.id !== 'home') alert("Avval maqsad va kunlik vazifalarni yozib, \"Boshlash\" tugmasini bosing — shundan keyin boshqa bo‘limlar ochiladi."); }}
-                    className={`relative flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl ${tab.id === 'home' ? t.accentText + ' font-bold' : t.textSub + ' opacity-40'}`}>
-                    <i className={`fa-solid ${tab.icon} text-base`}></i>
-                    <span className="text-[10px] tracking-tight">{tab.label}</span>
-                    {tab.id !== 'home' && <i className="fa-solid fa-lock absolute -top-1 -right-0.5 text-[8px]"></i>}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         );
       }
@@ -730,7 +984,8 @@
       return (
         <div className={`w-full h-full ${t.appBg} ${t.textMain} flex flex-col overflow-hidden relative transition-colors duration-200 font-sans`}>
           {splashOverlay}
-          <div className={`px-6 md:px-10 py-3.5 flex justify-between items-center border-b ${t.border} ${t.cardBg} flex-shrink-0 z-10 shadow-sm`}>
+          
+          <div className={`header-safe px-6 md:px-10 pb-3 flex justify-between items-center border-b ${t.border} ${t.cardBg} flex-shrink-0 z-10 shadow-sm`}>
             <div className="flex items-center gap-2.5">
               <IntizomLogo size={26} />
               <h1 className={t.isDark ? "brand-title-dark text-xl" : "brand-title-light text-xl"}>Intizom</h1>
@@ -750,7 +1005,7 @@
             </div>
           </div>
 
-          <div key={activeTab} className="tab-enter relative z-10 flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-4 max-w-xl md:max-w-3xl xl:max-w-4xl mx-auto w-full md:p-8">
+          <div key={activeTab} className="tab-enter relative z-10 flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-4 max-w-xl md:max-w-3xl xl:max-w-4xl mx-auto w-full md:p-8 pb-36">
 
             {activeTab === 'home' && (
               <div className="space-y-4">
@@ -847,6 +1102,182 @@
                     <button onClick={addTask} className={`px-5 py-2.5 rounded-xl text-sm font-bold ${t.accent}`}>+</button>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* QAZO NAMOZLARI MODULI */}
+            {activeTab === 'namoz' && (
+              <div className="space-y-4">
+                
+                <div className={`${t.cardBg} border ${t.border} p-4 rounded-2xl shadow-sm flex items-center justify-between`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-lg">
+                      <i className="fa-solid fa-hourglass-half animate-pulse"></i>
+                    </div>
+                    <div>
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${t.textSub}`}>Keyingi namoz</span>
+                      <h4 className={`text-sm font-black ${t.textMain}`}>{nextPrayerInfo.name} ({nextPrayerInfo.timeStr})</h4>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-[10px] ${t.textSub}`}>Qolgan vaqt:</span>
+                    <div className="text-xs font-black text-amber-400 font-mono">{nextPrayerInfo.remStr}</div>
+                  </div>
+                </div>
+
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-4`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Mening qazo namozlarim</span>
+                      <h2 className={`text-base font-black mt-0.5 ${t.textMain}`}>Hisob va Ado etish nazorati</h2>
+                    </div>
+                    <div className="bg-emerald-500/15 border border-emerald-500/30 px-3.5 py-1.5 rounded-xl text-right">
+                      <span className="text-[10px] text-zinc-400 uppercase font-bold block">Jami Qazo</span>
+                      <span className="text-base font-black text-emerald-400">{totalQazoAmount.toLocaleString()} ta</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between px-1 py-1 text-xs">
+                    <span className={t.textSub}>Bugun o‘qilgan qazo namozlari:</span>
+                    <span className="font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">{todayReadQazo} ta</span>
+                  </div>
+
+                  <button 
+                    onClick={completeOneFullDayQazo}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition flex items-center justify-center gap-2"
+                  >
+                    <i className="fa-solid fa-layer-group"></i>
+                    1 to‘liq kunlik qazo o‘qidim (Barchasidan −1)
+                  </button>
+                </div>
+
+                <div className={`${t.cardBg} border ${t.border} p-4 rounded-2xl shadow-sm space-y-3`}>
+                  <div className="flex justify-between items-center px-1">
+                    <div>
+                      <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Namoz vaqtlari</span>
+                      <span className={`text-[10px] block ${t.textSub}`}>Vaqtlarni o‘zgartiring (shu vaqtda signal beradi)</span>
+                    </div>
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                      ● Avtomat signal faol
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {PRAYER_LIST.map(p => {
+                      const curTime = prayerTimes[p.id] || p.defaultTime;
+                      return (
+                        <div key={p.id} className={`p-3 rounded-xl border ${t.border} ${t.subtleBg} flex flex-col justify-between space-y-2.5 overflow-hidden box-border`}>
+                          <div className="flex justify-between items-center">
+                            <span className={`text-xs font-bold ${t.textMain}`}>{p.name}</span>
+                            <button 
+                              onClick={() => triggerPrayerReminder(p)}
+                              title="Signalni sinab ko‘rish"
+                              className="text-[10px] text-zinc-400 hover:text-amber-400 transition"
+                            >
+                              <i className="fa-solid fa-bell"></i>
+                            </button>
+                          </div>
+                          
+                          <div className="w-full flex justify-center items-center">
+                            <div className="w-full max-w-[140px] h-10 rounded-xl border border-zinc-800 bg-black/40 flex items-center justify-center px-1">
+                              <input 
+                                type="time" 
+                                value={curTime}
+                                onChange={(e) => updatePrayerTime(p.id, e.target.value)}
+                                className="prayer-time-input w-full bg-transparent text-amber-400 font-mono font-black text-sm text-center outline-none cursor-pointer"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="text-[9px] text-center text-zinc-500">
+                            Signal vaqti: <b className="text-zinc-400">{curTime}</b>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-3`}>
+                  <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub} block px-1`}>Namozlar bo‘yicha qazo soni</span>
+                  
+                  <div className="space-y-2">
+                    {PRAYER_LIST.map(p => {
+                      const count = Number(qazoCounts[p.id]) || 0;
+                      return (
+                        <div key={p.id} className={`flex items-center justify-between p-3 rounded-xl border ${t.border} ${t.subtleBg}`}>
+                          <div>
+                            <h4 className={`text-sm font-bold ${t.textMain}`}>{p.name}</h4>
+                            <span className={`text-xs ${t.textSub}`}>
+                              Qolgan: <b className="text-amber-400 font-mono">{count.toLocaleString()} ta</b>
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-1.5">
+                            <button 
+                              onClick={() => changeSingleQazo(p.id, -1)}
+                              disabled={count === 0}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 disabled:hover:bg-emerald-600 text-white font-bold text-xs transition"
+                              title="1 ta o‘qidim"
+                            >
+                              O‘qidim (−1)
+                            </button>
+                            <button 
+                              onClick={() => changeSingleQazo(p.id, 1)}
+                              className="w-7 h-7 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 font-bold text-xs flex items-center justify-center transition"
+                              title="1 ta qo‘shish"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-3`}>
+                  <div className="flex items-center gap-2">
+                    <i className="fa-solid fa-calculator text-amber-400 text-sm"></i>
+                    <h3 className={`text-sm font-bold ${t.textMain}`}>O‘tgan yillar qazolarini hisoblash</h3>
+                  </div>
+                  <p className={`text-xs leading-relaxed ${t.textSub}`}>
+                    Yoshingiz bo‘yicha qoldirilgan yillarni avtomatik 6 ta namozga teng taqsimlab beradi.
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="space-y-1">
+                      <label className={`text-[11px] font-bold ${t.textSub}`}>Hozirgi yoshingiz</label>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        max="120"
+                        value={calcCurrentAge} 
+                        onChange={e => setCalcCurrentAge(e.target.value)}
+                        className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm font-bold outline-none focus:border-amber-400`} 
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className={`text-[11px] font-bold ${t.textSub}`}>Qazo boshlangan yosh</label>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        max="120"
+                        value={calcStartAge} 
+                        onChange={e => setCalcStartAge(e.target.value)}
+                        className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm font-bold outline-none focus:border-amber-400`} 
+                      />
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={calculatePastQazos}
+                    className={`w-full py-2.5 rounded-xl text-xs font-bold border ${t.border} ${t.subtleBg} ${t.textMain} hover:border-amber-400 transition mt-1`}
+                  >
+                    Avtomat hisoblash va belgilash
+                  </button>
+                </div>
+
               </div>
             )}
 
@@ -975,7 +1406,7 @@
                               return (
                                 <div key={b.id} title={b.title}
                                   style={{ height: 120 + (b.id % 4) * 12, width: w }}
-                                  onClick={() => { setSelectedBook(b); setWordIndex(0); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }}
+                                  onClick={() => { setSelectedBook(b); setWordIndex(bookProgressMap[b.id] || 0); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }}
                                   className={`real-spine bg-gradient-to-b ${b.coverColor} ${isCurrent ? 'sel' : ''}`}>
                                   <div className="spine-gold" style={{ top: 8 }}></div>
                                   <div className="spine-gold" style={{ top: 12 }}></div>
@@ -1014,11 +1445,11 @@
                         </div>
                         <h4 className={`text-sm font-bold truncate ${t.textMain}`}>{selectedBook.title}</h4>
                         <div className={`text-xs ${t.textSub}`}><i className="fa-regular fa-clock text-amber-500 mr-1.5"></i>≈ {Math.max(1, Math.round(wordsList.length / 250))} daq o‘qish</div>
-                        <div className={`text-xs ${t.textSub}`}><i className="fa-solid fa-align-left text-amber-500 mr-1.5"></i>{wordsList.length.toLocaleString()} so‘z</div>
+                        <div className={`text-xs ${t.textSub}`}><i className="fa-solid fa-bookmark text-emerald-400 mr-1.5"></i>Xatcho‘p: {bookProgressMap[selectedBook.id] || 0}-so‘zda</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3 pt-1">
-                      <button onClick={() => { setWordIndex(0); setActiveTab('speed'); }} className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 ${t.accent}`}>
+                      <button onClick={() => { setActiveTab('speed'); }} className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 ${t.accent}`}>
                         <i className="fa-solid fa-bolt text-xs"></i><span>Tez O‘qish</span>
                       </button>
                       <button onClick={() => { setActiveTab('ai_exam'); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider border ${t.border} ${t.subtleBg} ${t.textMain} hover:opacity-80 flex items-center justify-center gap-2`}>
@@ -1037,7 +1468,6 @@
                   <span className={`font-mono text-xs ${t.textSub}`}>{wordsList.length > 0 ? wordIndex + 1 : 0} / {wordsList.length}</span>
                 </div>
 
-                {/* SOLID TOZA DIQQAT MARKAZI */}
                 <div className={`w-full h-44 md:h-64 rounded-2xl ${t.isDark ? 'rsvp-box-solid-dark' : 'rsvp-box-solid-light'} flex items-center justify-center p-5 relative`}>
                   {!selectedBook ? (
                     <div className="text-center space-y-2">
@@ -1090,22 +1520,31 @@
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center gap-2 flex-wrap px-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={`text-xs ${t.textSub} font-bold mr-1`}>Ko‘rinish:</span>
-                    {[1, 2, 3].map(n => (
-                      <button key={n} onClick={() => setChunkSize(n)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition flex items-center gap-1.5 ${chunkSize === n ? t.accent : `${t.border} ${t.subtleBg}${t.textMain}`}`}>
-                        <i className="fa-solid fa-font text-[10px]"></i> {n} ta
+                {/* TO'G'RILANGAN: Qizil tugma A 3 ta ning O'NG TOMONIDA va BIR QATORDA */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                    <span className={`text-xs ${t.textSub} font-bold mr-1 whitespace-nowrap`}>Ko‘rinish:</span>
+                    <div className="flex items-center gap-1.5 flex-nowrap">
+                      {[1, 2, 3].map(n => (
+                        <button key={n} onClick={() => setChunkSize(n)} className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] font-bold border transition whitespace-nowrap flex items-center gap-1 ${chunkSize === n ? t.accent : `${t.border} ${t.subtleBg} ${t.textMain}`}`}>
+                          <i className="fa-solid fa-font text-[9px]"></i> {n} ta
+                        </button>
+                      ))}
+                      
+                      {/* Qizil tugma aynan A 3 ta ning o'ng yonida, bir qatorda joylashgan */}
+                      <button onClick={toggleFocus} title="Markazdagi qizil harfni yoqish/o‘chirish" className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border transition whitespace-nowrap ${showFocus ? 'border-red-500/50 bg-red-500/15 text-red-500' : `${t.border} ${t.subtleBg} ${t.textSub}`}`}>
+                        <i className={`fa-solid ${showFocus ? 'fa-eye' : 'fa-eye-slash'} text-[10px]`}></i> Qizil: {showFocus ? 'Yoq' : 'O‘chiq'}
                       </button>
-                    ))}
-                    <button onClick={toggleFocus} title="Markazdagi qizil harfni yoqish/o‘chirish" className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border ${showFocus ? 'border-red-500/50 bg-red-500/15 text-red-500' : `${t.border} ${t.subtleBg}${t.textSub}`}`}>
-                      <i className={`fa-solid ${showFocus ? 'fa-eye' : 'fa-eye-slash'} text-[10px]`}></i> Qizil: {showFocus ? 'Yoq' : 'O‘chiq'}
-                    </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <button onClick={() => setFontSize(p => Math.max(22, p - 4))} className={`w-8 h-8 rounded-lg border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>−</button>
-                    <span className={`text-xs font-bold ${t.textMain} px-1.5 min-w-[2rem] text-center`}>{fontSize}</span>
-                    <button onClick={() => setFontSize(p => Math.min(64, p + 4))} className={`w-8 h-8 rounded-lg border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>+</button>
+
+                  <div className="flex items-center justify-between px-1">
+                    <span className={`text-xs ${t.textSub} font-medium`}>Shrift o‘lchami:</span>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setFontSize(p => Math.max(22, p - 4))} className={`w-8 h-8 rounded-lg border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>−</button>
+                      <span className={`text-xs font-bold ${t.textMain} px-1.5 min-w-[2rem] text-center`}>{fontSize}</span>
+                      <button onClick={() => setFontSize(p => Math.min(64, p + 4))} className={`w-8 h-8 rounded-lg border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>+</button>
+                    </div>
                   </div>
                 </div>
 
@@ -1191,17 +1630,51 @@
             )}
           </div>
 
-          {/* SOLID TOZA NAVIGATSIYA PANEL DOCK */}
-          <div className={`h-16 mx-3 mb-3 md:w-[30rem] md:self-center rounded-2xl border ${t.navBg} flex justify-around items-center px-2 flex-shrink-0 z-20 shadow-md`}>
+          {activePrayerReminder && (
+            <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
+              <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl text-center`}>
+                <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold">
+                  <i className="fa-solid fa-bell animate-bounce"></i>
+                </div>
+                <div>
+                  <h3 className="text-lg font-black">{activePrayerReminder.name} vaqti kirdi!</h3>
+                  <p className={`text-xs mt-1 ${t.textSub}`}>Ushbu namozni hozir ado etasizmi yoki qazoga qoldirasizmi?</p>
+                </div>
+                <div className="space-y-2 pt-2">
+                  <button 
+                    onClick={handlePrayerRead}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-zinc-950 font-bold text-sm shadow-md active:scale-95 transition flex items-center justify-center gap-2"
+                  >
+                    <i className="fa-solid fa-check"></i> O‘qiyman
+                  </button>
+                  <button 
+                    onClick={handlePrayerSnooze}
+                    className="w-full py-2.5 rounded-xl border border-amber-500/40 text-amber-400 hover:bg-amber-500/10 font-bold text-xs active:scale-95 transition flex items-center justify-center gap-2"
+                  >
+                    <i className="fa-solid fa-clock"></i> 10 daqiqadan keyin yana eslat
+                  </button>
+                  <button 
+                    onClick={handlePrayerMissed}
+                    className="w-full py-2.5 rounded-xl border border-red-500/40 text-red-500 hover:bg-red-500/10 font-bold text-xs active:scale-95 transition flex items-center justify-center gap-2"
+                  >
+                    <i className="fa-solid fa-clock-rotate-left"></i> O‘qishga ulgurmayman (Qazoga tushsin)
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className={`fixed bottom-3 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[32rem] h-16 rounded-2xl border ${t.navBg} flex justify-around items-center px-2 z-20 shadow-md`}>
             {[
               { id: 'home', icon: 'fa-house', label: 'Asosiy' },
+              { id: 'namoz', icon: 'fa-kaaba', label: 'Namoz' },
               { id: 'timer', icon: 'fa-stopwatch', label: 'Fokus' },
               { id: 'library', icon: 'fa-book-bookmark', label: 'Kutubxona' },
               { id: 'speed', icon: 'fa-bolt', label: 'Tez O‘qish' },
               { id: 'profile', icon: 'fa-user', label: 'Profil' },
             ].map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center gap-1 transition px-3.5 py-1.5 rounded-xl ${activeTab === tab.id ? t.accentText + ' font-bold bg-black/10 dark:bg-white/10' : t.textSub}`}>
+                className={`flex flex-col items-center gap-1 transition px-2.5 py-1.5 rounded-xl ${activeTab === tab.id ? t.accentText + ' font-bold bg-black/10 dark:bg-white/10' : t.textSub}`}>
                 <i className={`fa-solid ${tab.icon} text-base`}></i>
                 <span className="text-[10px] tracking-tight">{tab.label}</span>
               </button>
