@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Intizom - Shaxsiy Rivojlanish</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -18,74 +19,75 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   </script>
   <style>
-    body { font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; background:#09090b; }
+    body { font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background:#09090b; }
     button { transition: transform .15s ease, filter .2s ease, background-color .2s ease, box-shadow .2s ease; }
     button:active:not(:disabled) { transform: scale(.96); }
     input, textarea { color: inherit; }
     input::placeholder, textarea::placeholder { color: currentColor; opacity: .45; }
 
-    .app-obsidian { background: radial-gradient(650px circle at 12% 0%, rgba(251,191,36,.20), transparent 60%), radial-gradient(550px circle at 100% 35%, rgba(244,63,94,.14), transparent 60%), radial-gradient(500px circle at 0% 100%, rgba(139,92,246,.14), transparent 60%), linear-gradient(160deg,#09090b,#18181b 55%,#0c0a09); }
-    .app-light { background: radial-gradient(650px circle at 10% 0%, rgba(99,102,241,.22), transparent 60%), radial-gradient(550px circle at 100% 30%, rgba(236,72,153,.15), transparent 60%), radial-gradient(500px circle at 0% 100%, rgba(14,165,233,.18), transparent 60%), linear-gradient(160deg,#f8fafc,#e0e7ff 60%,#fdf2f8); }
-    .app-sepia { background: radial-gradient(650px circle at 10% 0%, rgba(217,119,6,.22), transparent 60%), radial-gradient(550px circle at 100% 40%, rgba(190,90,60,.16), transparent 60%), linear-gradient(160deg,#f8f2e6,#efe2c8 60%,#f6e9d6); }
-    .app-midnight { background: radial-gradient(650px circle at 12% 0%, rgba(59,130,246,.28), transparent 60%), radial-gradient(550px circle at 100% 35%, rgba(139,92,246,.24), transparent 60%), radial-gradient(500px circle at 0% 100%, rgba(6,182,212,.16), transparent 60%), linear-gradient(160deg,#050a16,#0b1226 55%,#070b18); }
-    .app-emerald { background: radial-gradient(650px circle at 12% 0%, rgba(16,185,129,.26), transparent 60%), radial-gradient(550px circle at 100% 35%, rgba(20,184,166,.20), transparent 60%), radial-gradient(500px circle at 0% 100%, rgba(132,204,22,.12), transparent 60%), linear-gradient(160deg,#03110b,#062016 55%,#04130d); }
+    /* SOLID TOZA TEMALAR (Glass va Blur umuman yo'q) */
+    .app-obsidian { background: #09090b; }
+    .app-light { background: #f8fafc; }
+    .app-sepia { background: #f5eedf; }
+    .app-midnight { background: #0b0f19; }
+    .app-emerald { background: #05130e; }
+
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    @keyframes tabIn { from { opacity:0; transform: translateY(14px) scale(.985); } to { opacity:1; transform:none; } }
-    .tab-enter > * { animation: tabIn .45s cubic-bezier(.2,.8,.2,1) both; }
-    @keyframes floaty { 0%,100% { transform: translate(0,0); } 50% { transform: translate(18px,-26px); } }
-    .orb { position:absolute; border-radius:9999px; filter: blur(70px); pointer-events:none; opacity:.45; animation: floaty 14s ease-in-out infinite; z-index:0; }
-    .orb-a { width:220px; height:220px; background:#f59e0b; top:8%; left:-60px; }
-    .orb-b { width:200px; height:200px; background:#10b981; bottom:14%; right:-60px; animation-delay:-6s; }
-    .hero-pct { font-size:56px; line-height:1; font-weight:900; letter-spacing:-2px; background:linear-gradient(135deg,#fde68a,#f59e0b 45%,#10b981); -webkit-background-clip:text; background-clip:text; color:transparent; filter: drop-shadow(0 0 18px rgba(245,158,11,.45)); }
-    .glow-emerald { box-shadow: 0 0 24px rgba(16,185,129,.25), inset 0 1px 0 rgba(255,255,255,.12); }
-    .glow-amber { box-shadow: 0 0 22px rgba(251,191,36,.35); }
+    @keyframes tabIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+    .tab-enter > * { animation: tabIn .25s ease-out both; }
+
+    .hero-pct { font-size:54px; line-height:1; font-weight:900; letter-spacing:-2px; background:linear-gradient(135deg,#fde68a,#f59e0b 55%,#10b981); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    
     .ring-wrap { position:relative; width:250px; height:250px; }
-    .ring-wrap svg { transform: rotate(-90deg); filter: drop-shadow(0 0 14px rgba(251,191,36,.55)); }
+    .ring-wrap svg { transform: rotate(-90deg); filter: drop-shadow(0 4px 12px rgba(0,0,0,.4)); }
     .ring-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
 
-    .shelf-plank { height:14px; margin:0 -8px; border-radius:6px; background:linear-gradient(180deg,#6d3510 0%, #421c06 60%, #240d02 100%); box-shadow:0 8px 18px rgba(0,0,0,.75), inset 0 2px 0 rgba(255,255,255,.22); border-top: 1px solid #82431d; }
+    .shelf-plank { height:14px; margin:0 -8px; border-radius:6px; background:linear-gradient(180deg,#6d3510 0%, #421c06 60%, #240d02 100%); box-shadow:0 8px 18px rgba(0,0,0,.75); border-top: 1px solid #82431d; }
     .spine-gold { position:absolute; left:6px; right:6px; height:2px; background:linear-gradient(90deg,transparent,#fbbf24,transparent); opacity:.8; }
 
-    .rsvp-box { background-image: linear-gradient(rgba(251,191,36,.0), rgba(251,191,36,.0)), radial-gradient(circle at 50% 50%, rgba(244,63,94,.16), transparent 62%); box-shadow: inset 0 0 40px rgba(0,0,0,.35), 0 0 30px rgba(244,63,94,.10); overflow:hidden; }
-    .rsvp-box-light { background-color: rgba(255,255,255,0.7); box-shadow: inset 0 0 20px rgba(0,0,0,.06), 0 10px 25px rgba(0,0,0,.05); }
-    .rsvp-box::before, .rsvp-box::after { content:""; position:absolute; left:50%; width:2px; height:16px; background:linear-gradient(#f43f5e,transparent); transform:translateX(-50%); opacity:.7; }
-    .rsvp-box::before { top:0; } .rsvp-box::after { bottom:0; transform:translateX(-50%) rotate(180deg); }
-    .rsvp-focus { text-shadow: 0 0 14px rgba(244,63,94,.95), 0 0 30px rgba(244,63,94,.6); }
-    .avatar-ring { padding:3px; border-radius:9999px; background:conic-gradient(from 0deg,#f59e0b,#10b981,#8b5cf6,#f59e0b); box-shadow:0 0 22px rgba(245,158,11,.4); }
+    /* SOLID RSVP O'QISH QUTISI */
+    .rsvp-box-solid-dark { background-color: #121215; border: 1px solid #27272a; box-shadow: inset 0 2px 6px rgba(0,0,0,0.5); }
+    .rsvp-box-solid-light { background-color: #ffffff; border: 1px solid #e2e8f0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.03); }
+    .rsvp-focus { text-shadow: 0 0 10px rgba(239,68,68,.7); }
+
+    .avatar-ring { padding:2px; border-radius:9999px; background:linear-gradient(135deg,#f59e0b,#10b981); }
     .archive-card { border-left:4px solid #10b981; }
-    .nav-glass { box-shadow: 0 18px 40px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.06), inset 0 1px 0 rgba(255,255,255,.14); }
-    .nav-active { box-shadow: 0 0 18px rgba(251,191,36,.35), inset 0 1px 0 rgba(255,255,255,.3); transform: translateY(-3px); }
-    .sec-title { letter-spacing:.18em; }
 
-    .brand-title-dark { font-family:"Playfair Display",Georgia,serif; font-weight:800; letter-spacing:.02em; background:linear-gradient(135deg,#fde68a,#d97706 55%,#b45309); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 1px 8px rgba(245,158,11,.3)); }
-    .brand-title-light { font-family:"Playfair Display",Georgia,serif; font-weight:800; letter-spacing:.02em; background:linear-gradient(135deg,#78350f,#b45309 60%,#d97706); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 1px 2px rgba(0,0,0,.15)); }
+    .brand-title-dark { font-family:"Playfair Display",Georgia,serif; font-weight:800; letter-spacing:.02em; background:linear-gradient(135deg,#fde68a,#d97706 60%,#b45309); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .brand-title-light { font-family:"Playfair Display",Georgia,serif; font-weight:800; letter-spacing:.02em; background:linear-gradient(135deg,#78350f,#b45309 60%,#d97706); -webkit-background-clip:text; background-clip:text; color:transparent; }
 
-    .glass-edge { outline: 1px solid rgba(255,255,255,.06); outline-offset:-1px; }
-
-    .bookcase { padding: 0 14px 16px; border-radius: 36px 36px 24px 24px; background: linear-gradient(90deg, #1b0902 0%, #3e1b07 6%, #2d1305 15%, #2d1305 85%, #3e1b07 94%, #1b0902 100%); box-shadow: 0 28px 50px rgba(0,0,0,.75), inset 0 0 0 2px #512509; }
-    .bookcase-crown { height: 24px; margin: 0 -14px 12px; border-radius: 36px 36px 8px 8px; background: linear-gradient(180deg, #854013 0%, #522509 60%, #2f1304 100%); box-shadow: 0 6px 14px rgba(0,0,0,.6), inset 0 2px 2px rgba(255,255,255,.3); border-top: 1px solid #a8581f; position: relative; }
-    .bookcase-crown::after { content: ""; position: absolute; bottom: 3px; left: 10%; right: 10%; height: 2px; background: linear-gradient(90deg, transparent, rgba(251,191,36,0.35), transparent); }
-    .bookcase-back { background: linear-gradient(180deg, #150701 0%, #0c0400 100%); border-radius: 20px 20px 10px 10px; padding: 16px 8px 0; box-shadow: inset 0 18px 30px rgba(0,0,0,.9), inset 0 0 0 2px rgba(0,0,0,.6); }
+    .bookcase { padding: 0 14px 16px; border-radius: 28px; background: #1f0c03; box-shadow: 0 20px 40px rgba(0,0,0,.7); border: 2px solid #3d1706; }
+    .bookcase-crown { height: 20px; margin: 0 -14px 12px; border-radius: 28px 28px 6px 6px; background: #522509; border-top: 1px solid #7c3b12; position: relative; }
+    .bookcase-back { background: #110500; border-radius: 16px; padding: 16px 8px 0; }
     .shelf-books { display:flex; align-items:flex-end; gap:3px; padding:0 8px; min-height:160px; }
 
-    .real-spine { position:relative; flex:0 0 auto; border-radius:4px 3px 3px 4px; cursor:pointer; transition:transform .25s ease, box-shadow .25s ease; box-shadow:3px 0 7px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.09); overflow:visible; display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:22px 0 16px; }
-    .real-spine::before { content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; background:linear-gradient(90deg,rgba(255,255,255,.32) 0%,rgba(255,255,255,.05) 18%,rgba(0,0,0,0) 45%,rgba(0,0,0,.55) 100%); }
-    .real-spine::after { content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px); }
-    .real-spine:hover { transform: translateY(-6px); }
-    .real-spine.sel { transform: translateY(-15px); box-shadow:0 18px 24px rgba(0,0,0,.7), 0 0 0 1px #fbbf24, 0 0 26px rgba(251,191,36,.55); }
-    .spine-title { writing-mode:vertical-rl; font-family:"Playfair Display",Georgia,serif; font-weight:700; color:#fde68a; font-size:11px; letter-spacing:.08em; text-shadow:0 1px 2px rgba(0,0,0,.8); max-height:62%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+    .real-spine { position:relative; flex:0 0 auto; border-radius:4px 3px 3px 4px; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease; box-shadow:3px 0 7px rgba(0,0,0,.65); display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:22px 0 16px; }
+    .real-spine:hover { transform: translateY(-5px); }
+    .real-spine.sel { transform: translateY(-12px); box-shadow:0 12px 20px rgba(0,0,0,.6), 0 0 0 2px #fbbf24; }
+    .spine-title { writing-mode:vertical-rl; font-family:"Playfair Display",Georgia,serif; font-weight:700; color:#fde68a; font-size:11px; letter-spacing:.08em; max-height:62%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 
-    .ribbon-tail { position: absolute; bottom: -13px; left: 50%; transform: translateX(-50%); width: 13px; height: 18px; background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%); box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 30; }
+    .ribbon-tail { position: absolute; bottom: -13px; left: 50%; transform: translateX(-50%); width: 13px; height: 18px; background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%); z-index: 30; }
 
-    .book-cover { width:84px; height:118px; border-radius:3px 8px 8px 3px; position:relative; flex-shrink:0; box-shadow:7px 9px 18px rgba(0,0,0,.55), inset 3px 0 0 rgba(0,0,0,.35), inset 6px 0 0 rgba(255,255,255,.12); transform:perspective(500px) rotateY(-14deg); }
-    .cover-frame { position:absolute; inset:7px 7px 7px 12px; border:1px solid rgba(251,191,36,.6); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; padding:4px; text-align:center; }
+    .book-cover { width:84px; height:118px; border-radius:4px 8px 8px 4px; position:relative; flex-shrink:0; box-shadow:4px 6px 14px rgba(0,0,0,.45); }
+    .cover-frame { position:absolute; inset:6px; border:1px solid rgba(251,191,36,.6); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; padding:4px; text-align:center; }
     .cover-title { font-family:"Playfair Display",Georgia,serif; font-weight:800; font-size:11px; color:#fde68a; line-height:1.15; overflow:hidden; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; word-break:break-word; }
-    .rsvp-box.no-guide::before, .rsvp-box.no-guide::after { display:none; }
+
+    /* MOTION LOGO ANIMATIONS */
+    @keyframes splashPulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(245,158,11,0.3)); }
+      50% { transform: scale(1.05); filter: drop-shadow(0 0 28px rgba(245,158,11,0.6)); }
+    }
+    @keyframes logoSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .splash-logo-anim { animation: splashPulse 2.2s ease-in-out infinite; }
+    .splash-glow-ring { animation: logoSpin 14s linear infinite; }
   </style>
 </head>
-<body style="height:100dvh" class="flex justify-center items-center h-screen m-0 p-0 antialiased selection:bg-amber-500 selection:text-black overflow-hidden">
+<body style="height:100dvh" class="flex justify-center items-center h-screen m-0 p-0 antialiased selection:bg-amber-500 selection:text-black overflow-hidden bg-[#09090b]">
   <div id="root" class="w-full h-full flex justify-center"></div>
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
@@ -99,15 +101,56 @@
       appId: "1:131558530387:web:45c4b99acbf7c04654d5a6"
     };
 
-    const mk = (id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg) =>
-      ({ id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg });
+    const mk = (id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg, navBg) =>
+      ({ id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg, navBg });
 
+    // SOLID, TOZA, LOYQALANMAYDIGAN XUSUSIYATLAR
     const THEMES = {
-      obsidian: mk('obsidian','Obsidian (Tungi)',true,'app-obsidian','bg-white/[0.06] backdrop-blur-xl glass-edge shadow-xl shadow-black/20','border-white/10','text-zinc-100','text-zinc-400','bg-gradient-to-r from-amber-400 to-orange-500 text-zinc-950 shadow-lg shadow-amber-500/25 hover:brightness-110','text-amber-400','accent-amber-400','bg-amber-400/10 text-amber-300 border-amber-400/20','bg-white/[0.07] backdrop-blur-md','bg-zinc-800'),
-      light: mk('light','Yorug‘lik (Kunduzgi)',false,'app-light','bg-white/80 backdrop-blur-xl border-slate-200 shadow-lg shadow-indigo-950/5','border-slate-300','text-slate-900','text-slate-600','bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:brightness-110','text-blue-600','accent-blue-600','bg-blue-50 text-blue-800 border-blue-200','bg-slate-100/80 backdrop-blur-md','bg-slate-300'),
-      sepia: mk('sepia','Qog‘oz / Sepia (Kunduzgi)',false,'app-sepia','bg-[#fcf9f2]/85 backdrop-blur-xl border-[#dcd1be] shadow-lg shadow-amber-950/5','border-[#cfc1a8]','text-[#2f2416]','text-[#6e5d48]','bg-gradient-to-r from-[#b8743a] to-[#8a4b1f] text-white shadow-lg shadow-amber-900/25 hover:brightness-110','text-[#8c4f22]','accent-[#8c4f22]','bg-[#ede3d1] text-[#5c3417] border-[#d5c3a6]','bg-[#f4ebe0]/90 backdrop-blur-md','bg-[#dcd0bd]'),
-      midnight: mk('midnight','Midnight (Tungi)',true,'app-midnight','bg-blue-300/[0.07] backdrop-blur-xl glass-edge shadow-xl shadow-black/30','border-blue-200/15','text-blue-50','text-blue-300/70','bg-gradient-to-r from-blue-500 to-violet-500 text-white shadow-lg shadow-blue-500/30 hover:brightness-110','text-blue-400','accent-blue-500','bg-blue-500/10 text-blue-300 border-blue-500/20','bg-white/[0.07] backdrop-blur-md','bg-slate-800'),
-      emerald: mk('emerald','Zumrad (Tungi)',true,'app-emerald','bg-emerald-300/[0.07] backdrop-blur-xl glass-edge shadow-xl shadow-black/30','border-emerald-200/15','text-emerald-50','text-emerald-300/70','bg-gradient-to-r from-emerald-400 to-teal-400 text-zinc-950 shadow-lg shadow-emerald-500/25 hover:brightness-110','text-emerald-400','accent-emerald-400','bg-emerald-500/10 text-emerald-300 border-emerald-500/20','bg-white/[0.07] backdrop-blur-md','bg-emerald-950')
+      obsidian: mk(
+        'obsidian', 'Obsidian Qora', true,
+        'app-obsidian', 'bg-[#141417]', 'border-[#242429]',
+        'text-zinc-100', 'text-zinc-400',
+        'bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold shadow-md shadow-amber-500/20',
+        'text-amber-400', 'accent-amber-400',
+        'bg-amber-500/10 text-amber-300 border-amber-500/20',
+        'bg-[#1a1a20]', 'bg-zinc-800', 'bg-[#121215] border-[#27272a]'
+      ),
+      light: mk(
+        'light', 'Yorug‘lik Oq', false,
+        'app-light', 'bg-white shadow-sm', 'border-slate-200',
+        'text-slate-900', 'text-slate-500',
+        'bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md shadow-blue-500/20',
+        'text-blue-600', 'accent-blue-600',
+        'bg-blue-50 text-blue-800 border-blue-200',
+        'bg-slate-100', 'bg-slate-200', 'bg-white border-slate-200 shadow-lg'
+      ),
+      sepia: mk(
+        'sepia', 'Sepia Qog‘oz', false,
+        'app-sepia', 'bg-[#fcf8f0] shadow-sm', 'border-[#e4d8c5]',
+        'text-[#2f2416]', 'text-[#75624c]',
+        'bg-[#8c4f22] hover:bg-[#77411a] text-white font-bold shadow-md',
+        'text-[#8c4f22]', 'accent-[#8c4f22]',
+        'bg-[#ede3d1] text-[#5c3417] border-[#d5c3a6]',
+        'bg-[#f2e9dc]', 'bg-[#ded0be]', 'bg-[#fcf8f0] border-[#decbb4] shadow-md'
+      ),
+      midnight: mk(
+        'midnight', 'Midnight Ko‘k', true,
+        'app-midnight', 'bg-[#111827]', 'border-slate-800',
+        'text-slate-100', 'text-slate-400',
+        'bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-md shadow-blue-500/20',
+        'text-blue-400', 'accent-blue-500',
+        'bg-blue-500/10 text-blue-300 border-blue-500/20',
+        'bg-[#172136]', 'bg-slate-800', 'bg-[#0e1422] border-slate-800'
+      ),
+      emerald: mk(
+        'emerald', 'Zumrad Yashil', true,
+        'app-emerald', 'bg-[#091a13]', 'border-emerald-900/40',
+        'text-emerald-50', 'text-emerald-300/70',
+        'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold shadow-md shadow-emerald-500/20',
+        'text-emerald-400', 'accent-emerald-400',
+        'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+        'bg-[#0f261d]', 'bg-emerald-950', 'bg-[#06150f] border-emerald-900/50'
+      )
     };
 
     const BOOK_COLORS = [
@@ -220,22 +263,55 @@
       await ref.delete();
     }
 
+    // Zamonaviy Motion Emblem Logo
+    function IntizomLogo({ size = 32, animated = false }) {
+      return (
+        <div className={`relative flex items-center justify-center flex-shrink-0 ${animated ? 'splash-logo-anim' : ''}`} style={{ width: size, height: size }}>
+          {animated && (
+            <div className="absolute inset-0 rounded-full border border-amber-500/20 splash-glow-ring scale-125 pointer-events-none"></div>
+          )}
+          <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logoGrad" x1="10%" y1="0%" x2="90%" y2="100%">
+                <stop offset="0%" stopColor="#fde68a" />
+                <stop offset="45%" stopColor="#f59e0b" />
+                <stop offset="100%" stopColor="#10b981" />
+              </linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r="46" fill="#141417" stroke="url(#logoGrad)" strokeWidth="3.5" strokeDasharray="6 3" />
+            <polygon points="50,16 80,48 50,40 20,48" fill="url(#logoGrad)" />
+            <polygon points="50,42 74,70 50,62 26,70" fill="url(#logoGrad)" opacity="0.9" />
+            <polygon points="50,64 68,86 50,80 32,86" fill="url(#logoGrad)" opacity="0.75" />
+            <circle cx="50" cy="18" r="4.5" fill="#fde68a" />
+          </svg>
+        </div>
+      );
+    }
+
     function App() {
+      const cachedData = useMemo(() => {
+        try {
+          const raw = localStorage.getItem('intizom_v1');
+          return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+          return null;
+        }
+      }, []);
+
       const [activeTab, setActiveTab] = useState('home');
-      const [themeKey, setThemeKey] = useState('obsidian');
-      const [goalTitle, setGoalTitle] = useState("");
-      const [goalDays, setGoalDays] = useState(10);
-      const [currentDay, setCurrentDay] = useState(1);
+      const [themeKey, setThemeKey] = useState(cachedData?.themeKey || 'obsidian');
+      const [goalTitle, setGoalTitle] = useState(cachedData?.goalTitle !== undefined ? cachedData.goalTitle : "");
+      const [goalDays, setGoalDays] = useState(cachedData?.goalDays || 10);
+      const [currentDay, setCurrentDay] = useState(cachedData?.currentDay || 1);
       const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
       const [tempTitle, setTempTitle] = useState("");
       const [tempDays, setTempDays] = useState(10);
-      const [dayTasks, setDayTasks] = useState({});
-      const [completedDays, setCompletedDays] = useState([]);
-      const [onboarded, setOnboarded] = useState(false);
+      const [dayTasks, setDayTasks] = useState(cachedData?.dayTasks || {});
+      const [completedDays, setCompletedDays] = useState(cachedData?.completedDays || []);
+      const [onboarded, setOnboarded] = useState(cachedData?.onboarded !== undefined ? cachedData.onboarded : false);
       const [user, setUser] = useState(null);
-      const [hydrated, setHydrated] = useState(false);
       const [syncError, setSyncError] = useState("");
-      const [archive, setArchive] = useState([]);
+      const [archive, setArchive] = useState(cachedData?.archive || []);
       const [creatingNew, setCreatingNew] = useState(false);
       const cloudLoadedRef = useRef(false);
       const legacyBooksRef = useRef([]);
@@ -248,6 +324,9 @@
       const [pomoMinutes, setPomoMinutes] = useState(25);
       const [secondsLeft, setSecondsLeft] = useState(25 * 60);
       const [isTimerRunning, setIsTimerRunning] = useState(false);
+
+      const [splashActive, setSplashActive] = useState(true);
+      const [splashFading, setSplashFading] = useState(false);
 
       const [books, setBooks] = useState([
         { id: 1, title: "Atom Odatlari", author: "James Clear", coverColor: "from-[#4a1217] via-[#751d24] to-[#360b0f]", content: "Kichik odatlar har kuni takrorlansa ulkan natijalarga sabab bo'ladi. Intizom bu doimiylik demakdir.", questions: [] },
@@ -284,35 +363,48 @@
       };
 
       useEffect(() => {
-        try { const raw = localStorage.getItem('intizom_v1'); if (raw) applyData(JSON.parse(raw)); } catch (e) {}
-        if (!cloudReady) { setHydrated(true); return; }
-        if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-        return firebase.auth().onAuthStateChanged(async (u) => {
-          if (u) {
-            try {
-              const snap = await firebase.firestore().collection('intizom_users').doc(u.uid).get();
-              if (snap.exists) applyData(snap.data());
-              cloudLoadedRef.current = true;
-              setSyncError("");
-            } catch (e) { setSyncError(e.code || e.message); }
-          } else { cloudLoadedRef.current = false; }
-          setUser(u);
-          setHydrated(true);
-        });
+        const fadeTimer = setTimeout(() => setSplashFading(true), 900);
+        const hideTimer = setTimeout(() => setSplashActive(false), 1300);
+        return () => { clearTimeout(fadeTimer); clearTimeout(hideTimer); };
       }, []);
 
       useEffect(() => {
-        if (!hydrated) return;
+        if (!cloudReady) return;
+        try {
+          if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+          const unsub = firebase.auth().onAuthStateChanged(async (u) => {
+            if (u) {
+              try {
+                const snap = await firebase.firestore().collection('intizom_users').doc(u.uid).get();
+                if (snap.exists) applyData(snap.data());
+                cloudLoadedRef.current = true;
+                setSyncError("");
+              } catch (e) {
+                setSyncError(e.code || e.message);
+              }
+            } else {
+              cloudLoadedRef.current = false;
+            }
+            setUser(u);
+          });
+          return () => unsub();
+        } catch(e) {
+          console.error("Firebase init error:", e);
+        }
+      }, []);
+
+      useEffect(() => {
         const data = JSON.parse(JSON.stringify({ goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive }));
         const id = setTimeout(() => {
           try { localStorage.setItem('intizom_v1', JSON.stringify(data)); } catch (e) {}
-          if (user && cloudLoadedRef.current) userRef(user.uid).set(data, { merge: true }).then(() => setSyncError("")).catch(e => setSyncError(e.code || e.message));
-        }, 700);
+          if (user && cloudLoadedRef.current) {
+            userRef(user.uid).set(data, { merge: true }).then(() => setSyncError("")).catch(e => setSyncError(e.code || e.message));
+          }
+        }, 600);
         return () => clearTimeout(id);
-      }, [hydrated, user, goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive]);
+      }, [user, goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive]);
 
       useEffect(() => {
-        if (!hydrated) return;
         (async () => {
           try {
             const map = new Map();
@@ -348,7 +440,7 @@
             }
           } catch (e) { console.error(e); }
         })();
-      }, [hydrated, user]);
+      }, [user]);
 
       const fileInputRef = useRef(null);
       const t = THEMES[themeKey] || THEMES.obsidian;
@@ -543,19 +635,27 @@
           {!syncError && <span className={`hidden sm:inline text-[10px] ${t.textSub}`}>☁ Bulutda</span>}
         </button>
       ) : (
-        <button onClick={signIn} className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${t.border} ${t.textMain} flex items-center gap-1.5`}>
+        <button onClick={signIn} className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${t.border} ${t.textMain} flex items-center gap-1.5 bg-black/5 dark:bg-white/5`}>
           <i className="fa-brands fa-google"></i> Kirish
         </button>
       );
 
-      if (!hydrated) {
-        return (
-          <div className={`w-full h-full ${t.appBg} ${t.textMain} flex flex-col items-center justify-center gap-3`}>
-            <h1 className={t.isDark ? "brand-title-dark text-3xl" : "brand-title-light text-3xl"}>Intizom</h1>
-            <i className="fa-solid fa-circle-notch fa-spin text-amber-400"></i>
+      // TOZA SOLID SPLASH SCREEN
+      const splashOverlay = splashActive ? (
+        <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-400 ease-out bg-[#09090b] ${splashFading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <div className="flex flex-col items-center justify-center gap-5">
+            <IntizomLogo size={92} animated={true} />
+            <div className="text-center space-y-1">
+              <h1 className="text-3xl font-extrabold tracking-wider font-serif text-amber-400">INTIZOM</h1>
+              <p className="text-[11px] uppercase tracking-[0.25em] font-semibold text-zinc-400">Shaxsiy Rivojlanish & Fokus</p>
+            </div>
+            <div className="flex items-center gap-2 mt-3">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+              <span className="text-[11px] font-medium tracking-wide text-zinc-500">Tayyorlanmoqda...</span>
+            </div>
           </div>
-        );
-      }
+        </div>
+      ) : null;
 
       if (!onboarded || creatingNew) {
         const submitSetup = () => {
@@ -574,35 +674,39 @@
           setCompletedDays([]); setCurrentDay(1); setActiveTab('home'); setOnboarded(true); setCreatingNew(false);
         };
         return (
-          <div className={`w-full h-full ${t.appBg} ${t.textMain} overflow-y-auto font-sans`}>
+          <div className={`w-full h-full ${t.appBg} ${t.textMain} overflow-y-auto font-sans relative`}>
+            {splashOverlay}
             <div className="max-w-lg mx-auto p-5 md:p-8 pb-28 space-y-4">
               <div className="flex items-center justify-between">
-                <h1 className={t.isDark ? "brand-title-dark text-2xl" : "brand-title-light text-2xl"}>Intizom</h1>
+                <div className="flex items-center gap-2.5">
+                  <IntizomLogo size={28} />
+                  <h1 className={t.isDark ? "brand-title-dark text-2xl" : "brand-title-light text-2xl"}>Intizom</h1>
+                </div>
                 {authButton}
               </div>
-              <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-4 shadow-sm`}>
+              <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-4 shadow-sm`}>
                 <div>
                   <h2 className={`font-black text-base ${t.textMain}`}>{creatingNew ? "Yangi maqsad" : "Maqsad va vazifalar"}</h2>
                   <p className={`text-xs mt-1 ${t.textSub}`}>Boshlash uchun maqsad va kunlik vazifalarni yozing.</p>
                 </div>
                 <div className="space-y-1.5">
                   <label className={`text-xs font-bold ${t.textSub}`}>Maqsadingiz</label>
-                  <input value={setupTitle} onChange={e => setSetupTitle(e.target.value)} placeholder="Masalan: 10 kunda yangi kitob o'qish" className={`w-full p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none`} />
+                  <input value={setupTitle} onChange={e => setSetupTitle(e.target.value)} placeholder="Masalan: 10 kunda yangi kitob o'qish" className={`w-full p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none focus:border-amber-500`} />
                 </div>
                 <div className="space-y-1.5">
                   <label className={`text-xs font-bold ${t.textSub}`}>Necha kunlik reja?</label>
-                  <input type="number" min="1" max="365" value={setupDays} onChange={e => setSetupDays(e.target.value)} className={`w-28 p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none`} />
+                  <input type="number" min="1" max="365" value={setupDays} onChange={e => setSetupDays(e.target.value)} className={`w-28 p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none focus:border-amber-500`} />
                 </div>
                 <div className="space-y-1.5">
                   <label className={`text-xs font-bold ${t.textSub}`}>Har kungi vazifalar (har qatorga bittadan)</label>
-                  <textarea rows="5" value={setupTasks} onChange={e => setSetupTasks(e.target.value)} placeholder={"20 daqiqa kitob o‘qish\n25 daqiqa fokus ishlash"} className={`w-full p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none resize-none`} />
+                  <textarea rows="5" value={setupTasks} onChange={e => setSetupTasks(e.target.value)} placeholder={"20 daqiqa kitob o‘qish\n25 daqiqa fokus ishlash"} className={`w-full p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none resize-none focus:border-amber-500`} />
                 </div>
-                <button onClick={submitSetup} className={`w-full py-3 rounded-2xl text-sm font-bold shadow-md ${t.accent}`}>{creatingNew ? "Yangi maqsadni boshlash" : "Boshlash"}</button>
-                {creatingNew && <button onClick={() => setCreatingNew(false)} className={`w-full py-2.5 rounded-2xl text-xs font-bold border ${t.border} ${t.textSub}`}>Bekor qilish</button>}
+                <button onClick={submitSetup} className={`w-full py-3 rounded-xl text-sm font-bold ${t.accent}`}>{creatingNew ? "Yangi maqsadni boshlash" : "Boshlash"}</button>
+                {creatingNew && <button onClick={() => setCreatingNew(false)} className={`w-full py-2.5 rounded-xl text-xs font-bold border ${t.border} ${t.textSub}`}>Bekor qilish</button>}
               </div>
             </div>
             {!creatingNew && (
-              <div className={`fixed bottom-3 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[30rem] h-16 rounded-3xl border ${t.border} ${t.cardBg} nav-glass flex justify-around items-center px-2 z-20`}>
+              <div className={`fixed bottom-3 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[30rem] h-16 rounded-2xl border ${t.border} ${t.navBg} flex justify-around items-center px-2 z-20`}>
                 {[
                   { id: 'home', icon: 'fa-house', label: 'Asosiy' },
                   { id: 'timer', icon: 'fa-stopwatch', label: 'Fokus' },
@@ -611,7 +715,7 @@
                   { id: 'profile', icon: 'fa-user', label: 'Profil' },
                 ].map(tab => (
                   <button key={tab.id} onClick={() => { if (tab.id !== 'home') alert("Avval maqsad va kunlik vazifalarni yozib, \"Boshlash\" tugmasini bosing — shundan keyin boshqa bo‘limlar ochiladi."); }}
-                    className={`relative flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl ${tab.id === 'home' ? t.accentText + ' nav-active font-bold bg-gradient-to-b from-white/30 to-white/5 ring-1 ring-white/30' : t.textSub + ' opacity-40'}`}>
+                    className={`relative flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl ${tab.id === 'home' ? t.accentText + ' font-bold' : t.textSub + ' opacity-40'}`}>
                     <i className={`fa-solid ${tab.icon} text-base`}></i>
                     <span className="text-[10px] tracking-tight">{tab.label}</span>
                     {tab.id !== 'home' && <i className="fa-solid fa-lock absolute -top-1 -right-0.5 text-[8px]"></i>}
@@ -624,23 +728,24 @@
       }
 
       return (
-        <div className={`w-full h-full ${t.appBg} ${t.textMain} flex flex-col overflow-hidden relative transition-colors duration-300 font-sans`}>
-          <div className="orb orb-a"></div><div className="orb orb-b"></div>
-          <div className={`px-6 md:px-10 py-4 flex justify-between items-center border-b ${t.border} flex-shrink-0 relative z-10`}>
-            <div className="flex items-center gap-2">
+        <div className={`w-full h-full ${t.appBg} ${t.textMain} flex flex-col overflow-hidden relative transition-colors duration-200 font-sans`}>
+          {splashOverlay}
+          <div className={`px-6 md:px-10 py-3.5 flex justify-between items-center border-b ${t.border} ${t.cardBg} flex-shrink-0 z-10 shadow-sm`}>
+            <div className="flex items-center gap-2.5">
+              <IntizomLogo size={26} />
               <h1 className={t.isDark ? "brand-title-dark text-xl" : "brand-title-light text-xl"}>Intizom</h1>
               {authButton}
             </div>
-            <div className={`flex items-center gap-1.5 p-1 rounded-full ${t.cardBg} border ${t.border}`}>
+            <div className={`flex items-center gap-1.5 p-1 rounded-lg ${t.subtleBg} border ${t.border}`}>
               {[
-                { k: 'obsidian', color: 'bg-zinc-900 border border-zinc-600', title: 'Obsidian Qora' },
+                { k: 'obsidian', color: 'bg-zinc-950 border border-zinc-700', title: 'Obsidian Qora' },
                 { k: 'light', color: 'bg-white border border-slate-300', title: 'Yorug‘lik Oq' },
                 { k: 'sepia', color: 'bg-[#e7d8be] border border-[#b89f78]', title: 'Sepia Qog‘oz' },
                 { k: 'midnight', color: 'bg-blue-600', title: 'Midnight Ko‘k' },
                 { k: 'emerald', color: 'bg-emerald-600', title: 'Zumrad Yashil' }
               ].map(item => (
                 <button key={item.k} onClick={() => setThemeKey(item.k)} title={item.title}
-                  className={`w-4 h-4 rounded-full transition-transform ${item.color} ${themeKey === item.k ? 'scale-125 ring-2 ring-blue-500 shadow' : 'opacity-60 hover:opacity-100'}`} />
+                  className={`w-4 h-4 rounded-full transition-transform ${item.color} ${themeKey === item.k ? 'scale-125 ring-2 ring-amber-500 shadow' : 'opacity-60 hover:opacity-100'}`} />
               ))}
             </div>
           </div>
@@ -649,44 +754,44 @@
 
             {activeTab === 'home' && (
               <div className="space-y-4">
-                <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-3 shadow-sm`}>
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-3.5 shadow-sm`}>
                   <div className="flex items-end justify-between">
                     <div>
-                      <span className={`text-[11px] font-bold uppercase sec-title ${t.textSub}`}>Maqsad statistikasi</span>
+                      <span className={`text-[11px] font-bold uppercase tracking-wider ${t.textSub}`}>Maqsad statistikasi</span>
                       <div className={`text-xs mt-1 ${t.textSub}`}>{goalTitle}</div>
                     </div>
                     <span className="hero-pct">{overallPct}<span className="text-2xl">%</span></span>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-2xl p-3 bg-emerald-500/10 border border-emerald-500/30 glow-emerald">
+                    <div className="rounded-xl p-3 bg-emerald-500/10 border border-emerald-500/25">
                       <div className="text-2xl font-black text-emerald-500">{doneCount}</div>
                       <div className={`text-xs font-semibold ${t.textSub}`}>Yakunlangan kun (to‘liq: {fullDays})</div>
                     </div>
-                    <div className={`rounded-2xl p-3 ${t.subtleBg} border ${t.border}`}>
+                    <div className={`rounded-xl p-3 ${t.subtleBg} border ${t.border}`}>
                       <div className={`text-2xl font-black ${t.textMain}`}>{remainCount}</div>
                       <div className={`text-xs font-semibold ${t.textSub}`}>Qolgan kun</div>
                     </div>
                   </div>
-                  <div className={`w-full h-2.5 rounded-full ${t.sliderBg} overflow-hidden`}>
-                    <div className="h-full bg-gradient-to-r from-emerald-400 to-amber-400 transition-all duration-500 shadow-[0_0_12px_rgba(16,185,129,.8)]" style={{ width: `${overallPct}%` }}></div>
+                  <div className={`w-full h-2 rounded-full ${t.sliderBg} overflow-hidden`}>
+                    <div className="h-full bg-gradient-to-r from-emerald-500 to-amber-500 transition-all duration-300" style={{ width: `${overallPct}%` }}></div>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {Array.from({ length: goalDays }, (_, i) => i + 1).map(d => (
                       <button key={d} onClick={() => setCurrentDay(d)} title={`${d}-kun`}
-                        className={`w-6 h-6 rounded-md text-[9px] font-bold transition ${completedDays.includes(d) ? (dayScore(d) === 1 ? 'bg-emerald-500 text-white' : dayScore(d) > 0 ? 'bg-amber-500 text-white' : 'bg-red-500/70 text-white') : `${t.subtleBg} ${t.textSub}`} ${d === currentDay ? 'ring-2 ring-amber-400' : ''}`}>{d}</button>
+                        className={`w-6 h-6 rounded text-[9px] font-bold transition ${completedDays.includes(d) ? (dayScore(d) === 1 ? 'bg-emerald-500 text-white' : dayScore(d) > 0 ? 'bg-amber-500 text-white' : 'bg-red-500/80 text-white') : `${t.subtleBg} ${t.textSub}`} ${d === currentDay ? 'ring-2 ring-amber-400 font-extrabold' : ''}`}>{d}</button>
                     ))}
                   </div>
                   <button onClick={toggleDayComplete}
-                    className={`w-full py-3 rounded-2xl text-sm font-bold shadow-md flex items-center justify-center gap-2 ${isDayDone ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30' : t.accent}`}>
+                    className={`w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${isDayDone ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30' : t.accent}`}>
                     <i className={`fa-solid ${isDayDone ? 'fa-circle-check' : 'fa-flag-checkered'}`}></i>
                     {isDayDone ? `${currentDay}-kun yakunlandi (bekor qilish)` : `${currentDay}-kunni yakunlash`}
                   </button>
-                  <button onClick={startNewGoal} className={`w-full py-2.5 rounded-2xl text-xs font-bold border ${t.border} ${t.textMain} flex items-center justify-center gap-2 hover:opacity-80`}>
+                  <button onClick={startNewGoal} className={`w-full py-2.5 rounded-xl text-xs font-bold border ${t.border} ${t.textMain} ${t.subtleBg} flex items-center justify-center gap-2 hover:opacity-80`}>
                     <i className="fa-solid fa-rotate"></i> Maqsadni yangilash
                   </button>
                 </div>
 
-                <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl relative shadow-sm`}>
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl relative shadow-sm`}>
                   <div className="flex justify-between items-start mb-2">
                     <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Bosh Reja</span>
                     <button onClick={() => { setTempTitle(goalTitle); setTempDays(goalDays); setIsGoalModalOpen(true); }} className={`text-xs font-semibold ${t.accentText} hover:opacity-80 transition`}>Tahrirlash</button>
@@ -705,23 +810,23 @@
                   <input type="range" min="1" max={goalDays} value={currentDay} onChange={(e) => setCurrentDay(Number(e.target.value))} className={`w-full mt-3 h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
                 </div>
 
-                <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-3 shadow-sm`}>
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-3 shadow-sm`}>
                   <div className="flex justify-between items-center">
                     <h3 className={`text-xs font-bold tracking-tight uppercase ${t.textSub}`}>{currentDay}-Kunning vazifalari</h3>
                     <span className={`text-xs font-semibold ${t.textSub}`}>{completedTasksCount} / {currentTasks.length}</span>
                   </div>
                   <div className="space-y-2.5">
                     {currentTasks.length > 0 ? currentTasks.map(tk => (
-                      <div key={tk.id} className={`flex items-center justify-between p-3 rounded-2xl border ${t.border} ${t.subtleBg} transition-all`}>
+                      <div key={tk.id} className={`flex items-center justify-between p-3 rounded-xl border ${t.border} ${t.subtleBg} transition-all`}>
                         {editingTaskId === tk.id ? (
                           <div className="flex gap-2 w-full">
-                            <input type="text" value={editingTaskText} onChange={(e) => setEditingTaskText(e.target.value)} className={`flex-1 ${t.cardBg} text-sm px-3 py-2 rounded-xl border ${t.border} ${t.textMain} focus:outline-none`} autoFocus />
-                            <button onClick={() => saveEditingTask(tk.id)} className="px-3 py-1.5 bg-emerald-500 text-white font-bold rounded-xl text-xs"><i className="fa-solid fa-check"></i></button>
+                            <input type="text" value={editingTaskText} onChange={(e) => setEditingTaskText(e.target.value)} className={`flex-1 ${t.cardBg} text-sm px-3 py-2 rounded-lg border ${t.border} ${t.textMain} focus:outline-none`} autoFocus />
+                            <button onClick={() => saveEditingTask(tk.id)} className="px-3 py-1.5 bg-emerald-500 text-white font-bold rounded-lg text-xs"><i className="fa-solid fa-check"></i></button>
                           </div>
                         ) : (
                           <>
                             <div onClick={() => toggleTask(tk.id)} className="flex items-center gap-3 flex-1 cursor-pointer select-none">
-                              <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition ${tk.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-zinc-400'}`}>
+                              <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition ${tk.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-zinc-500'}`}>
                                 {tk.done && <i className="fa-solid fa-check text-[10px] font-black"></i>}
                               </div>
                               <span className={`text-sm font-medium leading-snug ${tk.done ? `line-through ${t.textSub}` : t.textMain}`}>{tk.text}</span>
@@ -738,8 +843,8 @@
                     )}
                   </div>
                   <div className="flex gap-2 pt-1">
-                    <input type="text" placeholder="Yangi vazifa..." value={newTaskText} onChange={(e) => setNewTaskText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTask()} className={`flex-1 ${t.subtleBg} border ${t.border} rounded-2xl px-4 py-2.5 text-sm ${t.textMain} focus:outline-none`} />
-                    <button onClick={addTask} className={`px-5 py-2.5 rounded-2xl text-sm font-bold ${t.accent}`}>+</button>
+                    <input type="text" placeholder="Yangi vazifa..." value={newTaskText} onChange={(e) => setNewTaskText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTask()} className={`flex-1 ${t.subtleBg} border ${t.border} rounded-xl px-4 py-2.5 text-sm ${t.textMain} focus:outline-none focus:border-amber-500`} />
+                    <button onClick={addTask} className={`px-5 py-2.5 rounded-xl text-sm font-bold ${t.accent}`}>+</button>
                   </div>
                 </div>
               </div>
@@ -747,7 +852,7 @@
 
             {activeTab === 'profile' && (
               <div className="space-y-4">
-                <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-3 shadow-sm`}>
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-3.5 shadow-sm`}>
                   <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Profil</span>
                   {user ? (
                     <>
@@ -759,18 +864,18 @@
                         </div>
                       </div>
                       <div className={`text-xs font-semibold ${syncError ? 'text-red-500' : 'text-emerald-500'}`}>
-                        {syncError ? `⚠ Bulutda xatolik: ${syncError}` : "☁ Ma’lumotlar bulutda saqlanmoqda"}
+                        {syncError ? `⚠ Bulutda xatolik: ${syncError}` : "☁ Ma’lumotlar bulutda xavfsiz saqlanmoqda"}
                       </div>
-                      <button onClick={signOut} className="w-full py-2.5 rounded-2xl text-sm font-bold border border-red-500/40 text-red-500 flex items-center justify-center gap-2"><i className="fa-solid fa-right-from-bracket"></i> Profildan chiqish</button>
+                      <button onClick={signOut} className="w-full py-2.5 rounded-xl text-sm font-bold border border-red-500/40 text-red-500 flex items-center justify-center gap-2 hover:bg-red-500/10"><i className="fa-solid fa-right-from-bracket"></i> Profildan chiqish</button>
                     </>
                   ) : (
                     <>
                       <p className={`text-xs ${t.textSub}`}>Hisobga kirmagansiz — ma’lumotlar faqat shu qurilmada saqlanadi.</p>
-                      <button onClick={signIn} className={`w-full py-2.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 ${t.accent}`}><i className="fa-brands fa-google"></i> Google bilan kirish</button>
+                      <button onClick={signIn} className={`w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${t.accent}`}><i className="fa-brands fa-google"></i> Google bilan kirish</button>
                     </>
                   )}
                 </div>
-                <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-3 shadow-sm`}>
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-3 shadow-sm`}>
                   <div className="flex justify-between items-center">
                     <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Maqsadlar arxivi</span>
                     <span className={`text-xs font-semibold ${t.textSub}`}>{archive.length} ta</span>
@@ -778,7 +883,7 @@
                   {archive.length === 0 ? (
                     <div className={`text-center text-sm py-3 ${t.textSub}`}>Hozircha arxiv bo‘sh.</div>
                   ) : [...archive].reverse().map(a => (
-                    <div key={a.id} className={`archive-card rounded-2xl p-3 border ${t.border} ${t.subtleBg} space-y-2`}>
+                    <div key={a.id} className={`archive-card rounded-xl p-3.5 border ${t.border} ${t.subtleBg} space-y-2`}>
                       <div className="flex justify-between items-start gap-2">
                         <div className="min-w-0">
                           <div className={`text-sm font-bold ${t.textMain}`}>{a.title}</div>
@@ -790,7 +895,7 @@
                       <div className={`flex justify-between items-center text-[11px] ${t.textSub}`}>
                         <span>Yakunlangan kun: {a.finished}/{a.days}</span>
                         <span>Vazifalar: {a.tDone}/{a.tTotal}</span>
-                        <button onClick={() => { if (confirm("Arxivdan o‘chirasizmi?")) setArchive(prev => prev.filter(x => x.id !== a.id)); }} className="text-red-500"><i className="fa-solid fa-trash"></i></button>
+                        <button onClick={() => { if (confirm("Arxivdan o‘chirasizmi?")) setArchive(prev => prev.filter(x => x.id !== a.id)); }} className="text-red-500 hover:text-red-600"><i className="fa-solid fa-trash"></i></button>
                       </div>
                     </div>
                   ))}
@@ -803,7 +908,7 @@
                 <span className={`text-xs font-bold uppercase tracking-widest ${t.textSub}`}>Chuqur Ishlash Rejimi</span>
                 <div className="ring-wrap">
                   <svg width="250" height="250" viewBox="0 0 250 250">
-                    <circle cx="125" cy="125" r="108" fill="none" stroke={t.isDark ? "rgba(255,255,255,.1)" : "rgba(0,0,0,.12)"} strokeWidth="12" />
+                    <circle cx="125" cy="125" r="108" fill="none" stroke={t.isDark ? "#1c1c21" : "#e2e8f0"} strokeWidth="12" />
                     <circle cx="125" cy="125" r="108" fill="none" stroke="url(#tg)" strokeWidth="12" strokeLinecap="round" strokeDasharray={2*Math.PI*108} strokeDashoffset={2*Math.PI*108*(1 - secondsLeft/(pomoMinutes*60))} style={{ transition: 'stroke-dashoffset 1s linear' }} />
                     <defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#fbbf24" /><stop offset="100%" stopColor="#10b981" /></linearGradient></defs>
                   </svg>
@@ -813,10 +918,10 @@
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <button onClick={() => setIsTimerRunning(!isTimerRunning)} className={`px-8 py-3 rounded-2xl font-bold text-sm shadow-lg ${t.accent}`}>{isTimerRunning ? 'To‘xtatish' : 'Boshlash'}</button>
-                  <button onClick={() => { setIsTimerRunning(false); setSecondsLeft(pomoMinutes * 60); }} className={`px-5 py-3 rounded-2xl font-semibold text-sm border ${t.border} ${t.textMain} hover:opacity-80`}>Qaytarish</button>
+                  <button onClick={() => setIsTimerRunning(!isTimerRunning)} className={`px-8 py-3 rounded-xl font-bold text-sm ${t.accent}`}>{isTimerRunning ? 'To‘xtatish' : 'Boshlash'}</button>
+                  <button onClick={() => { setIsTimerRunning(false); setSecondsLeft(pomoMinutes * 60); }} className={`px-5 py-3 rounded-xl font-semibold text-sm border ${t.border} ${t.subtleBg} ${t.textMain} hover:opacity-80`}>Qaytarish</button>
                 </div>
-                <div className={`w-full ${t.cardBg} border ${t.border} p-5 rounded-3xl shadow-sm`}>
+                <div className={`w-full ${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm`}>
                   <div className="flex justify-between text-sm mb-2.5">
                     <span className={t.textSub}>Vaqtni sozlash</span>
                     <span className={`font-bold ${t.textMain}`}>{pomoMinutes} daqiqa</span>
@@ -830,7 +935,7 @@
 
             {activeTab === 'library' && (
               <div className="space-y-4">
-                <div className={`p-4 rounded-[32px] border ${t.border} ${t.cardBg} space-y-3.5 shadow-2xl`}>
+                <div className={`p-4 rounded-2xl border ${t.border} ${t.cardBg} space-y-3.5 shadow-sm`}>
                   <div className="flex justify-between items-center px-1">
                     <div>
                       <h2 className={t.isDark ? "brand-title-dark text-2xl" : "brand-title-light text-2xl"}>Kitob Javoni</h2>
@@ -838,7 +943,7 @@
                     </div>
                     <input type="file" accept="application/pdf" ref={fileInputRef} onChange={handlePdfUpload} className="hidden" />
                     <button onClick={() => fileInputRef.current.click()} disabled={uploadProgress !== null}
-                      className={`text-xs px-4 py-2.5 rounded-2xl font-bold flex items-center gap-2.5 shadow-xl ${t.accent} active:scale-95 transition`}>
+                      className={`text-xs px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 ${t.accent} active:scale-95 transition`}>
                       <i className="fa-solid fa-file-pdf text-xs"></i>
                       <span>{uploadProgress !== null ? `${uploadProgress}%` : "+ PDF Qo‘shish"}</span>
                     </button>
@@ -847,7 +952,7 @@
                     <i className={`fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-xs ${t.textSub}`}></i>
                     <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Kitoblardan qidirish..."
-                      className={`w-full pl-10 pr-4 py-3 text-xs rounded-full ${t.isDark ? 'bg-black/40 border border-white/10' : 'bg-black/5 border border-black/10'} ${t.textMain} focus:outline-none focus:border-amber-500 shadow-inner`} />
+                      className={`w-full pl-10 pr-4 py-2.5 text-xs rounded-xl ${t.subtleBg} border ${t.border} ${t.textMain} focus:outline-none focus:border-amber-500`} />
                   </div>
                 </div>
 
@@ -890,7 +995,7 @@
                 )}
 
                 {selectedBook && (
-                  <div className={`${t.cardBg} border ${t.border} p-5 rounded-[32px] space-y-4 shadow-2xl`}>
+                  <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-4 shadow-sm`}>
                     <div className="flex gap-4 items-center pb-1">
                       <div className={`book-cover bg-gradient-to-br ${selectedBook.coverColor}`}>
                         <div className="cover-frame">
@@ -902,7 +1007,7 @@
                       </div>
                       <div className="flex-1 min-w-0 space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className={`text-[10px] uppercase sec-title font-bold ${t.accentText}`}>Tanlangan asar</span>
+                          <span className={`text-[10px] uppercase tracking-wider font-bold ${t.accentText}`}>Tanlangan asar</span>
                           <button onClick={(e) => deleteBook(selectedBook.id, e)} title="Kitobni o'chirish" className="text-xs text-red-500 hover:text-red-600 font-bold px-2 py-0.5 rounded-lg border border-red-500/20 bg-red-500/10">
                             <i className="fa-solid fa-trash-can mr-1"></i> O‘chirish
                           </button>
@@ -913,10 +1018,10 @@
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3 pt-1">
-                      <button onClick={() => { setWordIndex(0); setActiveTab('speed'); }} className={`py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg ${t.accent}`}>
+                      <button onClick={() => { setWordIndex(0); setActiveTab('speed'); }} className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 ${t.accent}`}>
                         <i className="fa-solid fa-bolt text-xs"></i><span>Tez O‘qish</span>
                       </button>
-                      <button onClick={() => { setActiveTab('ai_exam'); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider border ${t.border} ${t.subtleBg} ${t.textMain} hover:opacity-80 flex items-center justify-center gap-2 shadow-lg`}>
+                      <button onClick={() => { setActiveTab('ai_exam'); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider border ${t.border} ${t.subtleBg} ${t.textMain} hover:opacity-80 flex items-center justify-center gap-2`}>
                         <i className={`fa-solid fa-brain ${t.accentText} text-xs`}></i><span>Test / Viktorina</span>
                       </button>
                     </div>
@@ -932,7 +1037,8 @@
                   <span className={`font-mono text-xs ${t.textSub}`}>{wordsList.length > 0 ? wordIndex + 1 : 0} / {wordsList.length}</span>
                 </div>
 
-                <div className={`w-full h-44 md:h-64 rounded-3xl border ${t.border} ${t.isDark ? `${t.cardBg} rsvp-box` : 'rsvp-box-light'} ${showFocus ? '' : 'no-guide'} flex items-center justify-center p-5 relative shadow-inner`}>
+                {/* SOLID TOZA DIQQAT MARKAZI */}
+                <div className={`w-full h-44 md:h-64 rounded-2xl ${t.isDark ? 'rsvp-box-solid-dark' : 'rsvp-box-solid-light'} flex items-center justify-center p-5 relative`}>
                   {!selectedBook ? (
                     <div className="text-center space-y-2">
                       <p className={`text-sm ${t.textSub}`}>Kutubxonadan kitob tanlang yoki yangi PDF yuklang</p>
@@ -941,7 +1047,7 @@
                   ) : wordIndex >= wordsList.length - 1 && wordsList.length > 0 ? (
                     <div className="text-center space-y-3">
                       <span className="text-sm font-bold text-emerald-500 block">Kitob to‘liq mutolaa qilindi! 🎉</span>
-                      <button onClick={() => setActiveTab('ai_exam')} className={`px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg ${t.accent}`}>Testni Boshlash</button>
+                      <button onClick={() => setActiveTab('ai_exam')} className={`px-5 py-2.5 rounded-xl text-xs font-bold ${t.accent}`}>Testni Boshlash</button>
                     </div>
                   ) : (
                     <span style={{ fontSize: `${fontSize}px` }} className={`font-black text-center ${t.textMain} tracking-wide select-none leading-tight transition-all duration-75 px-4`}>
@@ -969,7 +1075,7 @@
                   )}
                 </div>
 
-                <div className={`${t.cardBg} border ${t.border} p-4 rounded-2xl space-y-3 shadow-sm`}>
+                <div className={`${t.cardBg} border ${t.border} p-4 rounded-xl space-y-3 shadow-sm`}>
                   <div className="flex justify-between text-xs font-medium">
                     <span className={`${t.textSub} flex items-center gap-1.5`}><i className="fa-solid fa-sliders text-xs"></i> Pozitsiya:</span>
                     <span className={`${t.textMain} font-bold`}>
@@ -988,42 +1094,42 @@
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className={`text-xs ${t.textSub} font-bold mr-1`}>Ko‘rinish:</span>
                     {[1, 2, 3].map(n => (
-                      <button key={n} onClick={() => setChunkSize(n)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition flex items-center gap-1.5 ${chunkSize === n ? t.accent : `${t.border} ${t.subtleBg} ${t.textMain}`}`}>
+                      <button key={n} onClick={() => setChunkSize(n)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition flex items-center gap-1.5 ${chunkSize === n ? t.accent : `${t.border} ${t.subtleBg}${t.textMain}`}`}>
                         <i className="fa-solid fa-font text-[10px]"></i> {n} ta
                       </button>
                     ))}
-                    <button onClick={toggleFocus} title="Markazdagi qizil harfni yoqish/o‘chirish" className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border ${showFocus ? 'border-red-500/50 bg-red-500/15 text-red-500' : `${t.border} ${t.subtleBg} ${t.textSub}`}`}>
+                    <button onClick={toggleFocus} title="Markazdagi qizil harfni yoqish/o‘chirish" className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border ${showFocus ? 'border-red-500/50 bg-red-500/15 text-red-500' : `${t.border} ${t.subtleBg}${t.textSub}`}`}>
                       <i className={`fa-solid ${showFocus ? 'fa-eye' : 'fa-eye-slash'} text-[10px]`}></i> Qizil: {showFocus ? 'Yoq' : 'O‘chiq'}
                     </button>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <button onClick={() => setFontSize(p => Math.max(22, p - 4))} className={`w-8 h-8 rounded-full border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>−</button>
+                    <button onClick={() => setFontSize(p => Math.max(22, p - 4))} className={`w-8 h-8 rounded-lg border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>−</button>
                     <span className={`text-xs font-bold ${t.textMain} px-1.5 min-w-[2rem] text-center`}>{fontSize}</span>
-                    <button onClick={() => setFontSize(p => Math.min(64, p + 4))} className={`w-8 h-8 rounded-full border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>+</button>
+                    <button onClick={() => setFontSize(p => Math.min(64, p + 4))} className={`w-8 h-8 rounded-lg border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>+</button>
                   </div>
                 </div>
 
-                <div className={`sticky bottom-1 z-10 p-2 rounded-3xl border ${t.border} ${t.cardBg} flex gap-2 items-stretch shadow-lg`}>
-                  <button onClick={() => setWordIndex(p => Math.max(0, p - (chunkSize * 10)))} className={`flex-1 py-3 rounded-2xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
+                <div className={`p-2 rounded-2xl border ${t.border} ${t.cardBg} flex gap-2 items-stretch shadow-sm`}>
+                  <button onClick={() => setWordIndex(p => Math.max(0, p - (chunkSize * 10)))} className={`flex-1 py-3 rounded-xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
                     <i className="fa-solid fa-backward-step"></i> -10
                   </button>
-                  <button onClick={() => setIsReadingRunning(!isReadingRunning)} disabled={wordsList.length === 0} className={`flex-[1.6] py-3 rounded-2xl text-sm font-black flex items-center justify-center gap-2 ${t.accent} disabled:opacity-50 active:scale-95 transition`}>
+                  <button onClick={() => setIsReadingRunning(!isReadingRunning)} disabled={wordsList.length === 0} className={`flex-[1.6] py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 ${t.accent} disabled:opacity-50 active:scale-95 transition`}>
                     <i className={`fa-solid ${isReadingRunning ? 'fa-pause' : 'fa-play'} text-xs`}></i>
                     <span>{isReadingRunning ? 'To‘xtatish' : 'Boshlash'}</span>
                   </button>
-                  <button onClick={() => setWordIndex(p => Math.min(wordsList.length - 1, p + (chunkSize * 10)))} className={`flex-1 py-3 rounded-2xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
+                  <button onClick={() => setWordIndex(p => Math.min(wordsList.length - 1, p + (chunkSize * 10)))} className={`flex-1 py-3 rounded-xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
                     +10 <i className="fa-solid fa-forward-step"></i>
                   </button>
                 </div>
 
-                <div className={`p-4 rounded-2xl ${t.cardBg} border ${t.border} space-y-2 shadow-sm`}>
+                <div className={`p-4 rounded-xl ${t.cardBg} border ${t.border} space-y-2 shadow-sm`}>
                   <div className="flex justify-between text-xs">
                     <span className={t.textSub}>O‘qish tezligi</span>
                     <span className={`font-bold ${t.textMain}`}>{speedWPM} WPM</span>
                   </div>
                   <div className="flex gap-1.5 flex-wrap">
                     {[200, 300, 400, 600].map(w => (
-                      <button key={w} onClick={() => setSpeedWPM(w)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition ${speedWPM === w ? t.accent : `${t.border} ${t.subtleBg} ${t.textMain}`}`}>{w}</button>
+                      <button key={w} onClick={() => setSpeedWPM(w)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition ${speedWPM === w ? t.accent : `${t.border} ${t.subtleBg}${t.textMain}`}`}>{w}</button>
                     ))}
                   </div>
                   <input type="range" min="100" max="900" step="50" value={speedWPM} onChange={(e) => setSpeedWPM(Number(e.target.value))} className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
@@ -1042,20 +1148,20 @@
                 ) : currentQList.length === 0 ? (
                   <div className={`text-center py-12 text-sm ${t.textSub}`}>Kitob hajmi test tuzish uchun yetarli emas.</div>
                 ) : quizFinished ? (
-                  <div className={`${t.cardBg} border ${t.border} p-6 rounded-3xl text-center space-y-4 shadow-xl`}>
+                  <div className={`${t.cardBg} border ${t.border} p-6 rounded-2xl text-center space-y-4 shadow-sm`}>
                     <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold"><i className="fa-solid fa-trophy"></i></div>
                     <h3 className={`text-lg font-black ${t.textMain}`}>Test yakunlandi!</h3>
                     <p className={`text-sm ${t.textSub}`}>Siz {currentQList.length} ta savoldan <span className="font-bold text-emerald-500">{calculateScore()} ta</span> to‘g‘ri javob berdingiz.</p>
                     <div className="text-3xl font-black text-amber-500">{Math.round((calculateScore() / currentQList.length) * 100)}%</div>
-                    <button onClick={() => { setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`w-full py-3 rounded-2xl text-xs font-bold shadow-md ${t.accent}`}>Qaytadan topshirish</button>
+                    <button onClick={() => { setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`w-full py-3 rounded-xl text-xs font-bold ${t.accent}`}>Qaytadan topshirish</button>
                   </div>
                 ) : (
-                  <div className={`${t.cardBg} border ${t.border} p-5 rounded-3xl space-y-5 shadow-sm`}>
+                  <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-5 shadow-sm`}>
                     <div className={`text-xs font-medium ${t.textSub}`}>Savol {quizIndex + 1}/{currentQList.length}</div>
                     <div className="flex justify-between items-center gap-1.5 overflow-x-auto pb-1">
                       {currentQList.map((_, idx) => (
                         <button key={idx} onClick={() => setQuizIndex(idx)}
-                          className={`w-7 h-7 flex-shrink-0 rounded-lg text-xs font-bold transition flex items-center justify-center ${quizIndex === idx ? 'border-2 border-red-500 text-red-500 bg-red-500/10' : selectedAnswers[idx] !== undefined ? `${t.subtleBg} ${t.textMain}` : `${t.subtleBg} ${t.textSub}`}`}>{idx + 1}</button>
+                          className={`w-7 h-7 flex-shrink-0 rounded-lg text-xs font-bold transition flex items-center justify-center ${quizIndex === idx ? 'border-2 border-red-500 text-red-500 bg-red-500/10' : selectedAnswers[idx] !== undefined ? `${t.subtleBg}${t.textMain}` : `${t.subtleBg}${t.textSub}`}`}>{idx + 1}</button>
                       ))}
                     </div>
                     <p className={`text-sm font-semibold leading-relaxed whitespace-pre-line ${t.textMain}`}>{currentQList[quizIndex]?.question}</p>
@@ -1064,8 +1170,8 @@
                         const isSelected = selectedAnswers[quizIndex] === opt;
                         return (
                           <button key={oIdx} onClick={() => setSelectedAnswers(prev => ({ ...prev, [quizIndex]: opt }))}
-                            className={`w-full text-left p-3.5 rounded-2xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${t.textMain} ${isSelected ? 'border-amber-400 bg-amber-400/15 shadow-[0_0_20px_rgba(251,191,36,.35)]' : `${t.border} ${t.subtleBg} hover:border-amber-400/40`}`}>
-                            <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${isSelected ? 'border-amber-400 bg-amber-400' : 'border-zinc-400'}`}>
+                            className={`w-full text-left p-3.5 rounded-xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${t.textMain} ${isSelected ? 'border-amber-400 bg-amber-400/15' : `${t.border}${t.subtleBg} hover:border-zinc-500`}`}>
+                            <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${isSelected ? 'border-amber-400 bg-amber-400' : 'border-zinc-500'}`}>
                               {isSelected && <div className="w-1.5 h-1.5 bg-zinc-950 rounded-full"></div>}
                             </div>
                             <span className="flex-1">{opt}</span>
@@ -1074,8 +1180,8 @@
                       })}
                     </div>
                     <div className="flex justify-between items-center gap-4 pt-3">
-                      <button onClick={() => setQuizIndex(p => Math.max(0, p - 1))} disabled={quizIndex === 0} className={`text-xs font-bold px-4 py-2.5 rounded-xl ${t.textSub} disabled:opacity-30`}>Ortga</button>
-                      <button onClick={() => { if (quizIndex < currentQList.length - 1) setQuizIndex(p => p + 1); else setQuizFinished(true); }} className="px-8 py-2.5 rounded-2xl text-xs font-bold bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-600/30 active:scale-95 transition">
+                      <button onClick={() => setQuizIndex(p => Math.max(0, p - 1))} disabled={quizIndex === 0} className={`text-xs font-bold px-4 py-2.5 rounded-lg ${t.textSub} disabled:opacity-30`}>Ortga</button>
+                      <button onClick={() => { if (quizIndex < currentQList.length - 1) setQuizIndex(p => p + 1); else setQuizFinished(true); }} className="px-8 py-2.5 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-500 text-white shadow-md active:scale-95 transition">
                         {quizIndex === currentQList.length - 1 ? "Yakunlash" : "Keyingi"}
                       </button>
                     </div>
@@ -1085,7 +1191,8 @@
             )}
           </div>
 
-          <div className={`h-16 mx-3 mb-3 md:w-[30rem] md:self-center rounded-3xl border ${t.border} ${t.cardBg} backdrop-blur-2xl nav-glass flex justify-around items-center px-2 flex-shrink-0 z-20 shadow-2xl`}>
+          {/* SOLID TOZA NAVIGATSIYA PANEL DOCK */}
+          <div className={`h-16 mx-3 mb-3 md:w-[30rem] md:self-center rounded-2xl border ${t.navBg} flex justify-around items-center px-2 flex-shrink-0 z-20 shadow-md`}>
             {[
               { id: 'home', icon: 'fa-house', label: 'Asosiy' },
               { id: 'timer', icon: 'fa-stopwatch', label: 'Fokus' },
@@ -1094,7 +1201,7 @@
               { id: 'profile', icon: 'fa-user', label: 'Profil' },
             ].map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center gap-1 transition px-3 py-1.5 rounded-2xl ${activeTab === tab.id ? t.accentText + ' nav-active font-bold bg-gradient-to-b from-white/30 to-white/5 ring-1 ring-white/30 shadow-md' : t.textSub}`}>
+                className={`flex flex-col items-center gap-1 transition px-3.5 py-1.5 rounded-xl ${activeTab === tab.id ? t.accentText + ' font-bold bg-black/10 dark:bg-white/10' : t.textSub}`}>
                 <i className={`fa-solid ${tab.icon} text-base`}></i>
                 <span className="text-[10px] tracking-tight">{tab.label}</span>
               </button>
@@ -1102,17 +1209,17 @@
           </div>
 
           {isGoalModalOpen && (
-            <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-5 z-50">
-              <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-3xl space-y-4 shadow-2xl`}>
+            <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-5 z-50">
+              <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-xl`}>
                 <h3 className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Rejani Tahrirlash</h3>
                 <form onSubmit={saveGoalSettings} className="space-y-3.5">
                   <div>
                     <label className={`text-xs ${t.textSub} uppercase font-bold block mb-1.5`}>Maqsad</label>
-                    <input type="text" required value={tempTitle} onChange={(e) => setTempTitle(e.target.value)} className={`w-full ${t.subtleBg} border ${t.border} rounded-2xl px-4 py-2.5 text-sm ${t.textMain} focus:outline-none`} />
+                    <input type="text" required value={tempTitle} onChange={(e) => setTempTitle(e.target.value)} className={`w-full ${t.subtleBg} border ${t.border} rounded-xl px-4 py-2.5 text-sm ${t.textMain} focus:outline-none focus:border-amber-500`} />
                   </div>
                   <div>
                     <label className={`text-xs ${t.textSub} uppercase font-bold block mb-1.5`}>Muddat (kunlar soni)</label>
-                    <input type="number" min="1" max="365" required value={tempDays} onChange={(e) => setTempDays(e.target.value)} className={`w-full ${t.subtleBg} border ${t.border} rounded-2xl px-4 py-2.5 text-sm ${t.textMain} focus:outline-none`} />
+                    <input type="number" min="1" max="365" required value={tempDays} onChange={(e) => setTempDays(e.target.value)} className={`w-full ${t.subtleBg} border ${t.border} rounded-xl px-4 py-2.5 text-sm ${t.textMain} focus:outline-none focus:border-amber-500`} />
                   </div>
                   <div className="flex gap-3 pt-2">
                     <button type="button" onClick={() => setIsGoalModalOpen(false)} className={`flex-1 py-2.5 text-xs rounded-xl border ${t.border} ${t.textSub}`}>Bekor qilish</button>
