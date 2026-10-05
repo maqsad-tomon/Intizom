@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   
-  <!-- FIREBASE SKRIPTLARI -->
+  <!-- FIREBASE KUTUBXONALARI -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -378,31 +378,27 @@
       const notifiedTodayRef = useRef({});
       const cloudReady = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId && window.firebase);
 
-      // SERVICE WORKER & FIREBASE CLOUD MESSAGING (FCM) INITIALIZATION
+      // SERVICE WORKERNI XAVFSIZ VA STANDARD USULDA REGISTRATSIYA QILISH
       useEffect(() => {
         if (!cloudReady) return;
         try {
           if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
           
           if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/firebase-messaging-sw.js')
+            navigator.serviceWorker.register('./firebase-messaging-sw.js')
               .then((registration) => {
-                console.log('FCM Service Worker muvaffaqiyatli ulandi:', registration.scope);
-                if (firebase.messaging.isSupported()) {
-                  const messaging = firebase.messaging();
-                  messaging.useServiceWorker(registration);
-                }
+                console.log('FCM Service Worker ulandi:', registration.scope);
               })
               .catch((err) => {
-                console.warn('Service worker ulanishida ogohlantirish:', err);
+                console.warn('FCM Service Worker ogohlantirish:', err);
               });
           }
         } catch(e) {
-          console.error("Firebase init xatoligi:", e);
+          console.error("Firebase init xatosi:", e);
         }
       }, [cloudReady]);
 
-      // FCM TOKEN OLISH FUNKSIYASI (Fonda xabar kelishi uchun)
+      // FONDA BILDIRISHNOMA YOQISH (FCM TOKEN OLISH)
       const enablePushNotifications = async () => {
         try {
           if (!("Notification" in window)) {
@@ -412,13 +408,19 @@
 
           const permission = await Notification.requestPermission();
           if (permission !== 'granted') {
-            alert("Bildirishnomalar taqiqlangan. Brauzer yoki telefon sozlamalaridan ruxsat bering.");
+            alert("Bildirishnomalarga ruxsat berilmadi. Sozlamalardan yoqing.");
             return;
           }
 
           if (firebase.messaging && firebase.messaging.isSupported()) {
+            const swReg = await navigator.serviceWorker.ready;
             const messaging = firebase.messaging();
-            const token = await messaging.getToken({ vapidKey: VAPID_KEY });
+            
+            const token = await messaging.getToken({
+              vapidKey: VAPID_KEY,
+              serviceWorkerRegistration: swReg
+            });
+
             if (token) {
               setFcmTokenStatus("Faol ●");
               localStorage.setItem('intizom_fcm_token', token);
