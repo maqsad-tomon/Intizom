@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Intizom - Shaxsiy Rivojlanish</title>
+  
+  <!-- iOS PWA UCHUN ZARUR META TEGLAR -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Intizom">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2855/2855502.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -376,21 +383,40 @@
       });
 
       const notifiedTodayRef = useRef({});
+      const audioCtxRef = useRef(null);
       const cloudReady = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId && window.firebase);
 
-      // SERVICE WORKERNI XAVFSIZ VA STANDARD USULDA REGISTRATSIYA QILISH
+      // AUDIOCTX-NI FOYDALANUVCHI HARAKATI BILAN AKTIVLASHTIRISH
+      const initAudioOnUserAction = () => {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!audioCtxRef.current && AudioCtx) {
+            audioCtxRef.current = new AudioCtx();
+          }
+          if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+            audioCtxRef.current.resume();
+          }
+        } catch(e) {}
+      };
+
+      // SERVICE WORKERNI TO'G'RI PATH BO'YICHA ULASH
       useEffect(() => {
         if (!cloudReady) return;
         try {
           if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
           
           if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./firebase-messaging-sw.js')
+            // Aniq path: root va repository pathini xatosiz aniqlash
+            const swPath = window.location.pathname.endsWith('/') 
+              ? window.location.pathname + 'firebase-messaging-sw.js'
+              : window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + 'firebase-messaging-sw.js';
+
+            navigator.serviceWorker.register(swPath)
               .then((registration) => {
                 console.log('FCM Service Worker ulandi:', registration.scope);
               })
               .catch((err) => {
-                console.warn('FCM Service Worker ogohlantirish:', err);
+                console.warn('FCM SW Register xatosi:', err);
               });
           }
         } catch(e) {
@@ -400,15 +426,16 @@
 
       // FONDA BILDIRISHNOMA YOQISH (FCM TOKEN OLISH)
       const enablePushNotifications = async () => {
+        initAudioOnUserAction();
         try {
           if (!("Notification" in window)) {
-            alert("Bu brauzer bildirishnomalarni qo‘llab-quvvatlamaydi.");
+            alert("Bu brauzer bildirishnomalarni qo‘llab-quvvatlamaydi. Ilovani 'Add to Home Screen' qilib, o‘sha yerdan oching.");
             return;
           }
 
           const permission = await Notification.requestPermission();
           if (permission !== 'granted') {
-            alert("Bildirishnomalarga ruxsat berilmadi. Sozlamalardan yoqing.");
+            alert("Bildirishnomalarga ruxsat berilmadi. iPhone sozlamalaridan ushbu ilovaga ruxsat bering.");
             return;
           }
 
@@ -532,8 +559,9 @@
       const playPrayerChime = () => {
         try {
           const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          if (!AudioCtx) return;
-          const ctx = new AudioCtx();
+          if (!audioCtxRef.current && AudioCtx) audioCtxRef.current = new AudioCtx();
+          const ctx = audioCtxRef.current;
+          if (!ctx) return;
           if (ctx.state === 'suspended') ctx.resume();
 
           const chime = (freq, start, dur) => {
@@ -1560,7 +1588,6 @@
                         </button>
                       ))}
                       
-                      {/* QIZIL TUGMA A 3 ta YONIDA BIR QATORDA */}
                       <button onClick={toggleFocus} title="Markazdagi qizil harfni yoqish/o‘chirish" className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border transition whitespace-nowrap ${showFocus ? 'border-red-500/50 bg-red-500/15 text-red-500' : `${t.border} ${t.subtleBg} ${t.textSub}`}`}>
                         <i className={`fa-solid ${showFocus ? 'fa-eye' : 'fa-eye-slash'} text-[10px]`}></i> Qizil: {showFocus ? 'Yoq' : 'O‘chiq'}
                       </button>
