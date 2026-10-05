@@ -13,14 +13,13 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  const title = payload.notification?.title || "Namoz vaqti kirdi!";
-  const options = {
-    body: payload.notification?.body || "Namozni ado etish vaqti bo‘ldi.",
-    icon: payload.notification?.icon || "https://cdn-icons-png.flaticon.com/512/2855/2855502.png",
-    badge: "https://cdn-icons-png.flaticon.com/512/2855/2855502.png",
-    vibrate: [200, 100, 200],
-    tag: "prayer-reminder",
-    renotify: true
+  console.log('Orqa fonda xabar keldi:', payload);
+  const notificationTitle = payload.notification ? payload.notification.title : 'Intizom';
+  const notificationOptions = {
+    body: payload.notification ? payload.notification.body : 'Namoz vaqti kirdi!',
+    icon: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png',
+    badge: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png'
   };
-  self.registration.showNotification(title, options);
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
