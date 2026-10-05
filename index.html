@@ -37,9 +37,17 @@
     input, textarea { color: inherit; }
     input::placeholder, textarea::placeholder { color: currentColor; opacity: .45; }
 
-    /* iPhone Dynamic Island va Status-bar ostidan to'liq pastga surish */
     .ios-header {
       padding-top: max(env(safe-area-inset-top), 64px) !important;
+    }
+
+    input[type="date"] {
+      min-height: 42px;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      display: block;
+      box-sizing: border-box;
     }
 
     .prayer-time-input {
@@ -383,7 +391,6 @@
       const [isTodayQazoModalOpen, setIsTodayQazoModalOpen] = useState(false);
       const [customTodayInput, setCustomTodayInput] = useState("");
 
-      // Ruxsat borligi yoki token saqlanganiga qarab "Faol ●" holatini tiklash
       const [fcmTokenStatus, setFcmTokenStatus] = useState(() => {
         try {
           const savedToken = localStorage.getItem('intizom_fcm_token');
@@ -446,7 +453,7 @@
 
             navigator.serviceWorker.register(swPath)
               .then((registration) => {
-                console.log('FCM Service Worker ulandi:', registration.scope);
+                console.log('FCM Service Worker ulangan:', registration.scope);
               })
               .catch((err) => {
                 console.warn('FCM SW Register xatosi:', err);
@@ -483,13 +490,13 @@
         initAudioOnUserAction();
         try {
           if (!("Notification" in window)) {
-            alert("Bu brauzer bildirishnomalarni qo‘llab-quvvatlamaydi. Ilovani 'Add to Home Screen' qilib, o‘sha yerdan oching.");
+            alert("Bu brauzer bildirishnomalarni qo‘llab-quvvatlamaydi. Ilovani 'Add to Home Screen' qilib oching.");
             return;
           }
 
           const permission = await Notification.requestPermission();
           if (permission !== 'granted') {
-            alert("Bildirishnomalarga ruxsat berilmadi. iPhone sozlamalaridan ushbu ilovaga bildirishnomalarga ruxsat bering.");
+            alert("Bildirishnomalarga ruxsat berilmadi. iPhone sozlamalaridan ushbu ilovaga ruxsat bering.");
             return;
           }
 
@@ -510,14 +517,13 @@
               if (user) {
                 await userRef(user.uid).set({ fcmToken: token, updatedAt: new Date().toISOString() }, { merge: true });
               }
-              // Tokenni darhol nusxalab olish uchun ekranga chiqarish
-              prompt("Sizning FCM tokeningiz (Firebase'ga qo‘yish uchun nusxalang):", token);
+              prompt("Sizning FCM tokeningiz (Nusxalash uchun):", token);
             }
           } else {
             alert("Ruxsat berildi. Fonda signal faollashtirildi!");
           }
         } catch (e) {
-          console.error("FCM Token olishda xato:", e);
+          console.error("FCM Token xatosi:", e);
           if (Notification.permission === 'granted') {
             setFcmTokenStatus("Faol ●");
           }
@@ -882,6 +888,13 @@
               try {
                 const snap = await firebase.firestore().collection('intizom_users').doc(u.uid).get();
                 if (snap.exists) applyData(snap.data());
+                
+                // FCM tokenni yangilab yozib qo'yish
+                const savedToken = localStorage.getItem('intizom_fcm_token');
+                if (savedToken) {
+                  await userRef(u.uid).set({ fcmToken: savedToken }, { merge: true });
+                }
+
                 cloudLoadedRef.current = true;
                 setSyncError("");
               } catch (e) {
@@ -894,13 +907,15 @@
           });
           return () => unsub();
         } catch(e) {
-          console.error("Firebase init error:", e);
+          console.error("Firebase init xatosi:", e);
         }
       }, []);
 
       useEffect(() => {
+        const savedToken = localStorage.getItem('intizom_fcm_token');
         const data = JSON.parse(JSON.stringify({ 
-          goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive, qazoCounts, prayerTimes 
+          goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive, qazoCounts, prayerTimes,
+          ...(savedToken ? { fcmToken: savedToken } : {})
         }));
         const id = setTimeout(() => {
           try { localStorage.setItem('intizom_v1', JSON.stringify(data)); } catch (e) {}
@@ -1221,7 +1236,7 @@
         <div className={`w-full h-full ${t.appBg} ${t.textMain} flex flex-col overflow-hidden relative transition-colors duration-200 font-sans`}>
           {splashOverlay}
           
-          {/* TO'G'RILANDI: iPhone Dynamic Island, Soat va Batareyadan to'liq pastga olingan toza header */}
+          {/* Header */}
           <header className={`ios-header px-5 md:px-10 pb-3 flex justify-between items-center border-b ${t.border} ${t.cardBg} flex-shrink-0 z-40 shadow-sm relative`}>
             <div className="flex items-center gap-2">
               <IntizomLogo size={24} />
@@ -1245,7 +1260,7 @@
             </div>
           </header>
 
-          {/* ASOSIY KONTENT: Pastki menyu ostida qolmasligi uchun pb-48 qo'shildi */}
+          {/* Asosiy kontent */}
           <main key={activeTab} className="tab-enter relative z-10 flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-4 max-w-xl md:max-w-3xl xl:max-w-4xl mx-auto w-full md:p-8 pt-4 pb-48">
 
             {activeTab === 'home' && (
@@ -1346,11 +1361,11 @@
               </div>
             )}
 
-            {/* QAZO NAMOZLARI MODULI (Barcha kartochkalar joyiga tushirildi) */}
+            {/* NAMOZ BO'LIMI */}
             {activeTab === 'namoz' && (
               <div className="space-y-4">
                 
-                {/* 1. KEYINGI NAMOZ TAYMERI */}
+                {/* KEYINGI NAMOZ TAYMERI */}
                 <div className={`${t.cardBg} border ${t.border} p-4 rounded-2xl shadow-sm flex items-center justify-between`}>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-lg">
@@ -1367,7 +1382,7 @@
                   </div>
                 </div>
 
-                {/* 2. ASOSIY XULOSA KARTOCHKASI */}
+                {/* ASOSIY QAZO KARTASI */}
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-4`}>
                   <div className="flex items-center justify-between">
                     <div>
@@ -1410,8 +1425,8 @@
                   </button>
                 </div>
 
-                {/* 3. SANA ORALIG'I BO'YICHA QAZO KALKULYATORI */}
-                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-3.5`}>
+                {/* SANA ORALIG'I BO'YICHA QAZO KALKULYATORI */}
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-4`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <i className="fa-solid fa-calendar-days text-amber-400 text-sm"></i>
@@ -1425,28 +1440,32 @@
                     Namoz o‘qimay qolgan davringizni kiriting. Dastur oradagi aniq kunlar va qazolarni hisoblab beradi.
                   </p>
 
-                  <div className="grid grid-cols-2 gap-3 pt-1">
-                    <div className="space-y-1">
-                      <label className={`text-[11px] font-bold ${t.textSub}`}>Boshlanish sanasi (Dan)</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                    <div className={`p-3 rounded-xl border ${t.border} ${t.subtleBg} space-y-1.5 shadow-sm`}>
+                      <span className={`text-[11px] font-bold block ${t.textSub}`}>
+                        Boshlanish sanasi (Dan)
+                      </span>
                       <input 
                         type="date" 
                         value={rangeStartDate} 
                         onChange={e => setRangeStartDate(e.target.value)}
-                        className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-xs font-bold outline-none focus:border-amber-400`} 
+                        className={`w-full py-2 px-3 rounded-lg border ${t.border} bg-black/30 ${t.textMain} text-xs font-semibold outline-none focus:border-amber-400 block`} 
                       />
                     </div>
-                    <div className="space-y-1">
-                      <label className={`text-[11px] font-bold ${t.textSub}`}>Tugash sanasi (Gacha)</label>
+                    <div className={`p-3 rounded-xl border ${t.border} ${t.subtleBg} space-y-1.5 shadow-sm`}>
+                      <span className={`text-[11px] font-bold block ${t.textSub}`}>
+                        Tugash sanasi (Gacha)
+                      </span>
                       <input 
                         type="date" 
                         value={rangeEndDate} 
                         onChange={e => setRangeEndDate(e.target.value)}
-                        className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-xs font-bold outline-none focus:border-amber-400`} 
+                        className={`w-full py-2 px-3 rounded-lg border ${t.border} bg-black/30 ${t.textMain} text-xs font-semibold outline-none focus:border-amber-400 block`} 
                       />
                     </div>
                   </div>
 
-                  <div className={`p-3 rounded-xl border ${t.border} ${t.subtleBg} flex items-center justify-between text-xs`}>
+                  <div className={`p-3.5 rounded-xl border ${t.border} ${t.subtleBg} flex items-center justify-between text-xs`}>
                     <div>
                       <span className={`${t.textSub} block text-[11px]`}>Oraliq muddati:</span>
                       <b className="text-amber-400 font-mono text-sm">{dateRangeCalculation.days.toLocaleString()} kun</b>
@@ -1474,7 +1493,7 @@
                   </div>
                 </div>
 
-                {/* 4. NAMOZ VAQTLARI VA FONDA SIGNAL TUGMASI */}
+                {/* NAMOZ VAQTLARI VA FONDA SIGNAL */}
                 <div className={`${t.cardBg} border ${t.border} p-4 rounded-2xl shadow-sm space-y-3`}>
                   <div className="flex justify-between items-center px-1">
                     <div>
@@ -1526,11 +1545,11 @@
                   </div>
                 </div>
 
-                {/* 5. NAMOZLAR BO'YICHA QAZO SONI */}
+                {/* NAMOZLAR BO'YICHA QAZO SONI */}
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-3`}>
                   <div className="flex justify-between items-center px-1">
                     <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Namozlar bo‘yicha qazo soni</span>
-                    <span className="text-[10px] text-zinc-500">Har birini o‘zgartirish uchun qalamchani bosing</span>
+                    <span className="text-[10px] text-zinc-500">O‘zgartirish uchun qalamchani bosing</span>
                   </div>
                   
                   <div className="space-y-2">
@@ -1580,7 +1599,7 @@
                   </div>
                 </div>
 
-                {/* 6. YILLAR BO'YICHA KALKULYATOR */}
+                {/* YILLAR BO'YICHA KALKULYATOR */}
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-3`}>
                   <div className="flex items-center gap-2">
                     <i className="fa-solid fa-calculator text-amber-400 text-sm"></i>
@@ -1973,7 +1992,7 @@
             )}
           </main>
 
-          {/* ASOSIY NAMOZ ESLATMASI MODALI */}
+          {/* NAMAZ ESLATMASI MODALI */}
           {activePrayerReminder && (
             <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
               <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl text-center`}>
@@ -2008,7 +2027,7 @@
             </div>
           )}
 
-          {/* ALOHIDA NAMOZ QAZOSINI TAHRIRLASH / 0 QILISH MODALI */}
+          {/* ALOHIDA NAMOZ QAZOSINI TAHRIRLASH MODALI */}
           {editingSinglePrayer && (
             <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
               <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl`}>
@@ -2046,7 +2065,7 @@
             </div>
           )}
 
-          {/* JAMI QAZOLARNI BIR YO'LA TO'G'RILASH / 0 QILISH MODALI */}
+          {/* UMUMIY QAZONI TAHRIRLASH MODALI */}
           {isQazoEditModalOpen && (
             <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
               <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl`}>
@@ -2055,7 +2074,7 @@
                   <button onClick={() => setIsQazoEditModalOpen(false)} className={`${t.textSub} text-sm`}><i className="fa-solid fa-xmark"></i></button>
                 </div>
                 <p className={`text-xs ${t.textSub}`}>
-                  Umumiy yangi yig‘indini kiritsangiz, dastur uni 6 ta namozga teng bo‘lib chiqadi. Yoki barchasini 0 ga tushirishingiz mumkin.
+                  Umumiy yangi yig‘indini kiritsangiz, dastur uni 6 ta namozga teng bo‘lib chiqadi.
                 </p>
                 <div>
                   <label className={`text-[11px] font-bold ${t.textSub} block mb-1`}>Jami qazolar soni (6 ta namoz uchun umumiy)</label>
@@ -2086,7 +2105,7 @@
             </div>
           )}
 
-          {/* BUGUN O'QILGAN QAZONI 0 QILISH / TAHRIRLASH MODALI */}
+          {/* BUGUNGI QAZONI TAHRIRLASH MODALI */}
           {isTodayQazoModalOpen && (
             <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
               <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl`}>
