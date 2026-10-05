@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Intizom - Shaxsiy Rivojlanish</title>
   
-  <!-- iOS PWA UCHUN ZARUR META TEGLAR -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Intizom">
@@ -20,7 +19,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   
-  <!-- FIREBASE KUTUBXONALARI -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -370,6 +368,22 @@
       const [calcCurrentAge, setCalcCurrentAge] = useState(26);
       const [calcStartAge, setCalcStartAge] = useState(12);
 
+      const [rangeStartDate, setRangeStartDate] = useState("2025-03-01");
+      const [rangeEndDate, setRangeEndDate] = useState(() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      });
+
+      // MODALLAR
+      const [isQazoEditModalOpen, setIsQazoEditModalOpen] = useState(false);
+      const [editingSinglePrayer, setEditingSinglePrayer] = useState(null);
+      const [customInputValue, setCustomInputValue] = useState("");
+      const [customTotalInput, setCustomTotalInput] = useState("");
+
+      // YANGI: BUGUNGI O'QILGAN QAZONI TAHRIRLASH / 0 QILISH MODALI
+      const [isTodayQazoModalOpen, setIsTodayQazoModalOpen] = useState(false);
+      const [customTodayInput, setCustomTodayInput] = useState("");
+
       const [fcmTokenStatus, setFcmTokenStatus] = useState("Ulanmagan");
 
       const [todayReadQazo, setTodayReadQazo] = useState(() => {
@@ -386,7 +400,6 @@
       const audioCtxRef = useRef(null);
       const cloudReady = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId && window.firebase);
 
-      // AUDIOCTX-NI FOYDALANUVCHI HARAKATI BILAN AKTIVLASHTIRISH
       const initAudioOnUserAction = () => {
         try {
           const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -399,14 +412,12 @@
         } catch(e) {}
       };
 
-      // SERVICE WORKERNI TO'G'RI PATH BO'YICHA ULASH
       useEffect(() => {
         if (!cloudReady) return;
         try {
           if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
           
           if ('serviceWorker' in navigator) {
-            // Aniq path: root va repository pathini xatosiz aniqlash
             const swPath = window.location.pathname.endsWith('/') 
               ? window.location.pathname + 'firebase-messaging-sw.js'
               : window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + 'firebase-messaging-sw.js';
@@ -424,7 +435,6 @@
         }
       }, [cloudReady]);
 
-      // FONDA BILDIRISHNOMA YOQISH (FCM TOKEN OLISH)
       const enablePushNotifications = async () => {
         initAudioOnUserAction();
         try {
@@ -495,6 +505,35 @@
         });
       };
 
+      // BUGUN O'QILGAN QAZONI 0 QILISH YOKI TAHRIRLASH
+      const resetTodayQazoToZero = () => {
+        setTodayReadQazo(0);
+        try {
+          localStorage.setItem('intizom_today_qazo', JSON.stringify({
+            date: new Date().toDateString(),
+            count: 0
+          }));
+        } catch(e) {}
+        setIsTodayQazoModalOpen(false);
+      };
+
+      const saveTodayQazoCustom = () => {
+        const val = parseInt(customTodayInput, 10);
+        if (isNaN(val) || val < 0) {
+          alert("To‘g‘ri musbat son kiriting.");
+          return;
+        }
+        setTodayReadQazo(val);
+        try {
+          localStorage.setItem('intizom_today_qazo', JSON.stringify({
+            date: new Date().toDateString(),
+            count: val
+          }));
+        } catch(e) {}
+        setIsTodayQazoModalOpen(false);
+        setCustomTodayInput("");
+      };
+
       const nextPrayerInfo = useMemo(() => {
         const now = new Date();
         const curMins = now.getHours() * 60 + now.getMinutes();
@@ -522,6 +561,104 @@
           remStr: `${remH > 0 ? remH + ' soat ' : ''}${remM} daqiqa`
         };
       }, [prayerTimes]);
+
+      const dateRangeCalculation = useMemo(() => {
+        if (!rangeStartDate || !rangeEndDate) return { days: 0, eachPrayer: 0, totalPrayers: 0 };
+        const start = new Date(rangeStartDate);
+        const end = new Date(rangeEndDate);
+        const diffTime = end - start;
+        if (diffTime < 0) return { days: 0, eachPrayer: 0, totalPrayers: 0, error: true };
+        const days = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        return {
+          days,
+          eachPrayer: days,
+          totalPrayers: days * 6,
+          error: false
+        };
+      }, [rangeStartDate, rangeEndDate]);
+
+      const applyDateRangeToQazos = (mode) => {
+        const { days, totalPrayers, error } = dateRangeCalculation;
+        if (error || days <= 0) {
+          alert("Iltimos, to‘g‘ri sana oralig‘ini kiriting.");
+          return;
+        }
+
+        if (mode === 'add') {
+          if (window.confirm(`${days} kunlik oraliq uchun har bir namozga ${days} tadan (jami ${totalPrayers.toLocaleString()} ta) qazo mavjud qazolarga qo‘shilsinmi?`)) {
+            setQazoCounts(prev => {
+              const next = { ...prev };
+              PRAYER_LIST.forEach(p => {
+                next[p.id] = (prev[p.id] || 0) + days;
+              });
+              return next;
+            });
+            alert("Muvaffaqiyatli qo‘shildi!");
+          }
+        } else if (mode === 'set') {
+          if (window.confirm(`Diqqat! Barcha namoz qazolari aynan shu oraliqdagi ${days} kunga (jami ${totalPrayers.toLocaleString()} ta) tenglashtirilsinmi?`)) {
+            setQazoCounts({
+              bomdod: days,
+              peshin: days,
+              asr: days,
+              shom: days,
+              xufton: days,
+              vitr: days
+            });
+            alert("Qazolar qaytadan belgilandi!");
+          }
+        }
+      };
+
+      const resetAllQazosToZero = () => {
+        if (window.confirm("Barcha namoz qazolarini to‘liq 0 ga tushirmoqchimisiz?")) {
+          setQazoCounts({
+            bomdod: 0, peshin: 0, asr: 0, shom: 0, xufton: 0, vitr: 0
+          });
+          setIsQazoEditModalOpen(false);
+        }
+      };
+
+      const setAllQazosEqually = () => {
+        const val = parseInt(customTotalInput, 10);
+        if (isNaN(val) || val < 0) {
+          alert("Iltimos, to‘g‘ri musbat son kiriting.");
+          return;
+        }
+        const each = Math.round(val / 6);
+        if (window.confirm(`Jami ${val.toLocaleString()} ta qazo 6 ta namozga teng (har biriga ${each.toLocaleString()} tadan) taqsimlansinmi?`)) {
+          setQazoCounts({
+            bomdod: each, peshin: each, asr: each, shom: each, xufton: each, vitr: each
+          });
+          setIsQazoEditModalOpen(false);
+          setCustomTotalInput("");
+        }
+      };
+
+      const saveSinglePrayerCount = () => {
+        if (!editingSinglePrayer) return;
+        const val = parseInt(customInputValue, 10);
+        if (isNaN(val) || val < 0) {
+          alert("To‘g‘ri musbat son kiriting.");
+          return;
+        }
+        setQazoCounts(prev => ({
+          ...prev,
+          [editingSinglePrayer.id]: val
+        }));
+        setEditingSinglePrayer(null);
+        setCustomInputValue("");
+      };
+
+      const resetSinglePrayerToZero = () => {
+        if (!editingSinglePrayer) return;
+        setQazoCounts(prev => ({
+          ...prev,
+          [editingSinglePrayer.id]: 0
+        }));
+        setEditingSinglePrayer(null);
+        setCustomInputValue("");
+      };
 
       useEffect(() => {
         const checkPrayerClock = () => {
@@ -1183,15 +1320,33 @@
                       <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Mening qazo namozlarim</span>
                       <h2 className={`text-base font-black mt-0.5 ${t.textMain}`}>Hisob va Ado etish nazorati</h2>
                     </div>
-                    <div className="bg-emerald-500/15 border border-emerald-500/30 px-3.5 py-1.5 rounded-xl text-right">
-                      <span className="text-[10px] text-zinc-400 uppercase font-bold block">Jami Qazo</span>
-                      <span className="text-base font-black text-emerald-400">{totalQazoAmount.toLocaleString()} ta</span>
+                    <div className="flex flex-col items-end gap-1">
+                      <div className="bg-emerald-500/15 border border-emerald-500/30 px-3.5 py-1.5 rounded-xl text-right">
+                        <span className="text-[10px] text-zinc-400 uppercase font-bold block">Jami Qazo</span>
+                        <span className="text-base font-black text-emerald-400">{totalQazoAmount.toLocaleString()} ta</span>
+                      </div>
+                      <button 
+                        onClick={() => { setCustomTotalInput(String(totalQazoAmount)); setIsQazoEditModalOpen(true); }}
+                        className="text-[11px] font-bold text-amber-400 hover:underline flex items-center gap-1"
+                      >
+                        <i className="fa-solid fa-pen-to-square text-[10px]"></i> Tahrirlash / 0 qilish
+                      </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between px-1 py-1 text-xs">
+                  {/* BUGUN O'QILGAN QAZO HISOBI (0 QILISH VA TAHRIRLASH TUGMASI BILAN) */}
+                  <div className="flex items-center justify-between px-1 py-1.5 text-xs bg-black/20 rounded-xl px-3 border border-zinc-800">
                     <span className={t.textSub}>Bugun o‘qilgan qazo namozlari:</span>
-                    <span className="font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">{todayReadQazo} ta</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-emerald-400 font-mono text-sm">{todayReadQazo} ta</span>
+                      <button 
+                        onClick={() => { setCustomTodayInput(String(todayReadQazo)); setIsTodayQazoModalOpen(true); }}
+                        title="Bugungi hisobni 0 ga tushirish yoki o‘zgartirish"
+                        className="text-[10px] px-2 py-0.5 rounded-md border border-zinc-700 hover:border-amber-400 text-zinc-400 hover:text-amber-400 transition"
+                      >
+                        <i className="fa-solid fa-rotate-left mr-1"></i>0 qilish
+                      </button>
+                    </div>
                   </div>
 
                   <button 
@@ -1201,6 +1356,70 @@
                     <i className="fa-solid fa-layer-group"></i>
                     1 to‘liq kunlik qazo o‘qidim (Barchasidan −1)
                   </button>
+                </div>
+
+                {/* SANA ORALIG'I BO'YICHA QAZO KALKULYATORI */}
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-3.5`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <i className="fa-solid fa-calendar-days text-amber-400 text-sm"></i>
+                      <h3 className={`text-sm font-bold ${t.textMain}`}>Sana oralig‘i bo‘yicha qazo hisoblash</h3>
+                    </div>
+                    <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-md">
+                      Aniq kunbay
+                    </span>
+                  </div>
+                  <p className={`text-xs leading-relaxed ${t.textSub}`}>
+                    Namoz o‘qimay qolgan davringizni kiriting. Dastur oradagi aniq kunlar va qazolarni hisoblab beradi.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="space-y-1">
+                      <label className={`text-[11px] font-bold ${t.textSub}`}>Boshlanish sanasi (Dan)</label>
+                      <input 
+                        type="date" 
+                        value={rangeStartDate} 
+                        onChange={e => setRangeStartDate(e.target.value)}
+                        className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-xs font-bold outline-none focus:border-amber-400`} 
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className={`text-[11px] font-bold ${t.textSub}`}>Tugash sanasi (Gacha)</label>
+                      <input 
+                        type="date" 
+                        value={rangeEndDate} 
+                        onChange={e => setRangeEndDate(e.target.value)}
+                        className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-xs font-bold outline-none focus:border-amber-400`} 
+                      />
+                    </div>
+                  </div>
+
+                  <div className={`p-3 rounded-xl border ${t.border} ${t.subtleBg} flex items-center justify-between text-xs`}>
+                    <div>
+                      <span className={`${t.textSub} block text-[11px]`}>Oraliq muddati:</span>
+                      <b className="text-amber-400 font-mono text-sm">{dateRangeCalculation.days.toLocaleString()} kun</b>
+                    </div>
+                    <div className="text-right">
+                      <span className={`${t.textSub} block text-[11px]`}>Jami qazo namozi:</span>
+                      <b className="text-emerald-400 font-mono text-sm">{dateRangeCalculation.totalPrayers.toLocaleString()} ta</b>
+                      <span className="text-[10px] text-zinc-500 block">(har bir namozdan {dateRangeCalculation.eachPrayer} ta)</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button 
+                      onClick={() => applyDateRangeToQazos('add')}
+                      className={`py-2.5 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30 transition`}
+                    >
+                      Qazolarga qo‘shish (+{dateRangeCalculation.eachPrayer})
+                    </button>
+                    <button 
+                      onClick={() => applyDateRangeToQazos('set')}
+                      className={`py-2.5 rounded-xl text-xs font-bold border ${t.border} ${t.subtleBg} ${t.textMain} hover:border-emerald-400 transition`}
+                    >
+                      Boshidan belgilash
+                    </button>
+                  </div>
                 </div>
 
                 {/* Namoz vaqtlari va Push eslatma tugmasi */}
@@ -1255,8 +1474,12 @@
                   </div>
                 </div>
 
+                {/* Namozlar bo'yicha alohida qazo soni */}
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-3`}>
-                  <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub} block px-1`}>Namozlar bo‘yicha qazo soni</span>
+                  <div className="flex justify-between items-center px-1">
+                    <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Namozlar bo‘yicha qazo soni</span>
+                    <span className="text-[10px] text-zinc-500">Har birini o‘zgartirish uchun qalamchani bosing</span>
+                  </div>
                   
                   <div className="space-y-2">
                     {PRAYER_LIST.map(p => {
@@ -1264,7 +1487,19 @@
                       return (
                         <div key={p.id} className={`flex items-center justify-between p-3 rounded-xl border ${t.border} ${t.subtleBg}`}>
                           <div>
-                            <h4 className={`text-sm font-bold ${t.textMain}`}>{p.name}</h4>
+                            <div className="flex items-center gap-2">
+                              <h4 className={`text-sm font-bold ${t.textMain}`}>{p.name}</h4>
+                              <button 
+                                onClick={() => {
+                                  setEditingSinglePrayer(p);
+                                  setCustomInputValue(String(count));
+                                }}
+                                title="Sonini o‘zgartirish yoki 0 qilish"
+                                className="text-zinc-500 hover:text-amber-400 text-xs transition"
+                              >
+                                <i className="fa-solid fa-pen text-[11px]"></i>
+                              </button>
+                            </div>
                             <span className={`text-xs ${t.textSub}`}>
                               Qolgan: <b className="text-amber-400 font-mono">{count.toLocaleString()} ta</b>
                             </span>
@@ -1293,13 +1528,14 @@
                   </div>
                 </div>
 
+                {/* Yillar bo'yicha kalkulyator */}
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-3`}>
                   <div className="flex items-center gap-2">
                     <i className="fa-solid fa-calculator text-amber-400 text-sm"></i>
-                    <h3 className={`text-sm font-bold ${t.textMain}`}>O‘tgan yillar qazolarini hisoblash</h3>
+                    <h3 className={`text-sm font-bold ${t.textMain}`}>Yillar bo‘yicha umumiy hisoblash</h3>
                   </div>
                   <p className={`text-xs leading-relaxed ${t.textSub}`}>
-                    Yoshingiz bo‘yicha qoldirilgan yillarni avtomatik 6 ta namozga teng taqsimlab beradi.
+                    Yoshingiz bo‘yicha umumiy qoldirilgan yillarni 6 ta namozga teng taqsimlaydi.
                   </p>
                   
                   <div className="grid grid-cols-2 gap-3 pt-1">
@@ -1331,7 +1567,7 @@
                     onClick={calculatePastQazos}
                     className={`w-full py-2.5 rounded-xl text-xs font-bold border ${t.border} ${t.subtleBg} ${t.textMain} hover:border-amber-400 transition mt-1`}
                   >
-                    Avtomat hisoblash va belgilash
+                    Yillar bo‘yicha hisoblash
                   </button>
                 </div>
 
@@ -1577,7 +1813,6 @@
                   </div>
                 </div>
 
-                {/* BIR QATOR: Qizil tugma A 3 ta ning O'NG TOMONIDA joylashgan */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                     <span className={`text-xs ${t.textSub} font-bold mr-1 whitespace-nowrap`}>Ko‘rinish:</span>
@@ -1613,7 +1848,7 @@
                     <span>{isReadingRunning ? 'To‘xtatish' : 'Boshlash'}</span>
                   </button>
                   <button onClick={() => setWordIndex(p => Math.min(wordsList.length - 1, p + (chunkSize * 10)))} className={`flex-1 py-3 rounded-xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
-                    +10 <i className="fa-solid fa-forward-step"></i>
+                    +10 <i className="fa-forward-step"></i>
                   </button>
                 </div>
 
@@ -1715,6 +1950,122 @@
                     className="w-full py-2.5 rounded-xl border border-red-500/40 text-red-500 hover:bg-red-500/10 font-bold text-xs active:scale-95 transition flex items-center justify-center gap-2"
                   >
                     <i className="fa-solid fa-clock-rotate-left"></i> O‘qishga ulgurmayman (Qazoga tushsin)
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ALOHIDA NAMOZ QAZOSINI TAHRIRLASH / 0 QILISH MODALI */}
+          {editingSinglePrayer && (
+            <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
+              <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl`}>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-base font-bold">{editingSinglePrayer.name} qazosini to‘g‘rilash</h3>
+                  <button onClick={() => setEditingSinglePrayer(null)} className={`${t.textSub} text-sm`}><i className="fa-solid fa-xmark"></i></button>
+                </div>
+                <p className={`text-xs ${t.textSub}`}>Istalgan yangi sonni kiriting yoki to‘g‘ridan-to‘g‘ri 0 ga tushiring.</p>
+                <div>
+                  <label className={`text-[11px] font-bold ${t.textSub} block mb-1`}>Qazo soni</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    value={customInputValue}
+                    onChange={(e) => setCustomInputValue(e.target.value)}
+                    className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm font-bold outline-none focus:border-amber-400`}
+                    autoFocus
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button 
+                    onClick={resetSinglePrayerToZero}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold border border-red-500/40 text-red-500 hover:bg-red-500/10 transition"
+                  >
+                    0 ga tushirish
+                  </button>
+                  <button 
+                    onClick={saveSinglePrayerCount}
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold ${t.accent} transition`}
+                  >
+                    Saqlash
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* JAMI QAZOLARNI BIR YO'LA TO'G'RILASH / 0 QILISH MODALI */}
+          {isQazoEditModalOpen && (
+            <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
+              <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl`}>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-base font-bold">Umumiy qazoni to‘g‘rilash</h3>
+                  <button onClick={() => setIsQazoEditModalOpen(false)} className={`${t.textSub} text-sm`}><i className="fa-solid fa-xmark"></i></button>
+                </div>
+                <p className={`text-xs ${t.textSub}`}>
+                  Umumiy yangi yig‘indini kiritsangiz, dastur uni 6 ta namozga teng bo‘lib chiqadi. Yoki barchasini 0 ga tushirishingiz mumkin.
+                </p>
+                <div>
+                  <label className={`text-[11px] font-bold ${t.textSub} block mb-1`}>Jami qazolar soni (6 ta namoz uchun umumiy)</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    placeholder="Masalan: 30000 yoki 6000"
+                    value={customTotalInput}
+                    onChange={(e) => setCustomTotalInput(e.target.value)}
+                    className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm font-bold outline-none focus:border-amber-400`}
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button 
+                    onClick={resetAllQazosToZero}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold border border-red-500/40 text-red-500 hover:bg-red-500/10 transition"
+                  >
+                    Barchasini 0 qilish
+                  </button>
+                  <button 
+                    onClick={setAllQazosEqually}
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold ${t.accent} transition`}
+                  >
+                    Taqsimlab belgilash
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* YANGI: BUGUN O'QILGAN QAZONI 0 QILISH / TAHRIRLASH MODALI */}
+          {isTodayQazoModalOpen && (
+            <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
+              <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl`}>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-base font-bold">Bugun o‘qilgan qazolar soni</h3>
+                  <button onClick={() => setIsTodayQazoModalOpen(false)} className={`${t.textSub} text-sm`}><i className="fa-solid fa-xmark"></i></button>
+                </div>
+                <p className={`text-xs ${t.textSub}`}>Bugungi kungi hisoblagichni 0 ga tushirishingiz yoki yangi son kiritishingiz mumkin.</p>
+                <div>
+                  <label className={`text-[11px] font-bold ${t.textSub} block mb-1`}>Bugun o‘qilgan namozlar soni</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    value={customTodayInput}
+                    onChange={(e) => setCustomTodayInput(e.target.value)}
+                    className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm font-bold outline-none focus:border-amber-400`}
+                    autoFocus
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button 
+                    onClick={resetTodayQazoToZero}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold border border-red-500/40 text-red-500 hover:bg-red-500/10 transition"
+                  >
+                    0 ga tushirish
+                  </button>
+                  <button 
+                    onClick={saveTodayQazoCustom}
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold ${t.accent} transition`}
+                  >
+                    Saqlash
                   </button>
                 </div>
               </div>
