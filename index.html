@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Intizom - Shaxsiy Rivojlanish</title>
   
+  <!-- PWA MANIFEST VA RANG SOZLAMALARI -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#09090b">
+
+  <!-- iOS / Safari PWA SOZLAMALARI -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Intizom">
@@ -1113,7 +1118,6 @@
 
       const totalQazoAmount = Object.values(qazoCounts).reduce((a, b) => a + (Number(b) || 0), 0);
 
-      // TO'G'RILANDI: Status bari (soat) bilan kirish tugmasi urilib ketmasligi uchun maxsus pt-12 va safe-area berildi
       if (!onboarded || creatingNew) {
         const submitSetup = () => {
           const tasks = setupTasks.split('\n').map(x => x.trim()).filter(Boolean);
@@ -1290,7 +1294,7 @@
               </div>
             )}
 
-            {/* QAZO NAMOZLARI MODULI (Shapelar to'liq tekislandi) */}
+            {/* QAZO NAMOZLARI MODULI */}
             {activeTab === 'namoz' && (
               <div className="space-y-4">
                 
@@ -1338,6 +1342,7 @@
                       <span className="font-black text-emerald-400 font-mono text-sm">{todayReadQazo} ta</span>
                       <button 
                         onClick={() => { setCustomTodayInput(String(todayReadQazo)); setIsTodayQazoModalOpen(true); }}
+                        title="Bugungi hisobni 0 ga tushirish yoki o‘zgartirish"
                         className="text-[10px] px-2 py-0.5 rounded-md border border-zinc-700 hover:border-amber-400 text-zinc-400 hover:text-amber-400 transition"
                       >
                         <i className="fa-solid fa-rotate-left mr-1"></i>0 qilish
@@ -1742,7 +1747,7 @@
                         <i className="fa-solid fa-bolt text-xs"></i><span>Tez O‘qish</span>
                       </button>
                       <button onClick={() => { setActiveTab('ai_exam'); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider border ${t.border} ${t.subtleBg} ${t.textMain} hover:opacity-80 flex items-center justify-center gap-2`}>
-                        <i className={`fa-solid ${showFocus ? 'fa-brain' : 'fa-brain'} ${t.accentText} text-xs`}></i><span>Test / Viktorina</span>
+                        <i className={`fa-solid fa-brain ${t.accentText} text-xs`}></i><span>Test / Viktorina</span>
                       </button>
                     </div>
                   </div>
@@ -1844,7 +1849,7 @@
                     <span>{isReadingRunning ? 'To‘xtatish' : 'Boshlash'}</span>
                   </button>
                   <button onClick={() => setWordIndex(p => Math.min(wordsList.length - 1, p + (chunkSize * 10)))} className={`flex-1 py-3 rounded-xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
-                    +10 <i className="fa-forward-step"></i>
+                    +10 <i className="fa-solid fa-forward-step"></i>
                   </button>
                 </div>
 
