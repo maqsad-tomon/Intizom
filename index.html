@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   
-  <!-- FIREBASE KUTUBXONALARI -->
+  <!-- FIREBASE SKRIPTLARI -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -130,28 +130,6 @@
     };
 
     const VAPID_KEY = "BOml4UKYetLZuCaCrblgSJwp58PLOXcZIY3C1O37vwTOe3Vr1VyrwLDk1pHOHtQX_ezwk_QLZJdneEz4lalMag8";
-
-    // SERVICE WORKER KODINI HTML ICHIDAN TURIB DINAMIK YARATISH (Alohida fayl shart emas)
-    const swCode = `
-      importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
-      importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
-
-      firebase.initializeApp(${JSON.stringify(FIREBASE_CONFIG)});
-      const messaging = firebase.messaging();
-
-      messaging.onBackgroundMessage((payload) => {
-        const title = payload.notification?.title || "Namoz vaqti kirdi!";
-        const options = {
-          body: payload.notification?.body || "Namozni ado etish vaqti bo‘ldi.",
-          icon: payload.notification?.icon || "https://cdn-icons-png.flaticon.com/512/2855/2855502.png",
-          badge: "https://cdn-icons-png.flaticon.com/512/2855/2855502.png",
-          vibrate: [200, 100, 200],
-          tag: "prayer-reminder",
-          renotify: true
-        };
-        self.registration.showNotification(title, options);
-      });
-    `;
 
     const mk = (id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg, navBg) =>
       ({ id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg, navBg });
@@ -398,38 +376,33 @@
       });
 
       const notifiedTodayRef = useRef({});
-      const swRegistrationRef = useRef(null);
       const cloudReady = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId && window.firebase);
 
-      // BLOB URL ORQALI SERVICE WORKER-NI BIRGINA SHU HTML ICHIDAN ISHGA TUSHIRISH
+      // SERVICE WORKER & FIREBASE CLOUD MESSAGING (FCM) INITIALIZATION
       useEffect(() => {
         if (!cloudReady) return;
         try {
           if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
           
           if ('serviceWorker' in navigator) {
-            const blob = new Blob([swCode], { type: 'application/javascript' });
-            const swUrl = URL.createObjectURL(blob);
-
-            navigator.serviceWorker.register(swUrl)
+            navigator.serviceWorker.register('/firebase-messaging-sw.js')
               .then((registration) => {
-                console.log('Blob Service Worker muvaffaqiyatli ishga tushdi:', registration.scope);
-                swRegistrationRef.current = registration;
+                console.log('FCM Service Worker muvaffaqiyatli ulandi:', registration.scope);
                 if (firebase.messaging.isSupported()) {
                   const messaging = firebase.messaging();
                   messaging.useServiceWorker(registration);
                 }
               })
               .catch((err) => {
-                console.warn('Service Worker ogohlantirish:', err);
+                console.warn('Service worker ulanishida ogohlantirish:', err);
               });
           }
         } catch(e) {
-          console.error("Firebase init xatosi:", e);
+          console.error("Firebase init xatoligi:", e);
         }
       }, [cloudReady]);
 
-      // FONDA BILDIRISHNOMA YOQISH (FCM TOKEN OLISH)
+      // FCM TOKEN OLISH FUNKSIYASI (Fonda xabar kelishi uchun)
       const enablePushNotifications = async () => {
         try {
           if (!("Notification" in window)) {
@@ -439,17 +412,13 @@
 
           const permission = await Notification.requestPermission();
           if (permission !== 'granted') {
-            alert("Bildirishnomalar taqiqlangan. Sozlamalardan ruxsat bering.");
+            alert("Bildirishnomalar taqiqlangan. Brauzer yoki telefon sozlamalaridan ruxsat bering.");
             return;
           }
 
           if (firebase.messaging && firebase.messaging.isSupported()) {
             const messaging = firebase.messaging();
-            const token = await messaging.getToken({
-              vapidKey: VAPID_KEY,
-              serviceWorkerRegistration: swRegistrationRef.current
-            });
-
+            const token = await messaging.getToken({ vapidKey: VAPID_KEY });
             if (token) {
               setFcmTokenStatus("Faol ●");
               localStorage.setItem('intizom_fcm_token', token);
