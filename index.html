@@ -12,9 +12,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  
+  <!-- FIREBASE KUTUBXONALARI -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   </script>
@@ -125,55 +129,39 @@
       appId: "1:131558530387:web:45c4b99acbf7c04654d5a6"
     };
 
+    const VAPID_KEY = "BOml4UKYetLZuCaCrblgSJwp58PLOXcZIY3C1O37vwTOe3Vr1VyrwLDk1pHOHtQX_ezwk_QLZJdneEz4lalMag8";
+
+    // SERVICE WORKER KODINI HTML ICHIDAN TURIB DINAMIK YARATISH (Alohida fayl shart emas)
+    const swCode = `
+      importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+      importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
+
+      firebase.initializeApp(${JSON.stringify(FIREBASE_CONFIG)});
+      const messaging = firebase.messaging();
+
+      messaging.onBackgroundMessage((payload) => {
+        const title = payload.notification?.title || "Namoz vaqti kirdi!";
+        const options = {
+          body: payload.notification?.body || "Namozni ado etish vaqti bo‘ldi.",
+          icon: payload.notification?.icon || "https://cdn-icons-png.flaticon.com/512/2855/2855502.png",
+          badge: "https://cdn-icons-png.flaticon.com/512/2855/2855502.png",
+          vibrate: [200, 100, 200],
+          tag: "prayer-reminder",
+          renotify: true
+        };
+        self.registration.showNotification(title, options);
+      });
+    `;
+
     const mk = (id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg, navBg) =>
       ({ id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg, navBg });
 
     const THEMES = {
-      obsidian: mk(
-        'obsidian', 'Obsidian Qora', true,
-        'app-obsidian', 'bg-[#141417]', 'border-[#242429]',
-        'text-zinc-100', 'text-zinc-400',
-        'bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold shadow-md shadow-amber-500/20',
-        'text-amber-400', 'accent-amber-400',
-        'bg-amber-500/10 text-amber-300 border-amber-500/20',
-        'bg-[#1a1a20]', 'bg-zinc-800', 'bg-[#121215] border-[#27272a]'
-      ),
-      light: mk(
-        'light', 'Yorug‘lik Oq', false,
-        'app-light', 'bg-white shadow-sm', 'border-slate-200',
-        'text-slate-900', 'text-slate-500',
-        'bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md shadow-blue-500/20',
-        'text-blue-600', 'accent-blue-600',
-        'bg-blue-50 text-blue-800 border-blue-200',
-        'bg-slate-100', 'bg-slate-200', 'bg-white border-slate-200 shadow-lg'
-      ),
-      sepia: mk(
-        'sepia', 'Sepia Qog‘oz', false,
-        'app-sepia', 'bg-[#fcf8f0] shadow-sm', 'border-[#e4d8c5]',
-        'text-[#2f2416]', 'text-[#75624c]',
-        'bg-[#8c4f22] hover:bg-[#77411a] text-white font-bold shadow-md',
-        'text-[#8c4f22]', 'accent-[#8c4f22]',
-        'bg-[#ede3d1] text-[#5c3417] border-[#d5c3a6]',
-        'bg-[#f2e9dc]', 'bg-[#ded0be]', 'bg-[#fcf8f0] border-[#decbb4] shadow-md'
-      ),
-      midnight: mk(
-        'midnight', 'Midnight Ko‘k', true,
-        'app-midnight', 'bg-[#111827]', 'border-slate-800',
-        'text-slate-100', 'text-slate-400',
-        'bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-md shadow-blue-500/20',
-        'text-blue-400', 'accent-blue-500',
-        'bg-blue-500/10 text-blue-300 border-blue-500/20',
-        'bg-[#172136]', 'bg-slate-800', 'bg-[#0e1422] border-slate-800'
-      ),
-      emerald: mk(
-        'emerald', 'Zumrad Yashil', true,
-        'app-emerald', 'bg-[#091a13]', 'border-emerald-900/40',
-        'text-emerald-50', 'text-emerald-300/70',
-        'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold shadow-md shadow-emerald-500/20',
-        'text-emerald-400', 'accent-emerald-400',
-        'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
-        'bg-[#0f261d]', 'bg-emerald-950', 'bg-[#06150f] border-emerald-900/50'
-      )
+      obsidian: mk('obsidian', 'Obsidian Qora', true, 'app-obsidian', 'bg-[#141417]', 'border-[#242429]', 'text-zinc-100', 'text-zinc-400', 'bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold shadow-md shadow-amber-500/20', 'text-amber-400', 'accent-amber-400', 'bg-amber-500/10 text-amber-300 border-amber-500/20', 'bg-[#1a1a20]', 'bg-zinc-800', 'bg-[#121215] border-[#27272a]'),
+      light: mk('light', 'Yorug‘lik Oq', false, 'app-light', 'bg-white shadow-sm', 'border-slate-200', 'text-slate-900', 'text-slate-500', 'bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md shadow-blue-500/20', 'text-blue-600', 'accent-blue-600', 'bg-blue-50 text-blue-800 border-blue-200', 'bg-slate-100', 'bg-slate-200', 'bg-white border-slate-200 shadow-lg'),
+      sepia: mk('sepia', 'Sepia Qog‘oz', false, 'app-sepia', 'bg-[#fcf8f0] shadow-sm', 'border-[#e4d8c5]', 'text-[#2f2416]', 'text-[#75624c]', 'bg-[#8c4f22] hover:bg-[#77411a] text-white font-bold shadow-md', 'text-[#8c4f22]', 'accent-[#8c4f22]', 'bg-[#ede3d1] text-[#5c3417] border-[#d5c3a6]', 'bg-[#f2e9dc]', 'bg-[#ded0be]', 'bg-[#fcf8f0] border-[#decbb4] shadow-md'),
+      midnight: mk('midnight', 'Midnight Ko‘k', true, 'app-midnight', 'bg-[#111827]', 'border-slate-800', 'text-slate-100', 'text-slate-400', 'bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-md shadow-blue-500/20', 'text-blue-400', 'accent-blue-500', 'bg-blue-500/10 text-blue-300 border-blue-500/20', 'bg-[#172136]', 'bg-slate-800', 'bg-[#0e1422] border-slate-800'),
+      emerald: mk('emerald', 'Zumrad Yashil', true, 'app-emerald', 'bg-[#091a13]', 'border-emerald-900/40', 'text-emerald-50', 'text-emerald-300/70', 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold shadow-md shadow-emerald-500/20', 'text-emerald-400', 'accent-emerald-400', 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20', 'bg-[#0f261d]', 'bg-emerald-950', 'bg-[#06150f] border-emerald-900/50')
     };
 
     const BOOK_COLORS = [
@@ -397,6 +385,8 @@
       const [calcCurrentAge, setCalcCurrentAge] = useState(26);
       const [calcStartAge, setCalcStartAge] = useState(12);
 
+      const [fcmTokenStatus, setFcmTokenStatus] = useState("Ulanmagan");
+
       const [todayReadQazo, setTodayReadQazo] = useState(() => {
         try {
           const raw = localStorage.getItem('intizom_today_qazo');
@@ -408,7 +398,74 @@
       });
 
       const notifiedTodayRef = useRef({});
+      const swRegistrationRef = useRef(null);
       const cloudReady = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId && window.firebase);
+
+      // BLOB URL ORQALI SERVICE WORKER-NI BIRGINA SHU HTML ICHIDAN ISHGA TUSHIRISH
+      useEffect(() => {
+        if (!cloudReady) return;
+        try {
+          if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+          
+          if ('serviceWorker' in navigator) {
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(blob);
+
+            navigator.serviceWorker.register(swUrl)
+              .then((registration) => {
+                console.log('Blob Service Worker muvaffaqiyatli ishga tushdi:', registration.scope);
+                swRegistrationRef.current = registration;
+                if (firebase.messaging.isSupported()) {
+                  const messaging = firebase.messaging();
+                  messaging.useServiceWorker(registration);
+                }
+              })
+              .catch((err) => {
+                console.warn('Service Worker ogohlantirish:', err);
+              });
+          }
+        } catch(e) {
+          console.error("Firebase init xatosi:", e);
+        }
+      }, [cloudReady]);
+
+      // FONDA BILDIRISHNOMA YOQISH (FCM TOKEN OLISH)
+      const enablePushNotifications = async () => {
+        try {
+          if (!("Notification" in window)) {
+            alert("Bu brauzer bildirishnomalarni qo‘llab-quvvatlamaydi.");
+            return;
+          }
+
+          const permission = await Notification.requestPermission();
+          if (permission !== 'granted') {
+            alert("Bildirishnomalar taqiqlangan. Sozlamalardan ruxsat bering.");
+            return;
+          }
+
+          if (firebase.messaging && firebase.messaging.isSupported()) {
+            const messaging = firebase.messaging();
+            const token = await messaging.getToken({
+              vapidKey: VAPID_KEY,
+              serviceWorkerRegistration: swRegistrationRef.current
+            });
+
+            if (token) {
+              setFcmTokenStatus("Faol ●");
+              localStorage.setItem('intizom_fcm_token', token);
+              if (user) {
+                await userRef(user.uid).set({ fcmToken: token, updatedAt: new Date().toISOString() }, { merge: true });
+              }
+              alert("Fonda ovozli xabar berish muvaffaqiyatli ulandi!");
+            }
+          } else {
+            alert("Ushbu qurilmada Web Push to‘liq qo‘llab-quvvatlanmadi.");
+          }
+        } catch (e) {
+          console.error("FCM Token olishda xato:", e);
+          alert("Ulanish xatosi: " + (e.message || e));
+        }
+      };
 
       useEffect(() => {
         if (selectedBook) {
@@ -467,12 +524,6 @@
           remStr: `${remH > 0 ? remH + ' soat ' : ''}${remM} daqiqa`
         };
       }, [prayerTimes]);
-
-      useEffect(() => {
-        if ("Notification" in window && Notification.permission === "default") {
-          Notification.requestPermission().catch(() => {});
-        }
-      }, []);
 
       useEffect(() => {
         const checkPrayerClock = () => {
@@ -1109,6 +1160,7 @@
             {activeTab === 'namoz' && (
               <div className="space-y-4">
                 
+                {/* 1. KEYINGI NAMOZ TAYMERI */}
                 <div className={`${t.cardBg} border ${t.border} p-4 rounded-2xl shadow-sm flex items-center justify-between`}>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-lg">
@@ -1125,6 +1177,7 @@
                   </div>
                 </div>
 
+                {/* Asosiy xulosa kartochkasi */}
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-4`}>
                   <div className="flex items-center justify-between">
                     <div>
@@ -1151,15 +1204,20 @@
                   </button>
                 </div>
 
+                {/* Namoz vaqtlari va Push eslatma tugmasi */}
                 <div className={`${t.cardBg} border ${t.border} p-4 rounded-2xl shadow-sm space-y-3`}>
                   <div className="flex justify-between items-center px-1">
                     <div>
                       <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Namoz vaqtlari</span>
-                      <span className={`text-[10px] block ${t.textSub}`}>Vaqtlarni o‘zgartiring (shu vaqtda signal beradi)</span>
+                      <span className={`text-[10px] block ${t.textSub}`}>Vaqtlarni o‘zgartiring</span>
                     </div>
-                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                      ● Avtomat signal faol
-                    </span>
+                    <button 
+                      onClick={enablePushNotifications}
+                      className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/25 flex items-center gap-1.5 hover:bg-emerald-500/20 active:scale-95 transition"
+                    >
+                      <i className="fa-solid fa-bell"></i>
+                      <span>Fonda signal: {fcmTokenStatus}</span>
+                    </button>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2.5">
@@ -1453,7 +1511,7 @@
                         <i className="fa-solid fa-bolt text-xs"></i><span>Tez O‘qish</span>
                       </button>
                       <button onClick={() => { setActiveTab('ai_exam'); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider border ${t.border} ${t.subtleBg} ${t.textMain} hover:opacity-80 flex items-center justify-center gap-2`}>
-                        <i className={`fa-solid fa-brain ${t.accentText} text-xs`}></i><span>Test / Viktorina</span>
+                        <i className={`fa-solid ${showFocus ? 'fa-brain' : 'fa-brain'} ${t.accentText} text-xs`}></i><span>Test / Viktorina</span>
                       </button>
                     </div>
                   </div>
@@ -1520,7 +1578,7 @@
                   </div>
                 </div>
 
-                {/* TO'G'RILANGAN: Qizil tugma A 3 ta ning O'NG TOMONIDA va BIR QATORDA */}
+                {/* BIR QATOR: Qizil tugma A 3 ta ning O'NG TOMONIDA joylashgan */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                     <span className={`text-xs ${t.textSub} font-bold mr-1 whitespace-nowrap`}>Ko‘rinish:</span>
@@ -1531,7 +1589,7 @@
                         </button>
                       ))}
                       
-                      {/* Qizil tugma aynan A 3 ta ning o'ng yonida, bir qatorda joylashgan */}
+                      {/* QIZIL TUGMA A 3 ta YONIDA BIR QATORDA */}
                       <button onClick={toggleFocus} title="Markazdagi qizil harfni yoqish/o‘chirish" className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border transition whitespace-nowrap ${showFocus ? 'border-red-500/50 bg-red-500/15 text-red-500' : `${t.border} ${t.subtleBg} ${t.textSub}`}`}>
                         <i className={`fa-solid ${showFocus ? 'fa-eye' : 'fa-eye-slash'} text-[10px]`}></i> Qizil: {showFocus ? 'Yoq' : 'O‘chiq'}
                       </button>
@@ -1630,6 +1688,7 @@
             )}
           </div>
 
+          {/* ASOSIY NAMOZ ESLATMASI MODALI */}
           {activePrayerReminder && (
             <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
               <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl text-center`}>
@@ -1664,6 +1723,7 @@
             </div>
           )}
 
+          {/* DOCK NAVIGATSIYA */}
           <div className={`fixed bottom-3 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[32rem] h-16 rounded-2xl border ${t.navBg} flex justify-around items-center px-2 z-20 shadow-md`}>
             {[
               { id: 'home', icon: 'fa-house', label: 'Asosiy' },
