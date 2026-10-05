@@ -37,8 +37,9 @@
     input, textarea { color: inherit; }
     input::placeholder, textarea::placeholder { color: currentColor; opacity: .45; }
 
+    /* Dynamic Island va Status bar ustiga chiqib ketmasligi uchun to'g'irlangan balandlik */
     .header-safe {
-      padding-top: max(env(safe-area-inset-top), 24px);
+      padding-top: max(env(safe-area-inset-top), 54px);
     }
 
     .prayer-time-input {
@@ -300,7 +301,7 @@
         }
       }, []);
 
-      const [activeTab, setActiveTab] = useState('home');
+      const [activeTab, setActiveTab] = useState('namoz');
       const [themeKey, setThemeKey] = useState(cachedData?.themeKey || 'obsidian');
       const [goalTitle, setGoalTitle] = useState(cachedData?.goalTitle !== undefined ? cachedData.goalTitle : "");
       const [goalDays, setGoalDays] = useState(cachedData?.goalDays || 10);
@@ -382,7 +383,16 @@
       const [isTodayQazoModalOpen, setIsTodayQazoModalOpen] = useState(false);
       const [customTodayInput, setCustomTodayInput] = useState("");
 
-      const [fcmTokenStatus, setFcmTokenStatus] = useState("Ulanmagan");
+      // TO'G'RILANDI: Token borligi va Notification ruxsati tekshirilib holat avtomatik tiklanadi
+      const [fcmTokenStatus, setFcmTokenStatus] = useState(() => {
+        try {
+          const savedToken = localStorage.getItem('intizom_fcm_token');
+          const hasPerm = typeof Notification !== 'undefined' && Notification.permission === 'granted';
+          return (savedToken || hasPerm) ? "Faol ●" : "Ulanmagan";
+        } catch(e) {
+          return "Ulanmagan";
+        }
+      });
 
       const [todayReadQazo, setTodayReadQazo] = useState(() => {
         try {
@@ -411,6 +421,20 @@
       };
 
       useEffect(() => {
+        const onFirstInteraction = () => {
+          initAudioOnUserAction();
+          window.removeEventListener('click', onFirstInteraction);
+          window.removeEventListener('touchstart', onFirstInteraction);
+        };
+        window.addEventListener('click', onFirstInteraction);
+        window.addEventListener('touchstart', onFirstInteraction);
+        return () => {
+          window.removeEventListener('click', onFirstInteraction);
+          window.removeEventListener('touchstart', onFirstInteraction);
+        };
+      }, []);
+
+      useEffect(() => {
         if (!cloudReady) return;
         try {
           if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
@@ -433,6 +457,25 @@
         }
       }, [cloudReady]);
 
+      // TO'G'RILANDI: Qayta kirganda status "Ulanmagan" bo'lib qolmasligi uchun avtomatik tekshiruv
+      useEffect(() => {
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          const token = localStorage.getItem('intizom_fcm_token');
+          if (token) {
+            setFcmTokenStatus("Faol ●");
+          } else if (cloudReady && firebase.messaging && firebase.messaging.isSupported()) {
+            navigator.serviceWorker.ready.then(swReg => {
+              return firebase.messaging().getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+            }).then(tok => {
+              if (tok) {
+                localStorage.setItem('intizom_fcm_token', tok);
+                setFcmTokenStatus("Faol ●");
+              }
+            }).catch(() => {});
+          }
+        }
+      }, [cloudReady]);
+
       const enablePushNotifications = async () => {
         initAudioOnUserAction();
         try {
@@ -443,7 +486,7 @@
 
           const permission = await Notification.requestPermission();
           if (permission !== 'granted') {
-            alert("Bildirishnomalarga ruxsat berilmadi. iPhone sozlamalaridan ushbu ilovaga ruxsat bering.");
+            alert("Bildirishnomalarga ruxsat berilmadi. iPhone sozlamalaridan ushbu ilovaga bildirishnomalarga ruxsat bering.");
             return;
           }
 
@@ -462,7 +505,7 @@
               if (user) {
                 await userRef(user.uid).set({ fcmToken: token, updatedAt: new Date().toISOString() }, { merge: true });
               }
-              alert("Fonda ovozli xabar berish muvaffaqiyatli ulandi!");
+              alert("Fonda bildirishnoma muvaffaqiyatli ulandi!");
             }
           } else {
             alert("Ushbu qurilmada Web Push to‘liq qo‘llab-quvvatlanmadi.");
@@ -760,6 +803,7 @@
       };
 
       const updatePrayerTime = (id, val) => {
+        if (!val) return;
         setPrayerTimes(prev => ({
           ...prev,
           [id]: val
@@ -851,7 +895,7 @@
           goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive, qazoCounts, prayerTimes 
         }));
         const id = setTimeout(() => {
-          try { localStorage.setItem('intizom_v1', JSON.stringify(data)); } catch (e) {}
+          try { localStorage.getItem('intizom_v1', JSON.stringify(data)); } catch (e) {}
           if (user && cloudLoadedRef.current) {
             userRef(user.uid).set(data, { merge: true }).then(() => setSyncError("")).catch(e => setSyncError(e.code || e.message));
           }
@@ -1113,7 +1157,6 @@
 
       const totalQazoAmount = Object.values(qazoCounts).reduce((a, b) => a + (Number(b) || 0), 0);
 
-      // TO'G'RILANDI: Status bari (soat) bilan kirish tugmasi urilib ketmasligi uchun maxsus pt-12 va safe-area berildi
       if (!onboarded || creatingNew) {
         const submitSetup = () => {
           const tasks = setupTasks.split('\n').map(x => x.trim()).filter(Boolean);
@@ -1133,7 +1176,7 @@
         return (
           <div className={`w-full h-full ${t.appBg} ${t.textMain} overflow-y-auto font-sans relative`}>
             {splashOverlay}
-            <div className="max-w-lg mx-auto p-5 md:p-8 pb-32 space-y-4 pt-12 header-safe">
+            <div className="max-w-lg mx-auto p-5 md:p-8 pb-32 space-y-4 header-safe">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2.5">
                   <IntizomLogo size={28} />
@@ -1170,7 +1213,8 @@
         <div className={`w-full h-full ${t.appBg} ${t.textMain} flex flex-col overflow-hidden relative transition-colors duration-200 font-sans`}>
           {splashOverlay}
           
-          <div className={`header-safe px-6 md:px-10 pb-3 flex justify-between items-center border-b ${t.border} ${t.cardBg} flex-shrink-0 z-10 shadow-sm pt-8`}>
+          {/* TOP HEADER: Dynamic Island ostidan to'liq xavfsiz masofaga surilgan */}
+          <div className={`header-safe px-5 md:px-10 pb-3 flex justify-between items-center border-b ${t.border} ${t.cardBg} flex-shrink-0 z-30 shadow-sm`}>
             <div className="flex items-center gap-2.5">
               <IntizomLogo size={26} />
               <h1 className={t.isDark ? "brand-title-dark text-xl" : "brand-title-light text-xl"}>Intizom</h1>
@@ -1290,7 +1334,7 @@
               </div>
             )}
 
-            {/* QAZO NAMOZLARI MODULI (Shapelar to'liq tekislandi) */}
+            {/* QAZO NAMOZLARI MODULI */}
             {activeTab === 'namoz' && (
               <div className="space-y-4">
                 
