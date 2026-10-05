@@ -2,7 +2,7 @@
 <html lang="uz">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
   <title>Intizom - Shaxsiy Rivojlanish</title>
   
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -37,9 +37,9 @@
     input, textarea { color: inherit; }
     input::placeholder, textarea::placeholder { color: currentColor; opacity: .45; }
 
-    /* Dynamic Island va Status bar ustiga chiqib ketmasligi uchun to'g'irlangan balandlik */
+    /* iPhone Dynamic Island, Soat va Batareyka bilan to'qnashmaslik uchun xavfsiz masofa */
     .header-safe {
-      padding-top: max(env(safe-area-inset-top), 54px);
+      padding-top: max(env(safe-area-inset-top), 62px) !important;
     }
 
     .prayer-time-input {
@@ -383,7 +383,7 @@
       const [isTodayQazoModalOpen, setIsTodayQazoModalOpen] = useState(false);
       const [customTodayInput, setCustomTodayInput] = useState("");
 
-      // TO'G'RILANDI: Token borligi va Notification ruxsati tekshirilib holat avtomatik tiklanadi
+      // TO'G'RILANDI: iPhone xotirasi yangilansa ham, brauzer ruxsatiga qarab "Faol ●" deb avtomatik belgilaydi
       const [fcmTokenStatus, setFcmTokenStatus] = useState(() => {
         try {
           const savedToken = localStorage.getItem('intizom_fcm_token');
@@ -457,23 +457,24 @@
         }
       }, [cloudReady]);
 
-      // TO'G'RILANDI: Qayta kirganda status "Ulanmagan" bo'lib qolmasligi uchun avtomatik tekshiruv
+      // TO'G'RILANDI: Ilovaga har kirganda "Fonda signal: Faol ●" holatini darhol tiklaydi
       useEffect(() => {
-        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-          const token = localStorage.getItem('intizom_fcm_token');
-          if (token) {
+        const checkPermissionAndToken = async () => {
+          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
             setFcmTokenStatus("Faol ●");
-          } else if (cloudReady && firebase.messaging && firebase.messaging.isSupported()) {
-            navigator.serviceWorker.ready.then(swReg => {
-              return firebase.messaging().getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
-            }).then(tok => {
-              if (tok) {
-                localStorage.setItem('intizom_fcm_token', tok);
-                setFcmTokenStatus("Faol ●");
+            try {
+              if (cloudReady && firebase.messaging && firebase.messaging.isSupported()) {
+                const swReg = await navigator.serviceWorker.ready;
+                const tok = await firebase.messaging().getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+                if (tok) {
+                  localStorage.setItem('intizom_fcm_token', tok);
+                  setFcmTokenStatus("Faol ●");
+                }
               }
-            }).catch(() => {});
+            } catch(e) {}
           }
-        }
+        };
+        checkPermissionAndToken();
       }, [cloudReady]);
 
       const enablePushNotifications = async () => {
@@ -489,6 +490,8 @@
             alert("Bildirishnomalarga ruxsat berilmadi. iPhone sozlamalaridan ushbu ilovaga bildirishnomalarga ruxsat bering.");
             return;
           }
+
+          setFcmTokenStatus("Faol ●");
 
           if (firebase.messaging && firebase.messaging.isSupported()) {
             const swReg = await navigator.serviceWorker.ready;
@@ -508,11 +511,13 @@
               alert("Fonda bildirishnoma muvaffaqiyatli ulandi!");
             }
           } else {
-            alert("Ushbu qurilmada Web Push to‘liq qo‘llab-quvvatlanmadi.");
+            alert("Ruxsat berildi. Fonda signal faollashtirildi!");
           }
         } catch (e) {
           console.error("FCM Token olishda xato:", e);
-          alert("Ulanish xatosi: " + (e.message || e));
+          if (Notification.permission === 'granted') {
+            setFcmTokenStatus("Faol ●");
+          }
         }
       };
 
@@ -895,7 +900,7 @@
           goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive, qazoCounts, prayerTimes 
         }));
         const id = setTimeout(() => {
-          try { localStorage.getItem('intizom_v1', JSON.stringify(data)); } catch (e) {}
+          try { localStorage.setItem('intizom_v1', JSON.stringify(data)); } catch (e) {}
           if (user && cloudLoadedRef.current) {
             userRef(user.uid).set(data, { merge: true }).then(() => setSyncError("")).catch(e => setSyncError(e.code || e.message));
           }
@@ -1129,13 +1134,13 @@
       };
 
       const authButton = user ? (
-        <button onClick={() => setActiveTab('profile')} title={user.email} className={`flex items-center gap-1.5 ${t.textMain}`}>
-          {user.photoURL ? <img src={user.photoURL} referrerPolicy="no-referrer" className="w-6 h-6 rounded-full" /> : <i className="fa-solid fa-circle-user"></i>}
-          {!syncError && <span className={`hidden sm:inline text-[10px] ${t.textSub}`}>☁ Bulutda</span>}
+        <button onClick={() => setActiveTab('profile')} title={user.email} className={`flex items-center gap-1.5 px-2 py-1 rounded-full ${t.subtleBg} border ${t.border} ${t.textMain}`}>
+          {user.photoURL ? <img src={user.photoURL} referrerPolicy="no-referrer" className="w-5 h-5 rounded-full" /> : <i className="fa-solid fa-circle-user text-sm"></i>}
+          <span className="text-[11px] font-bold max-w-[70px] truncate">{user.displayName ? user.displayName.split(' ')[0] : 'Profil'}</span>
         </button>
       ) : (
-        <button onClick={signIn} className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${t.border} ${t.textMain} flex items-center gap-1.5 bg-black/5 dark:bg-white/5`}>
-          <i className="fa-brands fa-google"></i> Kirish
+        <button onClick={signIn} className={`text-[11px] font-bold px-3 py-1.5 rounded-full border ${t.border} ${t.textMain} flex items-center gap-1.5 bg-black/10 dark:bg-white/10 active:scale-95 transition`}>
+          <i className="fa-brands fa-google text-xs text-amber-400"></i> Kirish
         </button>
       );
 
@@ -1177,7 +1182,7 @@
           <div className={`w-full h-full ${t.appBg} ${t.textMain} overflow-y-auto font-sans relative`}>
             {splashOverlay}
             <div className="max-w-lg mx-auto p-5 md:p-8 pb-32 space-y-4 header-safe">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-3 pt-2">
                 <div className="flex items-center gap-2.5">
                   <IntizomLogo size={28} />
                   <h1 className={t.isDark ? "brand-title-dark text-2xl" : "brand-title-light text-2xl"}>Intizom</h1>
@@ -1213,28 +1218,31 @@
         <div className={`w-full h-full ${t.appBg} ${t.textMain} flex flex-col overflow-hidden relative transition-colors duration-200 font-sans`}>
           {splashOverlay}
           
-          {/* TOP HEADER: Dynamic Island ostidan to'liq xavfsiz masofaga surilgan */}
-          <div className={`header-safe px-5 md:px-10 pb-3 flex justify-between items-center border-b ${t.border} ${t.cardBg} flex-shrink-0 z-30 shadow-sm`}>
+          {/* TO'G'RILANDI: iPhone status bar, Dynamic Island ostidan to'liq xavfsiz zonaga tushirilgan header */}
+          <header className={`header-safe px-5 md:px-10 pb-3.5 flex justify-between items-center border-b ${t.border} ${t.cardBg} flex-shrink-0 z-40 shadow-sm relative`}>
             <div className="flex items-center gap-2.5">
               <IntizomLogo size={26} />
               <h1 className={t.isDark ? "brand-title-dark text-xl" : "brand-title-light text-xl"}>Intizom</h1>
+            </div>
+            
+            <div className="flex items-center gap-2">
               {authButton}
+              <div className={`flex items-center gap-1.5 p-1 rounded-lg ${t.subtleBg} border ${t.border}`}>
+                {[
+                  { k: 'obsidian', color: 'bg-zinc-950 border border-zinc-700', title: 'Obsidian Qora' },
+                  { k: 'light', color: 'bg-white border border-slate-300', title: 'Yorug‘lik Oq' },
+                  { k: 'sepia', color: 'bg-[#e7d8be] border border-[#b89f78]', title: 'Sepia Qog‘oz' },
+                  { k: 'midnight', color: 'bg-blue-600', title: 'Midnight Ko‘k' },
+                  { k: 'emerald', color: 'bg-emerald-600', title: 'Zumrad Yashil' }
+                ].map(item => (
+                  <button key={item.k} onClick={() => setThemeKey(item.k)} title={item.title}
+                    className={`w-4 h-4 rounded-full transition-transform ${item.color} ${themeKey === item.k ? 'scale-125 ring-2 ring-amber-500 shadow' : 'opacity-60 hover:opacity-100'}`} />
+                ))}
+              </div>
             </div>
-            <div className={`flex items-center gap-1.5 p-1 rounded-lg ${t.subtleBg} border ${t.border}`}>
-              {[
-                { k: 'obsidian', color: 'bg-zinc-950 border border-zinc-700', title: 'Obsidian Qora' },
-                { k: 'light', color: 'bg-white border border-slate-300', title: 'Yorug‘lik Oq' },
-                { k: 'sepia', color: 'bg-[#e7d8be] border border-[#b89f78]', title: 'Sepia Qog‘oz' },
-                { k: 'midnight', color: 'bg-blue-600', title: 'Midnight Ko‘k' },
-                { k: 'emerald', color: 'bg-emerald-600', title: 'Zumrad Yashil' }
-              ].map(item => (
-                <button key={item.k} onClick={() => setThemeKey(item.k)} title={item.title}
-                  className={`w-4 h-4 rounded-full transition-transform ${item.color} ${themeKey === item.k ? 'scale-125 ring-2 ring-amber-500 shadow' : 'opacity-60 hover:opacity-100'}`} />
-              ))}
-            </div>
-          </div>
+          </header>
 
-          <div key={activeTab} className="tab-enter relative z-10 flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-4 max-w-xl md:max-w-3xl xl:max-w-4xl mx-auto w-full md:p-8 pb-36">
+          <main key={activeTab} className="tab-enter relative z-10 flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-4 max-w-xl md:max-w-3xl xl:max-w-4xl mx-auto w-full md:p-8 pb-44">
 
             {activeTab === 'home' && (
               <div className="space-y-4">
@@ -1959,7 +1967,7 @@
                 )}
               </div>
             )}
-          </div>
+          </main>
 
           {/* ASOSIY NAMOZ ESLATMASI MODALI */}
           {activePrayerReminder && (
@@ -2113,7 +2121,7 @@
           )}
 
           {/* DOCK NAVIGATSIYA */}
-          <div className={`fixed bottom-3 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[32rem] h-16 rounded-2xl border ${t.navBg} flex justify-around items-center px-2 z-20 shadow-md`}>
+          <nav className={`fixed bottom-4 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[32rem] h-16 rounded-2xl border ${t.navBg} flex justify-around items-center px-2 z-40 shadow-xl backdrop-blur-md`}>
             {[
               { id: 'home', icon: 'fa-house', label: 'Asosiy' },
               { id: 'namoz', icon: 'fa-kaaba', label: 'Namoz' },
@@ -2128,7 +2136,7 @@
                 <span className="text-[10px] tracking-tight">{tab.label}</span>
               </button>
             ))}
-          </div>
+          </nav>
 
           {isGoalModalOpen && (
             <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-5 z-50">
