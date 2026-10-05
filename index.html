@@ -37,9 +37,9 @@
     input, textarea { color: inherit; }
     input::placeholder, textarea::placeholder { color: currentColor; opacity: .45; }
 
-    /* iPhone Dynamic Island, Soat va Batareyka bilan to'qnashmaslik uchun xavfsiz masofa */
-    .header-safe {
-      padding-top: max(env(safe-area-inset-top), 62px) !important;
+    /* iPhone Dynamic Island va Status-bar ostidan to'liq pastga surish */
+    .ios-header {
+      padding-top: max(env(safe-area-inset-top), 64px) !important;
     }
 
     .prayer-time-input {
@@ -383,7 +383,7 @@
       const [isTodayQazoModalOpen, setIsTodayQazoModalOpen] = useState(false);
       const [customTodayInput, setCustomTodayInput] = useState("");
 
-      // TO'G'RILANDI: iPhone xotirasi yangilansa ham, brauzer ruxsatiga qarab "Faol ●" deb avtomatik belgilaydi
+      // Ruxsat borligi yoki token saqlanganiga qarab "Faol ●" holatini tiklash
       const [fcmTokenStatus, setFcmTokenStatus] = useState(() => {
         try {
           const savedToken = localStorage.getItem('intizom_fcm_token');
@@ -457,7 +457,6 @@
         }
       }, [cloudReady]);
 
-      // TO'G'RILANDI: Ilovaga har kirganda "Fonda signal: Faol ●" holatini darhol tiklaydi
       useEffect(() => {
         const checkPermissionAndToken = async () => {
           if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
@@ -469,13 +468,16 @@
                 if (tok) {
                   localStorage.setItem('intizom_fcm_token', tok);
                   setFcmTokenStatus("Faol ●");
+                  if (user) {
+                    await userRef(user.uid).set({ fcmToken: tok, updatedAt: new Date().toISOString() }, { merge: true });
+                  }
                 }
               }
             } catch(e) {}
           }
         };
         checkPermissionAndToken();
-      }, [cloudReady]);
+      }, [cloudReady, user]);
 
       const enablePushNotifications = async () => {
         initAudioOnUserAction();
@@ -508,7 +510,8 @@
               if (user) {
                 await userRef(user.uid).set({ fcmToken: token, updatedAt: new Date().toISOString() }, { merge: true });
               }
-              alert("Fonda bildirishnoma muvaffaqiyatli ulandi!");
+              // Tokenni darhol nusxalab olish uchun ekranga chiqarish
+              prompt("Sizning FCM tokeningiz (Firebase'ga qo‘yish uchun nusxalang):", token);
             }
           } else {
             alert("Ruxsat berildi. Fonda signal faollashtirildi!");
@@ -1134,9 +1137,9 @@
       };
 
       const authButton = user ? (
-        <button onClick={() => setActiveTab('profile')} title={user.email} className={`flex items-center gap-1.5 px-2 py-1 rounded-full ${t.subtleBg} border ${t.border} ${t.textMain}`}>
-          {user.photoURL ? <img src={user.photoURL} referrerPolicy="no-referrer" className="w-5 h-5 rounded-full" /> : <i className="fa-solid fa-circle-user text-sm"></i>}
-          <span className="text-[11px] font-bold max-w-[70px] truncate">{user.displayName ? user.displayName.split(' ')[0] : 'Profil'}</span>
+        <button onClick={() => setActiveTab('profile')} title={user.email} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${t.subtleBg} border ${t.border} ${t.textMain}`}>
+          {user.photoURL ? <img src={user.photoURL} referrerPolicy="no-referrer" className="w-5 h-5 rounded-full" /> : <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-[10px]">{user.displayName ? user.displayName.charAt(0) : 'U'}</div>}
+          <span className="text-[11px] font-bold max-w-[80px] truncate">{user.displayName ? user.displayName.split(' ')[0] : 'Profil'}</span>
         </button>
       ) : (
         <button onClick={signIn} className={`text-[11px] font-bold px-3 py-1.5 rounded-full border ${t.border} ${t.textMain} flex items-center gap-1.5 bg-black/10 dark:bg-white/10 active:scale-95 transition`}>
@@ -1181,7 +1184,7 @@
         return (
           <div className={`w-full h-full ${t.appBg} ${t.textMain} overflow-y-auto font-sans relative`}>
             {splashOverlay}
-            <div className="max-w-lg mx-auto p-5 md:p-8 pb-32 space-y-4 header-safe">
+            <div className="max-w-lg mx-auto p-5 md:p-8 pb-32 space-y-4 ios-header">
               <div className="flex items-center justify-between mb-3 pt-2">
                 <div className="flex items-center gap-2.5">
                   <IntizomLogo size={28} />
@@ -1218,11 +1221,11 @@
         <div className={`w-full h-full ${t.appBg} ${t.textMain} flex flex-col overflow-hidden relative transition-colors duration-200 font-sans`}>
           {splashOverlay}
           
-          {/* TO'G'RILANDI: iPhone status bar, Dynamic Island ostidan to'liq xavfsiz zonaga tushirilgan header */}
-          <header className={`header-safe px-5 md:px-10 pb-3.5 flex justify-between items-center border-b ${t.border} ${t.cardBg} flex-shrink-0 z-40 shadow-sm relative`}>
-            <div className="flex items-center gap-2.5">
-              <IntizomLogo size={26} />
-              <h1 className={t.isDark ? "brand-title-dark text-xl" : "brand-title-light text-xl"}>Intizom</h1>
+          {/* TO'G'RILANDI: iPhone Dynamic Island, Soat va Batareyadan to'liq pastga olingan toza header */}
+          <header className={`ios-header px-5 md:px-10 pb-3 flex justify-between items-center border-b ${t.border} ${t.cardBg} flex-shrink-0 z-40 shadow-sm relative`}>
+            <div className="flex items-center gap-2">
+              <IntizomLogo size={24} />
+              <h1 className={t.isDark ? "brand-title-dark text-lg" : "brand-title-light text-lg"}>Intizom</h1>
             </div>
             
             <div className="flex items-center gap-2">
@@ -1236,13 +1239,14 @@
                   { k: 'emerald', color: 'bg-emerald-600', title: 'Zumrad Yashil' }
                 ].map(item => (
                   <button key={item.k} onClick={() => setThemeKey(item.k)} title={item.title}
-                    className={`w-4 h-4 rounded-full transition-transform ${item.color} ${themeKey === item.k ? 'scale-125 ring-2 ring-amber-500 shadow' : 'opacity-60 hover:opacity-100'}`} />
+                    className={`w-3.5 h-3.5 rounded-full transition-transform ${item.color} ${themeKey === item.k ? 'scale-125 ring-2 ring-amber-500 shadow' : 'opacity-60 hover:opacity-100'}`} />
                 ))}
               </div>
             </div>
           </header>
 
-          <main key={activeTab} className="tab-enter relative z-10 flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-4 max-w-xl md:max-w-3xl xl:max-w-4xl mx-auto w-full md:p-8 pb-44">
+          {/* ASOSIY KONTENT: Pastki menyu ostida qolmasligi uchun pb-48 qo'shildi */}
+          <main key={activeTab} className="tab-enter relative z-10 flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-4 max-w-xl md:max-w-3xl xl:max-w-4xl mx-auto w-full md:p-8 pt-4 pb-48">
 
             {activeTab === 'home' && (
               <div className="space-y-4">
@@ -1342,7 +1346,7 @@
               </div>
             )}
 
-            {/* QAZO NAMOZLARI MODULI */}
+            {/* QAZO NAMOZLARI MODULI (Barcha kartochkalar joyiga tushirildi) */}
             {activeTab === 'namoz' && (
               <div className="space-y-4">
                 
@@ -1363,7 +1367,7 @@
                   </div>
                 </div>
 
-                {/* Asosiy xulosa kartochkasi */}
+                {/* 2. ASOSIY XULOSA KARTOCHKASI */}
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-4`}>
                   <div className="flex items-center justify-between">
                     <div>
@@ -1406,7 +1410,7 @@
                   </button>
                 </div>
 
-                {/* SANA ORALIG'I BO'YICHA QAZO KALKULYATORI */}
+                {/* 3. SANA ORALIG'I BO'YICHA QAZO KALKULYATORI */}
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-3.5`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -1470,7 +1474,7 @@
                   </div>
                 </div>
 
-                {/* Namoz vaqtlari va Push eslatma tugmasi */}
+                {/* 4. NAMOZ VAQTLARI VA FONDA SIGNAL TUGMASI */}
                 <div className={`${t.cardBg} border ${t.border} p-4 rounded-2xl shadow-sm space-y-3`}>
                   <div className="flex justify-between items-center px-1">
                     <div>
@@ -1522,7 +1526,7 @@
                   </div>
                 </div>
 
-                {/* Namozlar bo'yicha alohida qazo soni */}
+                {/* 5. NAMOZLAR BO'YICHA QAZO SONI */}
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-3`}>
                   <div className="flex justify-between items-center px-1">
                     <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Namozlar bo‘yicha qazo soni</span>
@@ -1576,7 +1580,7 @@
                   </div>
                 </div>
 
-                {/* Yillar bo'yicha kalkulyator */}
+                {/* 6. YILLAR BO'YICHA KALKULYATOR */}
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-3`}>
                   <div className="flex items-center gap-2">
                     <i className="fa-solid fa-calculator text-amber-400 text-sm"></i>
