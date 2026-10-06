@@ -19,12 +19,12 @@ async function checkAndSend() {
   const uzbHour = Math.floor(uzbMinutes / 60);
   const uzbMin = uzbMinutes % 60;
   const currentTime = `${String(uzbHour).padStart(2, '0')}:${String(uzbMin).padStart(2, '0')}`;
+  const todayDateStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
 
   console.log(`========================================`);
-  console.log(`Hozirgi vaqt (O'zbekiston): ${currentTime} (${uzbMinutes}-daqiqa)`);
+  console.log(`Hozirgi vaqt (O'zbekiston): ${currentTime} (${uzbMinutes}-daqiqa) | Sana: ${todayDateStr}`);
   console.log(`========================================`);
 
-  // Barcha foydalanuvchilarni olish
   const usersSnap = await db.collection('intizom_users').get();
   console.log(`Bazadagi jami foydalanuvchilar soni: ${usersSnap.docs.length}`);
 
@@ -32,9 +32,9 @@ async function checkAndSend() {
     const data = doc.data();
     console.log(`\nFoydalanuvchi ID: ${doc.id}`);
 
-    // Bazadagi barcha ehtimoliy token nomlarini tekshirish
     const token = data.fcmToken || data.token || data.pushToken || data.deviceToken || data.fcm_token;
     const times = data.prayerTimes || data.namozVaqtlari || {};
+    const lastNotified = data.lastNotified || {};
 
     if (!token) {
       console.log(`❌ Bu foydalanuvchida token topilmadi!`);
@@ -60,7 +60,13 @@ async function checkAndSend() {
       const targetMinutes = pHour * 60 + pMin;
       const diff = uzbMinutes - targetMinutes;
 
-      // Cron 0 dan 5 daqiqagacha kechikib yursa ham xabarni ushlaydi
+      // Bugun aynan shu namoz uchun xabar allaqachon yuborilgan bo'lsa, qayta yubormaymiz
+      const alreadySentKey = `${todayDateStr}_${key}`;
+      if (lastNotified[alreadySentKey]) {
+        continue;
+      }
+
+      // Cron 0 dan 5 daqiqagacha bo'lgan vaqt oralig'ida bo'lsa
       if (diff >= 0 && diff < 5) {
         console.log(`🚀 Xabar yuborilmoqda: ${prayerName} (${pTime})`);
 
@@ -104,6 +110,14 @@ async function checkAndSend() {
         try {
           await admin.messaging().send(message);
           console.log(`🎉 Muvaffaqiyatli yetkazildi: ${prayerName}`);
+
+          // Qayta yuborilmasligi uchun belgini saqlab qo'yamiz
+          await doc.ref.set({
+            lastNotified: {
+              [alreadySentKey]: true
+            }
+          }, { merge: true });
+
         } catch (err) {
           console.error(`⚠️ Yuborishda xatolik:`, err.message);
         }
