@@ -1,0 +1,26 @@
+name: Namoz Vaqti Bildirishnomasi
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  check-and-notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repozitoriyni yuklash
+        uses: actions/checkout@v4
+
+      - name: Node.js sozlash
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Kutubxonalarni o'rnatish
+        run: npm install firebase-admin
+
+      - name: Tekshirish va bildirishnoma yuborish
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node notify.js
