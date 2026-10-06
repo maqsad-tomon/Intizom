@@ -2,17 +2,23 @@ name: Namoz Vaqti Bildirishnomasi
 
 on:
   schedule:
+    # Har 5 daqiqada avtomatik tekshiradi
     - cron: '*/5 * * * *'
+  # GitHub panelidan qo'lda ham sinab ko'rish imkoniyati
   workflow_dispatch:
 
 concurrency:
   group: namoz-bildirishnoma
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   check-and-notify:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+
     steps:
       - name: Repozitoriyni yuklash
         uses: actions/checkout@v4
@@ -22,10 +28,12 @@ jobs:
         with:
           node-version: 20
 
-      - name: Kutubxonalarni o'rnatish
+      - name: Kerakli kutubxonalarni o'rnatish
         run: |
-          [ -f package.json ] || npm init -y
-          npm install firebase-admin --no-audit --no-fund
+          if [ ! -f package.json ]; then
+            npm init -y
+          fi
+          npm install firebase-admin --no-audit --no-fund --prefer-offline
 
       - name: Tekshirish va bildirishnoma yuborish
         env:
