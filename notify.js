@@ -1,113 +1,98 @@
 const admin = require('firebase-admin');
 
-// GitHub Secret ichidagi Firebase kaliti
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
+  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 }
 
 const db = admin.firestore();
 
+const WINDOW_MINUTES = 15; // GitHub cron kechikishi uchun
+
+const prayerNames = {
+  bomdod: "Bomdod",
+  peshin: "Peshin",
+  asr: "Asr",
+  shom: "Shom",
+  xufton: "Xufton",
+  vitr: "Vitr vojib"
+};
+
+const TOKEN_FIELDS = ['fcmToken', 'token', 'pushToken', 'deviceToken', 'fcm_token'];
+
 async function checkAndSend() {
   const now = new Date();
-  const utcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
-  const uzbMinutes = (utcMinutes + 5 * 60) % (24 * 60);
+  const uzbNow = new Date(now.getTime() + 5 * 60 * 60 * 1000);
+  const today = uzbNow.toISOString().slice(0, 10);
+  const uzbMinutes = uzbNow.getUTCHours() * 60 + uzbNow.getUTCMinutes();
 
-  const uzbHour = Math.floor(uzbMinutes / 60);
-  const uzbMin = uzbMinutes % 60;
-  const currentTime = `${String(uzbHour).padStart(2, '0')}:${String(uzbMin).padStart(2, '0')}`;
-
-  console.log(`========================================`);
-  console.log(`Hozirgi vaqt (O'zbekiston): ${currentTime} (${uzbMinutes}-daqiqa)`);
-  console.log(`========================================`);
+  console.log(`Hozirgi vaqt (UZ): ${uzbNow.toISOString()} | ${uzbMinutes}-daqiqa`);
 
   const usersSnap = await db.collection('intizom_users').get();
-  console.log(`Bazadagi jami foydalanuvchilar soni: ${usersSnap.docs.length}`);
+  console.log(`Foydalanuvchilar soni: ${usersSnap.docs.length}`);
 
   for (const doc of usersSnap.docs) {
     const data = doc.data();
-    console.log(`\nFoydalanuvchi ID: ${doc.id}`);
-
-    const token = data.fcmToken || data.token || data.pushToken || data.deviceToken || data.fcm_token;
+    const tokenField = TOKEN_FIELDS.find(f => data[f]);
+    const token = tokenField ? data[tokenField] : null;
     const times = data.prayerTimes || data.namozVaqtlari || {};
+    const lastSent = data.lastSent || {};
 
     if (!token) {
-      console.log(`❌ Bu foydalanuvchida token topilmadi!`);
+      console.log(`❌ ${doc.id}: token yo'q`);
       continue;
-    } else {
-      console.log(`✅ Token topildi: ${token.substring(0, 15)}...`);
     }
-
-    const prayerNames = {
-      bomdod: "Bomdod",
-      peshin: "Peshin",
-      asr: "Asr",
-      shom: "Shom",
-      xufton: "Xufton",
-      vitr: "Vitr vojib"
-    };
+    console.log(`✅ ${doc.id}: token bor, vaqtlar: ${JSON.stringify(times)}`);
 
     for (const [key, prayerName] of Object.entries(prayerNames)) {
       const pTime = times[key];
-      if (!pTime || !pTime.includes(':')) continue;
+      if (!pTime || typeof pTime !== 'string' || !pTime.includes(':')) continue;
+      if (lastSent[key] === today) continue;
 
-      const [pHour, pMin] = pTime.split(':').map(Number);
-      const targetMinutes = pHour * 60 + pMin;
-      const diff = uzbMinutes - targetMinutes;
+      const [pHour, pMin] = pTime.trim().split(':').map(Number);
+      if (isNaN(pHour) || isNaN(pMin)) continue;
 
-      // Belgilangan vaqtdan boshlab 4 daqiqa ichida xabarni yuboradi
-      if (diff >= 0 && diff < 5) {
-        console.log(`🚀 Xabar yuborilmoqda: ${prayerName} (${pTime})`);
+      const diff = (uzbMinutes - (pHour * 60 + pMin) + 1440) % 1440;
+
+      if (diff < WINDOW_MINUTES) {
+        console.log(`🚀 ${doc.id}: ${prayerName} (${pTime}) yuborilmoqda`);
 
         const message = {
-          token: token,
-          notification: {
+          token,
+          data: {
             title: `${prayerName} vaqti kirdi!`,
-            body: `Namoz vaqti bo‘ldi. Ado etishni unutmang!`
+            body: `Namoz vaqti bo‘ldi. Ado etishni unutmang!`,
+            tag: `prayer-${key}`,
+            url: './',
+            prayerId: key
           },
           webpush: {
-            headers: {
-              Urgency: 'high'
-            },
-            notification: {
-              title: `${prayerName} vaqti kirdi!`,
-              body: `Namoz vaqti bo‘ldi. Ado etishni unutmang!`,
-              icon: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png',
-              badge: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png',
-              sound: 'default'
-            }
-          },
-          apns: {
-            headers: {
-              'apns-priority': '10',
-              'apns-push-type': 'alert'
-            },
-            payload: {
-              aps: {
-                alert: {
-                  title: `${prayerName} vaqti kirdi!`,
-                  body: `Namoz vaqti bo‘ldi. Ado etishni unutmang!`
-                },
-                sound: 'default',
-                badge: 1,
-                'interruption-level': 'time-sensitive'
-              }
-            }
+            headers: { Urgency: 'high', TTL: '600' }
           }
         };
 
         try {
           await admin.messaging().send(message);
-          console.log(`🎉 Muvaffaqiyatli yetkazildi: ${prayerName}`);
+          console.log(`🎉 Yetkazildi: ${prayerName}`);
+          await doc.ref.update({ [`lastSent.${key}`]: today });
         } catch (err) {
-          console.error(`⚠️ Yuborishda xatolik:`, err.message);
+          console.error(`⚠️ ${doc.id} xatolik [${err.code}]:`, err.message);
+          if (
+            err.code === 'messaging/registration-token-not-registered' ||
+            err.code === 'messaging/invalid-registration-token'
+          ) {
+            await doc.ref.update({ [tokenField]: admin.firestore.FieldValue.delete() });
+            console.log(`🗑 Yaroqsiz token o'chirildi`);
+            break;
+          }
         }
       }
     }
   }
 }
 
-checkAndSend().catch(console.error);
+checkAndSend().catch(err => {
+  console.error(err);
+  process.exit(1);
+});
