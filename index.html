@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
   <title>Intizom - Shaxsiy Rivojlanish</title>
   
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#09090b">
+  
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Intizom">
@@ -395,7 +398,7 @@
         try {
           const savedToken = localStorage.getItem('intizom_fcm_token');
           const hasPerm = typeof Notification !== 'undefined' && Notification.permission === 'granted';
-          return (savedToken || hasPerm) ? "Faol ●" : "Ulanmagan";
+          return (savedToken && hasPerm) ? "Faol ●" : "Ulanmagan";
         } catch(e) {
           return "Ulanmagan";
         }
@@ -412,6 +415,7 @@
       });
 
       const audioCtxRef = useRef(null);
+      const lastTriggeredPrayerRef = useRef({});
       const cloudReady = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId && window.firebase);
 
       const initAudioOnUserAction = () => {
@@ -440,7 +444,6 @@
         };
       }, []);
 
-      // Service Worker registratsiyasi
       useEffect(() => {
         if (!cloudReady) return;
         try {
@@ -460,10 +463,37 @@
         }
       }, [cloudReady]);
 
-      // Push token olish va bazaga yozish funksiyasi
+      useEffect(() => {
+        const checkCurrentPrayerTime = () => {
+          const now = new Date();
+          const curTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+          const todayDateStr = now.toDateString();
+
+          PRAYER_LIST.forEach(p => {
+            const setTime = prayerTimes[p.id] || p.defaultTime;
+            if (setTime === curTimeStr) {
+              const lastKey = `${p.id}_${todayDateStr}`;
+              if (!lastTriggeredPrayerRef.current[lastKey]) {
+                lastTriggeredPrayerRef.current[lastKey] = true;
+                triggerPrayerReminder(p);
+              }
+            }
+          });
+        };
+
+        const interval = setInterval(checkCurrentPrayerTime, 15000);
+        return () => clearInterval(interval);
+      }, [prayerTimes]);
+
       const enablePushNotifications = async () => {
         initAudioOnUserAction();
         try {
+          if (!user) {
+            alert("Fonda bildirishnomalarni yoqish uchun avval Google hisobingizga kiring!");
+            await signIn();
+            return;
+          }
+
           if (!("Notification" in window)) {
             alert("Bu brauzer bildirishnomalarni qo‘llab-quvvatlamaydi. Ilovani Safari orqali 'Bosh ekranga qo‘shish' qilib oching.");
             return;
@@ -471,11 +501,9 @@
 
           const permission = await Notification.requestPermission();
           if (permission !== 'granted') {
-            alert("Bildirishnomalarga ruxsat berilmadi. iPhone sozlamalaridan ushbu ilovaga ruxsat bering.");
+            alert("Bildirishnomalarga ruxsat berilmadi. Qurilmangiz sozlamalaridan ushbu ilovaga ruxsat bering.");
             return;
           }
-
-          setFcmTokenStatus("Faol ●");
 
           if (firebase.messaging && firebase.messaging.isSupported()) {
             const swReg = await navigator.serviceWorker.ready;
@@ -490,15 +518,12 @@
               setFcmTokenStatus("Faol ●");
               localStorage.setItem('intizom_fcm_token', token);
               
-              // Firestore bazasiga tokenni zudlik bilan saqlash
-              const currentUser = firebase.auth().currentUser;
-              if (currentUser) {
-                await userRef(currentUser.uid).set({ 
-                  fcmToken: token,
-                  prayerTimes: prayerTimes,
-                  updatedAt: new Date().toISOString() 
-                }, { merge: true });
-              }
+              await userRef(user.uid).set({ 
+                fcmToken: token,
+                prayerTimes: prayerTimes,
+                updatedAt: new Date().toISOString() 
+              }, { merge: true });
+
               alert("Fonda signal muvaffaqiyatli yoqildi!");
             }
           }
@@ -840,7 +865,6 @@
                 if (savedToken) {
                   await userRef(u.uid).set({ 
                     fcmToken: savedToken,
-                    prayerTimes: prayerTimes,
                     updatedAt: new Date().toISOString()
                   }, { merge: true });
                 }
@@ -1869,7 +1893,7 @@
                     <span>{isReadingRunning ? 'To‘xtatish' : 'Boshlash'}</span>
                   </button>
                   <button onClick={() => setWordIndex(p => Math.min(wordsList.length - 1, p + (chunkSize * 10)))} className={`flex-1 py-3 rounded-xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
-                    +10 <i className="fa-forward-step"></i>
+                    +10 <i className="fa-solid fa-forward-step"></i>
                   </button>
                 </div>
 
@@ -1880,7 +1904,7 @@
                   </div>
                   <div className="flex gap-1.5 flex-wrap">
                     {[200, 300, 400, 600].map(w => (
-                      <button key={w} onClick={() => setSpeedWPM(w)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition ${speedWPM === w ? t.accent : `${t.border} ${t.subtleBg}${t.textMain}`}`}>{w}</button>
+                      <button key={w} onClick={() => setSpeedWPM(w)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition ${speedWPM === w ? t.accent : `${t.border} ${t.subtleBg} ${t.textMain}`}`}>{w}</button>
                     ))}
                   </div>
                   <input type="range" min="100" max="900" step="50" value={speedWPM} onChange={(e) => setSpeedWPM(Number(e.target.value))} className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
@@ -1912,7 +1936,7 @@
                     <div className="flex justify-between items-center gap-1.5 overflow-x-auto pb-1">
                       {currentQList.map((_, idx) => (
                         <button key={idx} onClick={() => setQuizIndex(idx)}
-                          className={`w-7 h-7 flex-shrink-0 rounded-lg text-xs font-bold transition flex items-center justify-center ${quizIndex === idx ? 'border-2 border-red-500 text-red-500 bg-red-500/10' : selectedAnswers[idx] !== undefined ? `${t.subtleBg}${t.textMain}` : `${t.subtleBg}${t.textSub}`}`}>{idx + 1}</button>
+                          className={`w-7 h-7 flex-shrink-0 rounded-lg text-xs font-bold transition flex items-center justify-center ${quizIndex === idx ? 'border-2 border-red-500 text-red-500 bg-red-500/10' : selectedAnswers[idx] !== undefined ? `${t.subtleBg} ${t.textMain}` : `${t.subtleBg} ${t.textSub}`}`}>{idx + 1}</button>
                       ))}
                     </div>
                     <p className={`text-sm font-semibold leading-relaxed whitespace-pre-line ${t.textMain}`}>{currentQList[quizIndex]?.question}</p>
@@ -1921,7 +1945,7 @@
                         const isSelected = selectedAnswers[quizIndex] === opt;
                         return (
                           <button key={oIdx} onClick={() => setSelectedAnswers(prev => ({ ...prev, [quizIndex]: opt }))}
-                            className={`w-full text-left p-3.5 rounded-xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${t.textMain} ${isSelected ? 'border-amber-400 bg-amber-400/15' : `${t.border}${t.subtleBg} hover:border-zinc-500`}`}>
+                            className={`w-full text-left p-3.5 rounded-xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${t.textMain} ${isSelected ? 'border-amber-400 bg-amber-400/15' : `${t.border} ${t.subtleBg} hover:border-zinc-500`}`}>
                             <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${isSelected ? 'border-amber-400 bg-amber-400' : 'border-zinc-500'}`}>
                               {isSelected && <div className="w-1.5 h-1.5 bg-zinc-950 rounded-full"></div>}
                             </div>
