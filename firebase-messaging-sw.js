@@ -15,11 +15,17 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log('[SW] Xabar keldi:', payload);
 
-  // Server data-only yuborsa, har doim o'zimiz ko'rsatamiz
+  if (payload.notification) {
+    return;
+  }
+
   const d = payload.data || {};
-  return self.registration.showNotification(d.title || 'Namoz vaqti kirdi!', {
-    body: d.body || 'Ado etishni unutmang!',
-    icon: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png',
+  const title = d.title || 'Namoz vaqti kirdi!';
+  const body = d.body || 'Ado etishni unutmang!';
+
+  return self.registration.showNotification(title, {
+    body: body,
+    icon: d.icon || 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png',
     tag: d.tag || 'prayer-notification',
     renotify: true,
     data: { url: d.url || '/' }
@@ -28,14 +34,19 @@ messaging.onBackgroundMessage((payload) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
+  const rawUrl = (event.notification.data && event.notification.data.url) || '/';
+  const targetUrl = new URL(rawUrl, self.location.origin).href;
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
       for (const client of list) {
-        if ('focus' in client) return client.focus();
+        if ('focus' in client) {
+          return client.focus();
+        }
       }
-      return clients.openWindow ? clients.openWindow(targetUrl) : undefined;
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
     })
   );
 });
