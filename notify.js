@@ -1,6 +1,6 @@
 const admin = require('firebase-admin');
 
-// GitHub Secret'dan olingan Firebase kaliti
+// GitHub Secret ichidagi Firebase kaliti
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 if (!admin.apps.length) {
@@ -19,26 +19,25 @@ async function checkAndSend() {
   const uzbHour = Math.floor(uzbMinutes / 60);
   const uzbMin = uzbMinutes % 60;
   const currentTime = `${String(uzbHour).padStart(2, '0')}:${String(uzbMin).padStart(2, '0')}`;
-  
+
   console.log(`========================================`);
   console.log(`Hozirgi vaqt (O'zbekiston): ${currentTime} (${uzbMinutes}-daqiqa)`);
   console.log(`========================================`);
 
-  // Barcha foydalanuvchilarni olamiz
+  // Barcha foydalanuvchilarni olish
   const usersSnap = await db.collection('intizom_users').get();
   console.log(`Bazadagi jami foydalanuvchilar soni: ${usersSnap.docs.length}`);
 
   for (const doc of usersSnap.docs) {
     const data = doc.data();
     console.log(`\nFoydalanuvchi ID: ${doc.id}`);
-    console.log(`Hujjat ichidagi kalitlar:`, Object.keys(data));
 
-    // Token qaysi nom bilan saqlangan bo'lsa ham ushlaymiz
+    // Bazadagi barcha ehtimoliy token nomlarini tekshirish
     const token = data.fcmToken || data.token || data.pushToken || data.deviceToken || data.fcm_token;
     const times = data.prayerTimes || data.namozVaqtlari || {};
 
     if (!token) {
-      console.log(`❌ Bu foydalanuvchida FCM token topilmadi!`);
+      console.log(`❌ Bu foydalanuvchida token topilmadi!`);
       continue;
     } else {
       console.log(`✅ Token topildi: ${token.substring(0, 15)}...`);
@@ -61,47 +60,49 @@ async function checkAndSend() {
       const targetMinutes = pHour * 60 + pMin;
       const diff = uzbMinutes - targetMinutes;
 
-      // Agar namoz vaqti so'nggi 5 daqiqa ichida kirgan bo'lsa
+      // Cron 0 dan 5 daqiqagacha kechikib yursa ham xabarni ushlaydi
       if (diff >= 0 && diff < 5) {
         console.log(`🚀 Xabar yuborilmoqda: ${prayerName} (${pTime})`);
 
-        try {
-          await admin.messaging().send({
-            token: token,
+        const message = {
+          token: token,
+          notification: {
+            title: `${prayerName} vaqti kirdi!`,
+            body: `Namoz vaqti bo‘ldi. Ado etishni unutmang!`
+          },
+          webpush: {
+            headers: {
+              Urgency: 'high'
+            },
             notification: {
               title: `${prayerName} vaqti kirdi!`,
-              body: `Namoz vaqti bo‘ldi. Ado etishni unutmang!`
+              body: `Namoz vaqti bo‘ldi. Ado etishni unutmang!`,
+              icon: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png',
+              badge: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png',
+              sound: 'default'
+            }
+          },
+          apns: {
+            headers: {
+              'apns-priority': '10',
+              'apns-push-type': 'alert'
             },
-            webpush: {
-              headers: {
-                Urgency: 'high'
-              },
-              notification: {
-                title: `${prayerName} vaqti kirdi!`,
-                body: `Namoz vaqti bo‘ldi. Ado etishni unutmang!`,
-                icon: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png',
-                badge: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png',
-                sound: 'default'
-              }
-            },
-            apns: {
-              headers: {
-                'apns-priority': '10',
-                'apns-push-type': 'alert'
-              },
-              payload: {
-                aps: {
-                  alert: {
-                    title: `${prayerName} vaqti kirdi!`,
-                    body: `Namoz vaqti bo‘ldi. Ado etishni unutmang!`
-                  },
-                  sound: 'default',
-                  badge: 1,
-                  'interruption-level': 'time-sensitive'
-                }
+            payload: {
+              aps: {
+                alert: {
+                  title: `${prayerName} vaqti kirdi!`,
+                  body: `Namoz vaqti bo‘ldi. Ado etishni unutmang!`
+                },
+                sound: 'default',
+                badge: 1,
+                'interruption-level': 'time-sensitive'
               }
             }
-          });
+          }
+        };
+
+        try {
+          await admin.messaging().send(message);
           console.log(`🎉 Muvaffaqiyatli yetkazildi: ${prayerName}`);
         } catch (err) {
           console.error(`⚠️ Yuborishda xatolik:`, err.message);
