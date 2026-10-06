@@ -2,6 +2,7 @@ name: Namoz Vaqti Bildirishnomasi
 
 on:
   schedule:
+    # Har 5 daqiqada tekshiradi
     - cron: '*/5 * * * *'
   workflow_dispatch:
 
@@ -15,10 +16,12 @@ jobs:
       - name: Node.js sozlash
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Kutubxonalarni o'rnatish
-        run: npm install firebase-admin
+        run: |
+          npm init -y
+          npm install firebase-admin --no-audit --no-fund
 
       - name: Tekshirish va bildirishnoma yuborish
         env:
