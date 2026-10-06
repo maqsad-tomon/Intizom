@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
   <title>Intizom - Shaxsiy Rivojlanish</title>
-  
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#09090b">
   
@@ -398,7 +397,7 @@
         try {
           const savedToken = localStorage.getItem('intizom_fcm_token');
           const hasPerm = typeof Notification !== 'undefined' && Notification.permission === 'granted';
-          return (savedToken && hasPerm) ? "Faol ●" : "Ulanmagan";
+          return (savedToken || hasPerm) ? "Faol ●" : "Ulanmagan";
         } catch(e) {
           return "Ulanmagan";
         }
@@ -444,6 +443,7 @@
         };
       }, []);
 
+      // Service Worker registratsiyasi
       useEffect(() => {
         if (!cloudReady) return;
         try {
@@ -462,7 +462,7 @@
           console.error("Firebase init xatosi:", e);
         }
       }, [cloudReady]);
-
+      // Real-vaqtda namoz vaqtini tekshirib eslatma berish
       useEffect(() => {
         const checkCurrentPrayerTime = () => {
           const now = new Date();
@@ -485,6 +485,7 @@
         return () => clearInterval(interval);
       }, [prayerTimes]);
 
+      // Push token olish va bazaga yozish funksiyasi
       const enablePushNotifications = async () => {
         initAudioOnUserAction();
         try {
@@ -493,7 +494,6 @@
             await signIn();
             return;
           }
-
           if (!("Notification" in window)) {
             alert("Bu brauzer bildirishnomalarni qo‘llab-quvvatlamaydi. Ilovani Safari orqali 'Bosh ekranga qo‘shish' qilib oching.");
             return;
@@ -501,9 +501,11 @@
 
           const permission = await Notification.requestPermission();
           if (permission !== 'granted') {
-            alert("Bildirishnomalarga ruxsat berilmadi. Qurilmangiz sozlamalaridan ushbu ilovaga ruxsat bering.");
+            alert("Bildirishnomalarga ruxsat berilmadi. iPhone sozlamalaridan ushbu ilovaga ruxsat bering.");
             return;
           }
+
+          setFcmTokenStatus("Faol ●");
 
           if (firebase.messaging && firebase.messaging.isSupported()) {
             const swReg = await navigator.serviceWorker.ready;
@@ -518,12 +520,15 @@
               setFcmTokenStatus("Faol ●");
               localStorage.setItem('intizom_fcm_token', token);
               
-              await userRef(user.uid).set({ 
-                fcmToken: token,
-                prayerTimes: prayerTimes,
-                updatedAt: new Date().toISOString() 
-              }, { merge: true });
-
+              // Firestore bazasiga tokenni zudlik bilan saqlash
+              const currentUser = firebase.auth().currentUser;
+              if (currentUser) {
+                await userRef(currentUser.uid).set({ 
+                  fcmToken: token,
+                  prayerTimes: prayerTimes,
+                  updatedAt: new Date().toISOString() 
+                }, { merge: true });
+              }
               alert("Fonda signal muvaffaqiyatli yoqildi!");
             }
           }
@@ -865,6 +870,7 @@
                 if (savedToken) {
                   await userRef(u.uid).set({ 
                     fcmToken: savedToken,
+                    prayerTimes: prayerTimes,
                     updatedAt: new Date().toISOString()
                   }, { merge: true });
                 }
@@ -1904,7 +1910,7 @@
                   </div>
                   <div className="flex gap-1.5 flex-wrap">
                     {[200, 300, 400, 600].map(w => (
-                      <button key={w} onClick={() => setSpeedWPM(w)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition ${speedWPM === w ? t.accent : `${t.border} ${t.subtleBg} ${t.textMain}`}`}>{w}</button>
+                      <button key={w} onClick={() => setSpeedWPM(w)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition ${speedWPM === w ? t.accent : `${t.border} ${t.subtleBg}${t.textMain}`}`}>{w}</button>
                     ))}
                   </div>
                   <input type="range" min="100" max="900" step="50" value={speedWPM} onChange={(e) => setSpeedWPM(Number(e.target.value))} className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
@@ -1936,7 +1942,7 @@
                     <div className="flex justify-between items-center gap-1.5 overflow-x-auto pb-1">
                       {currentQList.map((_, idx) => (
                         <button key={idx} onClick={() => setQuizIndex(idx)}
-                          className={`w-7 h-7 flex-shrink-0 rounded-lg text-xs font-bold transition flex items-center justify-center ${quizIndex === idx ? 'border-2 border-red-500 text-red-500 bg-red-500/10' : selectedAnswers[idx] !== undefined ? `${t.subtleBg} ${t.textMain}` : `${t.subtleBg} ${t.textSub}`}`}>{idx + 1}</button>
+                          className={`w-7 h-7 flex-shrink-0 rounded-lg text-xs font-bold transition flex items-center justify-center ${quizIndex === idx ? 'border-2 border-red-500 text-red-500 bg-red-500/10' : selectedAnswers[idx] !== undefined ? `${t.subtleBg}${t.textMain}` : `${t.subtleBg}${t.textSub}`}`}>{idx + 1}</button>
                       ))}
                     </div>
                     <p className={`text-sm font-semibold leading-relaxed whitespace-pre-line ${t.textMain}`}>{currentQList[quizIndex]?.question}</p>
@@ -1945,7 +1951,7 @@
                         const isSelected = selectedAnswers[quizIndex] === opt;
                         return (
                           <button key={oIdx} onClick={() => setSelectedAnswers(prev => ({ ...prev, [quizIndex]: opt }))}
-                            className={`w-full text-left p-3.5 rounded-xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${t.textMain} ${isSelected ? 'border-amber-400 bg-amber-400/15' : `${t.border} ${t.subtleBg} hover:border-zinc-500`}`}>
+                            className={`w-full text-left p-3.5 rounded-xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${t.textMain} ${isSelected ? 'border-amber-400 bg-amber-400/15' : `${t.border}${t.subtleBg} hover:border-zinc-500`}`}>
                             <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${isSelected ? 'border-amber-400 bg-amber-400' : 'border-zinc-500'}`}>
                               {isSelected && <div className="w-1.5 h-1.5 bg-zinc-950 rounded-full"></div>}
                             </div>
