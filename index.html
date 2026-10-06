@@ -411,7 +411,6 @@
         } catch(e) { return 0; }
       });
 
-      const notifiedTodayRef = useRef({});
       const audioCtxRef = useRef(null);
       const cloudReady = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId && window.firebase);
 
@@ -441,19 +440,16 @@
         };
       }, []);
 
+      // Service Worker registratsiyasi
       useEffect(() => {
         if (!cloudReady) return;
         try {
           if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
           
           if ('serviceWorker' in navigator) {
-            const swPath = window.location.pathname.endsWith('/') 
-              ? window.location.pathname + 'firebase-messaging-sw.js'
-              : window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + 'firebase-messaging-sw.js';
-
-            navigator.serviceWorker.register(swPath)
+            navigator.serviceWorker.register('firebase-messaging-sw.js')
               .then((registration) => {
-                console.log('FCM Service Worker ulangan:', registration.scope);
+                console.log('FCM SW ulangan:', registration.scope);
               })
               .catch((err) => {
                 console.warn('FCM SW Register xatosi:', err);
@@ -464,33 +460,12 @@
         }
       }, [cloudReady]);
 
-      useEffect(() => {
-        const checkPermissionAndToken = async () => {
-          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-            setFcmTokenStatus("Faol ●");
-            try {
-              if (cloudReady && firebase.messaging && firebase.messaging.isSupported()) {
-                const swReg = await navigator.serviceWorker.ready;
-                const tok = await firebase.messaging().getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
-                if (tok) {
-                  localStorage.setItem('intizom_fcm_token', tok);
-                  setFcmTokenStatus("Faol ●");
-                  if (user) {
-                    await userRef(user.uid).set({ fcmToken: tok, updatedAt: new Date().toISOString() }, { merge: true });
-                  }
-                }
-              }
-            } catch(e) {}
-          }
-        };
-        checkPermissionAndToken();
-      }, [cloudReady, user]);
-
+      // Push token olish va bazaga yozish funksiyasi
       const enablePushNotifications = async () => {
         initAudioOnUserAction();
         try {
           if (!("Notification" in window)) {
-            alert("Bu brauzer bildirishnomalarni qo‘llab-quvvatlamaydi. Ilovani 'Add to Home Screen' qilib oching.");
+            alert("Bu brauzer bildirishnomalarni qo‘llab-quvvatlamaydi. Ilovani Safari orqali 'Bosh ekranga qo‘shish' qilib oching.");
             return;
           }
 
@@ -514,13 +489,18 @@
             if (token) {
               setFcmTokenStatus("Faol ●");
               localStorage.setItem('intizom_fcm_token', token);
-              if (user) {
-                await userRef(user.uid).set({ fcmToken: token, updatedAt: new Date().toISOString() }, { merge: true });
+              
+              // Firestore bazasiga tokenni zudlik bilan saqlash
+              const currentUser = firebase.auth().currentUser;
+              if (currentUser) {
+                await userRef(currentUser.uid).set({ 
+                  fcmToken: token,
+                  prayerTimes: prayerTimes,
+                  updatedAt: new Date().toISOString() 
+                }, { merge: true });
               }
-              prompt("Sizning FCM tokeningiz (Nusxalash uchun):", token);
+              alert("Fonda signal muvaffaqiyatli yoqildi!");
             }
-          } else {
-            alert("Ruxsat berildi. Fonda signal faollashtirildi!");
           }
         } catch (e) {
           console.error("FCM Token xatosi:", e);
@@ -714,39 +694,6 @@
         setCustomInputValue("");
       };
 
-      useEffect(() => {
-        const checkPrayerClock = () => {
-          const now = new Date();
-          const hh = String(now.getHours()).padStart(2, '0');
-          const mm = String(now.getMinutes()).padStart(2, '0');
-          const currentHM = `${hh}:${mm}`;
-          const todayDateKey = now.toDateString();
-
-          PRAYER_LIST.forEach(p => {
-            const targetTime = prayerTimes[p.id] || p.defaultTime;
-            const notifKey = `${todayDateKey}_${p.id}_${targetTime}`;
-
-            if (currentHM === targetTime && !notifiedTodayRef.current[notifKey]) {
-              notifiedTodayRef.current[notifKey] = true;
-              triggerPrayerReminder(p);
-
-              if ("Notification" in window && Notification.permission === "granted") {
-                try {
-                  new Notification(`${p.name} vaqti kirdi!`, {
-                    body: "Namozni hozir ado etasizmi yoki qazoga qoldirasizmi?",
-                    icon: "https://cdn-icons-png.flaticon.com/512/2855/2855502.png"
-                  });
-                } catch (e) {}
-              }
-            }
-          });
-        };
-
-        checkPrayerClock();
-        const clockInterval = setInterval(checkPrayerClock, 15000);
-        return () => clearInterval(clockInterval);
-      }, [prayerTimes]);
-
       const playPrayerChime = () => {
         try {
           const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -889,10 +836,13 @@
                 const snap = await firebase.firestore().collection('intizom_users').doc(u.uid).get();
                 if (snap.exists) applyData(snap.data());
                 
-                // FCM tokenni yangilab yozib qo'yish
                 const savedToken = localStorage.getItem('intizom_fcm_token');
                 if (savedToken) {
-                  await userRef(u.uid).set({ fcmToken: savedToken }, { merge: true });
+                  await userRef(u.uid).set({ 
+                    fcmToken: savedToken,
+                    prayerTimes: prayerTimes,
+                    updatedAt: new Date().toISOString()
+                  }, { merge: true });
                 }
 
                 cloudLoadedRef.current = true;
@@ -1529,7 +1479,7 @@
                             <div className="w-full max-w-[140px] h-10 rounded-xl border border-zinc-800 bg-black/40 flex items-center justify-center px-1">
                               <input 
                                 type="time" 
-                                value={curTime}
+                                value={curTime} 
                                 onChange={(e) => updatePrayerTime(p.id, e.target.value)}
                                 className="prayer-time-input w-full bg-transparent text-amber-400 font-mono font-black text-sm text-center outline-none cursor-pointer"
                               />
