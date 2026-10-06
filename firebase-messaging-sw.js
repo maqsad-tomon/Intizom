@@ -13,13 +13,21 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  console.log('Orqa fonda xabar keldi:', payload);
-  const notificationTitle = payload.notification ? payload.notification.title : 'Intizom';
-  const notificationOptions = {
-    body: payload.notification ? payload.notification.body : 'Namoz vaqti kirdi!',
+  console.log('[SW] Orqa fonda xabar keldi:', payload);
+  
+  const title = (payload.notification && payload.notification.title) 
+                || (payload.data && payload.data.title) 
+                || 'Namoz vaqti kirdi!';
+                
+  const options = {
+    body: (payload.notification && payload.notification.body) 
+          || (payload.data && payload.data.body) 
+          || 'Ado etishni unutmang!',
     icon: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png',
-    badge: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png'
+    badge: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png',
+    sound: 'default',
+    data: payload.data || {}
   };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  self.registration.showNotification(title, options);
 });
