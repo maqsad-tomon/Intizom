@@ -1,5 +1,6 @@
 const admin = require('firebase-admin');
 
+// GitHub Secret'dan olingan Firebase kaliti
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 if (!admin.apps.length) {
@@ -18,19 +19,29 @@ async function checkAndSend() {
   const uzbHour = Math.floor(uzbMinutes / 60);
   const uzbMin = uzbMinutes % 60;
   const currentTime = `${String(uzbHour).padStart(2, '0')}:${String(uzbMin).padStart(2, '0')}`;
-  console.log("Hozirgi vaqt (O'zbekiston):", currentTime, `(${uzbMinutes}-daqiqa)`);
+  
+  console.log(`========================================`);
+  console.log(`Hozirgi vaqt (O'zbekiston): ${currentTime} (${uzbMinutes}-daqiqa)`);
+  console.log(`========================================`);
 
+  // Barcha foydalanuvchilarni olamiz
   const usersSnap = await db.collection('intizom_users').get();
-  console.log(`Foydalanuvchilar soni: ${usersSnap.docs.length}`);
+  console.log(`Bazadagi jami foydalanuvchilar soni: ${usersSnap.docs.length}`);
 
   for (const doc of usersSnap.docs) {
     const data = doc.data();
-    const token = data.fcmToken;
-    const times = data.prayerTimes || {};
+    console.log(`\nFoydalanuvchi ID: ${doc.id}`);
+    console.log(`Hujjat ichidagi kalitlar:`, Object.keys(data));
+
+    // Token qaysi nom bilan saqlangan bo'lsa ham ushlaymiz
+    const token = data.fcmToken || data.token || data.pushToken || data.deviceToken || data.fcm_token;
+    const times = data.prayerTimes || data.namozVaqtlari || {};
 
     if (!token) {
-      console.log(`Foydalanuvchida token yo'q: ${doc.id}`);
+      console.log(`❌ Bu foydalanuvchida FCM token topilmadi!`);
       continue;
+    } else {
+      console.log(`✅ Token topildi: ${token.substring(0, 15)}...`);
     }
 
     const prayerNames = {
@@ -52,7 +63,7 @@ async function checkAndSend() {
 
       // Agar namoz vaqti so'nggi 5 daqiqa ichida kirgan bo'lsa
       if (diff >= 0 && diff < 5) {
-        console.log(`Yuborilmoqda: ${prayerName} (${pTime}) -> ${doc.id}`);
+        console.log(`🚀 Xabar yuborilmoqda: ${prayerName} (${pTime})`);
 
         try {
           await admin.messaging().send({
@@ -91,9 +102,9 @@ async function checkAndSend() {
               }
             }
           });
-          console.log(`Muvaffaqiyatli yuborildi: ${prayerName}`);
+          console.log(`🎉 Muvaffaqiyatli yetkazildi: ${prayerName}`);
         } catch (err) {
-          console.error(`Xato yuz berdi:`, err.message);
+          console.error(`⚠️ Yuborishda xatolik:`, err.message);
         }
       }
     }
