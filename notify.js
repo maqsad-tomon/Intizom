@@ -3,12 +3,15 @@ const admin = require('firebase-admin');
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 if (!admin.apps.length) {
-  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
 }
 
 const db = admin.firestore();
 
-const WINDOW_MINUTES = 15; // GitHub cron kechikishi uchun
+// GitHub cron kechikishi uchun kengaytirilgan oyna (daqiqa)
+const WINDOW_MINUTES = 15;
 
 const prayerNames = {
   bomdod: "Bomdod",
@@ -24,7 +27,7 @@ const TOKEN_FIELDS = ['fcmToken', 'token', 'pushToken', 'deviceToken', 'fcm_toke
 async function checkAndSend() {
   const now = new Date();
   const uzbNow = new Date(now.getTime() + 5 * 60 * 60 * 1000);
-  const today = uzbNow.toISOString().slice(0, 10);
+  const today = uzbNow.toISOString().slice(0, 10); // YYYY-MM-DD (O'zbekiston sanasi)
   const uzbMinutes = uzbNow.getUTCHours() * 60 + uzbNow.getUTCMinutes();
 
   console.log(`Hozirgi vaqt (UZ): ${uzbNow.toISOString()} | ${uzbMinutes}-daqiqa`);
@@ -34,6 +37,7 @@ async function checkAndSend() {
 
   for (const doc of usersSnap.docs) {
     const data = doc.data();
+
     const tokenField = TOKEN_FIELDS.find(f => data[f]);
     const token = tokenField ? data[tokenField] : null;
     const times = data.prayerTimes || data.namozVaqtlari || {};
@@ -43,32 +47,60 @@ async function checkAndSend() {
       console.log(`❌ ${doc.id}: token yo'q`);
       continue;
     }
-    console.log(`✅ ${doc.id}: token bor, vaqtlar: ${JSON.stringify(times)}`);
 
     for (const [key, prayerName] of Object.entries(prayerNames)) {
       const pTime = times[key];
       if (!pTime || typeof pTime !== 'string' || !pTime.includes(':')) continue;
+
+      // Bugun allaqachon yuborilgan bo'lsa o'tkazib yuboramiz
       if (lastSent[key] === today) continue;
 
       const [pHour, pMin] = pTime.trim().split(':').map(Number);
       if (isNaN(pHour) || isNaN(pMin)) continue;
 
-      const diff = (uzbMinutes - (pHour * 60 + pMin) + 1440) % 1440;
+      const targetMinutes = pHour * 60 + pMin;
+      // Yarim tundan o'tishni hisobga oladi
+      const diff = (uzbMinutes - targetMinutes + 1440) % 1440;
 
-      if (diff < WINDOW_MINUTES) {
+      if (diff >= 0 && diff < WINDOW_MINUTES) {
         console.log(`🚀 ${doc.id}: ${prayerName} (${pTime}) yuborilmoqda`);
+
+        const title = `${prayerName} vaqti kirdi!`;
+        const body = `Namoz vaqti bo‘ldi. Ado etishni unutmang!`;
 
         const message = {
           token,
-          data: {
-            title: `${prayerName} vaqti kirdi!`,
-            body: `Namoz vaqti bo‘ldi. Ado etishni unutmang!`,
-            tag: `prayer-${key}`,
-            url: './',
-            prayerId: key
+          notification: { title, body },
+          android: {
+            priority: 'high',
+            ttl: 10 * 60 * 1000, // 10 daqiqadan keyin eskirgan xabar kerak emas
+            notification: {
+              sound: 'default',
+              priority: 'high'
+              // channelId: 'namoz_channel', // ilovada kanal yaratgan bo'lsangiz yoqing
+            }
           },
           webpush: {
-            headers: { Urgency: 'high', TTL: '600' }
+            headers: { Urgency: 'high', TTL: '600' },
+            notification: {
+              title,
+              body,
+              icon: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png'
+            }
+          },
+          apns: {
+            headers: {
+              'apns-priority': '10',
+              'apns-push-type': 'alert'
+            },
+            payload: {
+              aps: {
+                alert: { title, body },
+                sound: 'default',
+                badge: 1,
+                'interruption-level': 'time-sensitive'
+              }
+            }
           }
         };
 
@@ -78,6 +110,8 @@ async function checkAndSend() {
           await doc.ref.update({ [`lastSent.${key}`]: today });
         } catch (err) {
           console.error(`⚠️ ${doc.id} xatolik [${err.code}]:`, err.message);
+
+          // Yaroqsiz tokenni bazadan o'chiramiz
           if (
             err.code === 'messaging/registration-token-not-registered' ||
             err.code === 'messaging/invalid-registration-token'
