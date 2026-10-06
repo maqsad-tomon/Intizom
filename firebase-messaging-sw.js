@@ -12,6 +12,7 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// Orqa fonda xabar kelganda
 messaging.onBackgroundMessage((payload) => {
   console.log('[SW] Orqa fonda xabar keldi:', payload);
 
@@ -27,8 +28,32 @@ messaging.onBackgroundMessage((payload) => {
     badge: 'https://cdn-icons-png.flaticon.com/512/2855/2855502.png',
     tag: 'prayer-notification',
     renotify: true,
-    data: payload.data || {}
+    data: {
+      url: '/'
+    }
   };
 
   self.registration.showNotification(title, options);
+});
+
+// Bildirishnoma ustiga bosilganda ilovani ochish
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const targetUrl = (event.notification.data && event.notification.data.url) ? event.notification.data.url : '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // Agar ilova orqa fonda ochiq bo'lsa, o'shanga o'tadi
+      for (let client of windowClients) {
+        if ('focus' in client) {
+          return client.focus();
+        }
+      }
+      // Agar yopiq bo'lsa, yangidan ochadi
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
 });
