@@ -2,9 +2,7 @@ name: Namoz Vaqti Bildirishnomasi
 
 on:
   schedule:
-    # Har 5 daqiqada avtomatik tekshiradi
     - cron: '*/5 * * * *'
-  # GitHub panelidan qo'lda ham sinab ko'rish imkoniyati
   workflow_dispatch:
 
 concurrency:
@@ -28,7 +26,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Kerakli kutubxonalarni o'rnatish
+      - name: Kutubxonalarni o'rnatish
         run: |
           if [ ! -f package.json ]; then
             npm init -y
@@ -38,4 +36,5 @@ jobs:
       - name: Tekshirish va bildirishnoma yuborish
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: node notify.js
