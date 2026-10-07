@@ -403,6 +403,7 @@
         }
       });
 
+      const [telegramChatId, setTelegramChatId] = useState(cachedData?.telegramChatId || null);
       const [todayReadQazo, setTodayReadQazo] = useState(() => {
         try {
           const raw = localStorage.getItem('intizom_today_qazo');
@@ -847,6 +848,7 @@
         if (d.themeKey) setThemeKey(d.themeKey);
         if (d.qazoCounts) setQazoCounts(d.qazoCounts);
         if (d.prayerTimes) setPrayerTimes(d.prayerTimes);
+        if (d.telegramChatId) setTelegramChatId(d.telegramChatId);
         if (d.customBooks && d.customBooks.length) legacyBooksRef.current.push(...d.customBooks);
       };
 
@@ -1360,6 +1362,47 @@
                     <span className={`text-[10px] ${t.textSub}`}>Qolgan vaqt:</span>
                     <div className="text-xs font-black text-amber-400 font-mono">{nextPrayerInfo.remStr}</div>
                   </div>
+                </div>
+
+                {/* TELEGRAM BOT BILAN BIR BOSISHDA ULANISH KARTASI */}
+                <div className={`${t.cardBg} border border-sky-500/30 p-4 rounded-2xl shadow-sm bg-gradient-to-r from-sky-500/10 to-blue-500/5 space-y-2.5`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-base">
+                        <i className="fa-brands fa-telegram"></i>
+                      </div>
+                      <div>
+                        <h4 className={`text-xs font-bold ${t.textMain}`}>Telegram Eslatmalari</h4>
+                        <span className={`text-[10px] ${t.textSub}`}>Ovozli va 100% kafolatlangan signal</span>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                      telegramChatId ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                    }`}>
+                      {telegramChatId ? 'Ulangan ●' : 'Ulanmagan'}
+                    </span>
+                  </div>
+                  <p className={`text-[11px] leading-relaxed ${t.textSub}`}>
+                    {telegramChatId 
+                      ? "Botingiz muvaffaqiyatli ulangan! Har bir namoz vaqtida Telegramingizga avtomatik eslatma boradi."
+                      : "Hech qanday ID raqam qidirish shart emas. Tugmani bossangiz, Telegram ochiladi va 'Start'ni bosishingiz bilan hisobingiz avtomatik ulanadi."}
+                  </p>
+                  <a 
+                    href={user ? `https://t.me/Intizomimuz_bot?start=${user.uid}` : '#'} 
+                    onClick={(e) => {
+                      if (!user) {
+                        e.preventDefault();
+                        alert("Avval yuqoridagi 'Kirish' tugmasi orqali Google hisobingizga kiring!");
+                        signIn();
+                      }
+                    }}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 px-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-sky-500/20 transition active:scale-95 text-center"
+                  >
+                    <i className="fa-brands fa-telegram text-sm"></i>
+                    <span>{telegramChatId ? "Telegram botni ochish" : "Telegram botga 1 bosishda ulanish"}</span>
+                  </a>
                 </div>
 
                 {/* ASOSIY QAZO KARTASI */}
