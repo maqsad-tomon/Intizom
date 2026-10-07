@@ -1,10 +1,17 @@
 const admin = require('firebase-admin');
 const https = require('https');
 
-// Telegram bot orqali xabar yuborish funksiyasi
+// Telegramga xabar yuborish
 function sendTelegramMessage(botToken, chatId, text) {
-  return new Promise((resolve, reject) => {
-    if (!botToken || !chatId) return resolve(false);
+  return new Promise((resolve) => {
+    if (!botToken) {
+      console.error("❌ Xatolik: TELEGRAM_BOT_TOKEN kiritilmagan!");
+      return resolve(false);
+    }
+    if (!chatId) {
+      console.error("❌ Xatolik: Foydalanuvchida telegramChatId yo'q!");
+      return resolve(false);
+    }
 
     const payload = JSON.stringify({
       chat_id: chatId,
@@ -30,10 +37,10 @@ function sendTelegramMessage(botToken, chatId, text) {
         try {
           const json = JSON.parse(data);
           if (json.ok) {
-            console.log(`✈️ Telegram xabari yetkazildi: ${chatId}`);
+            console.log(`✈️ TELEGRAMGA YUBORILDI! Chat ID: ${chatId}`);
             resolve(true);
           } else {
-            console.error(`⚠️ Telegram xatolik:`, json.description);
+            console.error(`⚠️ Telegram xatolik [${json.error_code}]:`, json.description);
             resolve(false);
           }
         } catch (e) {
@@ -43,7 +50,7 @@ function sendTelegramMessage(botToken, chatId, text) {
     });
 
     req.on('error', (err) => {
-      console.error(`⚠️ Telegram so'rov xatosi:`, err.message);
+      console.error(`⚠️ Telegram ulanish xatosi:`, err.message);
       resolve(false);
     });
 
@@ -52,9 +59,8 @@ function sendTelegramMessage(botToken, chatId, text) {
   });
 }
 
-// 1. Firebase Service Account tekshiruvi
 if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-  console.error("❌ Xatolik: FIREBASE_SERVICE_ACCOUNT muhit o'zgaruvchisi topilmadi!");
+  console.error("❌ Xatolik: FIREBASE_SERVICE_ACCOUNT topilmadi!");
   process.exit(1);
 }
 
@@ -65,7 +71,7 @@ try {
     serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
   }
 } catch (e) {
-  console.error("❌ FIREBASE_SERVICE_ACCOUNT JSON xato:", e.message);
+  console.error("❌ FIREBASE_SERVICE_ACCOUNT JSON formati xato:", e.message);
   process.exit(1);
 }
 
@@ -77,7 +83,17 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
-const WINDOW_MINUTES = 20;
+const WINDOW_MINUTES = 25; // 25 daqiqalik qamrov oynasi
+
+// Standart namoz vaqtlari (agar bazada bo'sh bo'lsa)
+const DEFAULT_TIMES = {
+  bomdod: "05:15",
+  peshin: "12:40",
+  asr: "16:25",
+  shom: "18:20",
+  xufton: "19:50",
+  vitr: "20:15"
+};
 
 const prayerNames = {
   bomdod: "Bomdod",
@@ -87,8 +103,6 @@ const prayerNames = {
   xufton: "Xufton",
   vitr: "Vitr vojib"
 };
-
-const TOKEN_FIELDS = ['fcmToken', 'token', 'pushToken', 'deviceToken', 'fcm_token'];
 
 async function checkAndSend() {
   const now = new Date();
@@ -100,30 +114,37 @@ async function checkAndSend() {
   const uzbMinutes = parseInt(uzbMinStr, 10);
   const currentTotalMinutes = uzbHours * 60 + uzbMinutes;
 
-  console.log(`⏰ Hozirgi Toshkent vaqti: ${uzbDate} ${String(uzbHours).padStart(2, '0')}:${String(uzbMinutes).padStart(2, '0')} (${currentTotalMinutes}-daq)`);
+  console.log(`⏰ Toshkent vaqti: ${uzbDate} ${String(uzbHours).padStart(2, '0')}:${String(uzbMinutes).padStart(2, '0')}`);
+
+  if (!TELEGRAM_BOT_TOKEN) {
+    console.warn("⚠️ OGOHLANTIRISH: TELEGRAM_BOT_TOKEN siri topilmadi!");
+  }
 
   const usersSnap = await db.collection('intizom_users').get();
-  console.log(`👥 Foydalanuvchilar soni: ${usersSnap.docs.length}`);
+  console.log(`👥 Jami foydalanuvchilar: ${usersSnap.docs.length}`);
 
   for (const doc of usersSnap.docs) {
     const data = doc.data();
-
-    const tokenField = TOKEN_FIELDS.find(f => data[f]);
-    const fcmToken = tokenField ? data[tokenField] : null;
     const telegramChatId = data.telegramChatId || data.chatId || null;
-    const times = data.prayerTimes || data.namozVaqtlari || {};
+    const times = { ...DEFAULT_TIMES, ...(data.prayerTimes || data.namozVaqtlari || {}) };
     const lastSent = data.lastSent || {};
 
-    // Agar na FCM token va na Telegram ID bo'lmasa, o'tkazamiz
-    if (!fcmToken && !telegramChatId) {
+    console.log(`\n👤 Foydalanuvchi: ${doc.id}`);
+    console.log(`   - Telegram Chat ID: ${telegramChatId ? telegramChatId : "YO'Q ❌"}`);
+    console.log(`   - Xufton vaqti: ${times.xufton}`);
+
+    if (!telegramChatId && !data.fcmToken) {
+      console.log(`   ⏭ O'tkazib yuborildi (Token ham, Telegram ID ham yo'q)`);
       continue;
     }
 
     for (const [key, prayerName] of Object.entries(prayerNames)) {
       const pTime = times[key];
-      if (!pTime || typeof pTime !== 'string' || !pTime.includes(':')) continue;
+      if (!pTime || !pTime.includes(':')) continue;
 
-      if (lastSent[key] === uzbDate) continue;
+      if (lastSent[key] === uzbDate) {
+        continue;
+      }
 
       const [pHour, pMin] = pTime.trim().split(':').map(Number);
       if (isNaN(pHour) || isNaN(pMin)) continue;
@@ -131,39 +152,14 @@ async function checkAndSend() {
       const targetMinutes = pHour * 60 + pMin;
       const diff = (currentTotalMinutes - targetMinutes + 1440) % 1440;
 
+      // Namoz vaqti kirdi (0 dan 25 daqiqagacha bo'lgan vaqt oralig'i)
       if (diff >= 0 && diff < WINDOW_MINUTES) {
-        console.log(`🚀 ${doc.id}: ${prayerName} (${pTime}) yuborilmoqda...`);
+        console.log(`🚀 ${prayerName} (${pTime}) vaqti kirdi! Telegramga yuborilmoqda...`);
 
-        const title = `🕌 ${prayerName} vaqti kirdi!`;
-        const body = `Namoz vaqti bo‘ldi (${pTime}). Ado etishni unutmang!`;
+        const text = `🕌 <b>${prayerName} vaqti kirdi!</b>\n\nNamoz vaqti bo‘ldi (${pTime}). Ado etishni unutmang!`;
+        const sent = await sendTelegramMessage(TELEGRAM_BOT_TOKEN, telegramChatId, text);
 
-        let sentSuccess = false;
-
-        // 1. Telegram orqali xabar yuborish
-        if (TELEGRAM_BOT_TOKEN && telegramChatId) {
-          const tgText = `<b>${title}</b>\n\n${body}`;
-          sentSuccess = await sendTelegramMessage(TELEGRAM_BOT_TOKEN, telegramChatId, tgText);
-        }
-
-        // 2. Web Push (FCM) orqali xabar yuborish
-        if (fcmToken) {
-          const message = {
-            token: fcmToken,
-            notification: { title, body },
-            data: { title, body, prayer: key, tag: `namoz-${key}`, url: './' },
-            android: { priority: 'high', ttl: 15 * 60 * 1000 },
-            webpush: { headers: { Urgency: 'high', TTL: '900' } }
-          };
-          try {
-            await admin.messaging().send(message);
-            sentSuccess = true;
-          } catch (err) {
-            console.error(`⚠️ FCM xatolik:`, err.message);
-          }
-        }
-
-        // Agar xabar muvaffaqiyatli yuborilgan bo'lsa, bazaga belgilaymiz
-        if (sentSuccess) {
+        if (sent) {
           await doc.ref.set({
             lastSent: {
               ...lastSent,
@@ -178,7 +174,7 @@ async function checkAndSend() {
 
 checkAndSend()
   .then(() => {
-    console.log("🏁 Tekshiruv yakunlandi.");
+    console.log("\n🏁 Tekshiruv yakunlandi.");
     process.exit(0);
   })
   .catch(err => {
