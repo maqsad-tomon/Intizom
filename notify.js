@@ -52,7 +52,7 @@ function sendTelegramMessage(botToken, chatId, text) {
   });
 }
 
-// Telegram getUpdates orqali "START" bosgan yangi foydalanuvchilarni avtomatik ulash
+// Telegram getUpdates orqali "START" yoki "/uzish" bosgan foydalanuvchilarni boshqarish
 async function syncTelegramUsers(botToken, db) {
   if (!botToken) return;
   try {
@@ -72,7 +72,7 @@ async function syncTelegramUsers(botToken, db) {
       if (parts[0] === '/start') {
         if (parts.length > 1 && parts[1]) {
           const uid = parts[1].trim();
-          console.log(`🔗 Yangi foydalanuvchi avtomatik ulanmoqda: UID ${uid} -> Chat ID ${chatId}`);
+          console.log(`🔗 Yangi foydalanuvchi ulanmoqda: UID ${uid} -> Chat ID ${chatId}`);
 
           // Firestore bazasiga Chat ID ni avtomatik yozish
           await db.collection('intizom_users').doc(uid).set({
@@ -81,15 +81,23 @@ async function syncTelegramUsers(botToken, db) {
             telegramConnectedAt: new Date().toISOString()
           }, { merge: true });
 
-          // Foydalanuvchiga Telegramda tasdiq xabarini yuborish
-          await sendTelegramMessage(botToken, chatId, `🎉 <b>Tabriklaymiz!</b>\n\nHisobingiz <b>"Intizom"</b> ilovasi bilan muvaffaqiyatli ulandi.\n\nEndi har bir namoz vaqti (Bomdod, Peshin, Asr, Shom, Xufton, Vitr) kirganida sizga mana shu bot orqali avtomatik eslatma yuborib turiladi! 🕌`);
+          await sendTelegramMessage(botToken, chatId, `🎉 <b>Tabriklaymiz!</b>\n\nHisobingiz <b>"Intizom"</b> ilovasi bilan muvaffaqiyatli ulandi.\n\nEndi namoz vaqtlari sizga mana shu bot orqali avtomatik eslatib turiladi! 🕌`);
         } else {
-          await sendTelegramMessage(botToken, chatId, `Assalomu alaykum! 🕌\n\n<b>"Intizom"</b> ilovasi bilan hisobingizni ulash uchun, ilovadagi <b>"Telegram botga 1 bosishda ulanish"</b> tugmasini bosing.`);
+          await sendTelegramMessage(botToken, chatId, `Assalomu alaykum! 🕌\n\n<b>"Intizom"</b> ilovasi bilan hisobingizni ulash uchun ilovadagi <b>"Eslatmani yoqish"</b> tugmasini bosing.`);
         }
+      } else if (parts[0] === '/uzish' || parts[0] === '/stop') {
+        console.log(`🔌 Foydalanuvchi hisobdan uzishni so'radi: Chat ID ${chatId}`);
+        const userMatches = await db.collection('intizom_users').where('telegramChatId', '==', chatId).get();
+        for (const uDoc of userMatches.docs) {
+          await uDoc.ref.update({
+            telegramChatId: admin.firestore.FieldValue.delete()
+          });
+        }
+        await sendTelegramMessage(botToken, chatId, `🔌 <b>Telegram bot hisobingizdan uzildi!</b>\n\nEndi sizga namoz eslatmalari yuborilmaydi.\nQaytadan ulash uchun ilovaga kirib <b>"Eslatmani yoqish"</b> tugmasini bosing.`);
       }
     }
 
-    // Qayta ishlanmasligi uchun navbatni tozalash
+    // Navbatni tozalash
     if (maxUpdateId > 0) {
       await fetch(`https://api.telegram.org/bot${botToken}/getUpdates?offset=${maxUpdateId + 1}`);
     }
@@ -123,9 +131,8 @@ if (!admin.apps.length) {
 
 const db = admin.firestore();
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
-const WINDOW_MINUTES = 25; // 25 daqiqalik oyna
+const WINDOW_MINUTES = 25;
 
-// Standart namoz vaqtlari
 const DEFAULT_TIMES = {
   bomdod: "05:15",
   peshin: "12:40",
@@ -145,7 +152,7 @@ const prayerNames = {
 };
 
 async function checkAndSend() {
-  // 1. Telegram botga yangi ulanishlarni avtomatik qabul qilish
+  // 1. Telegram botga yangi ulanishlar yoki uzish so'rovlarini qabul qilish
   if (TELEGRAM_BOT_TOKEN) {
     await syncTelegramUsers(TELEGRAM_BOT_TOKEN, db);
   } else {
@@ -166,6 +173,9 @@ async function checkAndSend() {
 
   const usersSnap = await db.collection('intizom_users').get();
   console.log(`👥 Jami foydalanuvchilar: ${usersSnap.docs.length}`);
+
+  // Bitta Telegram hisobiga bitta namoz uchun faqat 1 marta yuborish (Dublikatni oldini oladi)
+  const sentPrayerToChats = new Set();
 
   for (const doc of usersSnap.docs) {
     const data = doc.data();
@@ -190,15 +200,26 @@ async function checkAndSend() {
       const diff = (currentTotalMinutes - targetMinutes + 1440) % 1440;
 
       if (diff >= 0 && diff < WINDOW_MINUTES) {
-        console.log(`🚀 ${prayerName} (${pTime}) vaqti kirdi! Telegramga yuborilmoqda...`);
+        console.log(`🚀 ${prayerName} (${pTime}) vaqti kirdi! User: ${doc.id}`);
 
         const text = `🕌 <b>${prayerName} vaqti kirdi!</b>\n\nNamoz vaqti bo‘ldi (${pTime}). Ado etishni unutmang!`;
         let sent = false;
 
+        // Telegramga yuborish (dublikat tekshiruvi bilan)
         if (TELEGRAM_BOT_TOKEN && telegramChatId) {
-          sent = await sendTelegramMessage(TELEGRAM_BOT_TOKEN, telegramChatId, text);
+          const chatDedupeKey = `${telegramChatId}_${key}_${uzbDate}`;
+          if (sentPrayerToChats.has(chatDedupeKey)) {
+            console.log(`   ⏭ Telegram xabari allaqachon ${telegramChatId} ga yuborilgan, ikkinchi nusxa bekor qilindi.`);
+            sent = true;
+          } else {
+            sent = await sendTelegramMessage(TELEGRAM_BOT_TOKEN, telegramChatId, text);
+            if (sent) {
+              sentPrayerToChats.add(chatDedupeKey);
+            }
+          }
         }
 
+        // Web push (agar mavjud bo'lsa)
         if (data.fcmToken) {
           try {
             await admin.messaging().send({
