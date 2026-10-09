@@ -332,8 +332,10 @@
       const [setupDays, setSetupDays] = useState(10);
       const [setupTasks, setSetupTasks] = useState("");
       const [newTaskText, setNewTaskText] = useState("");
+      const [newTaskTime, setNewTaskTime] = useState("");
       const [editingTaskId, setEditingTaskId] = useState(null);
       const [editingTaskText, setEditingTaskText] = useState("");
+      const [editingTaskTime, setEditingTaskTime] = useState("");
       const [pomoMinutes, setPomoMinutes] = useState(25);
       const [secondsLeft, setSecondsLeft] = useState(25 * 60);
       const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -1022,14 +1024,29 @@
       const toggleTask = (id) => setDayTasks(prev => ({ ...prev, [currentDay]: (prev[currentDay] || []).map(tk => tk.id === id ? { ...tk, done: !tk.done } : tk) }));
       const addTask = () => {
         if (!newTaskText.trim()) return;
-        const nt = { id: Date.now(), text: newTaskText.trim(), done: false };
+        const nt = { 
+          id: Date.now(), 
+          text: newTaskText.trim(), 
+          time: newTaskTime ? newTaskTime : null,
+          done: false 
+        };
         setDayTasks(prev => ({ ...prev, [currentDay]: [...(prev[currentDay] || []), nt] }));
         setNewTaskText("");
+        setNewTaskTime("");
       };
       const saveEditingTask = (id) => {
         if (!editingTaskText.trim()) return;
-        setDayTasks(prev => ({ ...prev, [currentDay]: (prev[currentDay] || []).map(tk => tk.id === id ? { ...tk, text: editingTaskText.trim() } : tk) }));
-        setEditingTaskId(null); setEditingTaskText("");
+        setDayTasks(prev => ({ 
+          ...prev, 
+          [currentDay]: (prev[currentDay] || []).map(tk => tk.id === id ? { 
+            ...tk, 
+            text: editingTaskText.trim(),
+            time: editingTaskTime ? editingTaskTime : null
+          } : tk) 
+        }));
+        setEditingTaskId(null); 
+        setEditingTaskText("");
+        setEditingTaskTime("");
       };
       const deleteTask = (id) => setDayTasks(prev => ({ ...prev, [currentDay]: (prev[currentDay] || []).filter(tk => tk.id !== id) }));
 
@@ -1332,20 +1349,30 @@
                     {currentTasks.length > 0 ? currentTasks.map(tk => (
                       <div key={tk.id} className={`flex items-center justify-between p-3 rounded-xl border ${t.border} ${t.subtleBg} transition-all`}>
                         {editingTaskId === tk.id ? (
-                          <div className="flex gap-2 w-full">
+                          <div className="flex flex-col sm:flex-row gap-2 w-full">
                             <input type="text" value={editingTaskText} onChange={(e) => setEditingTaskText(e.target.value)} className={`flex-1 ${t.cardBg} text-sm px-3 py-2 rounded-lg border ${t.border} ${t.textMain} focus:outline-none`} autoFocus />
-                            <button onClick={() => saveEditingTask(tk.id)} className="px-3 py-1.5 bg-emerald-500 text-white font-bold rounded-lg text-xs"><i className="fa-solid fa-check"></i></button>
+                            <div className="flex gap-2">
+                              <input type="time" title="Vaqt" value={editingTaskTime} onChange={(e) => setEditingTaskTime(e.target.value)} className={`w-28 ${t.cardBg} text-xs px-2 py-2 rounded-lg border ${t.border} text-amber-400 font-mono outline-none`} />
+                              <button onClick={() => saveEditingTask(tk.id)} className="px-3 py-1.5 bg-emerald-500 text-white font-bold rounded-lg text-xs"><i className="fa-solid fa-check"></i></button>
+                            </div>
                           </div>
                         ) : (
                           <>
                             <div onClick={() => toggleTask(tk.id)} className="flex items-center gap-3 flex-1 cursor-pointer select-none">
-                              <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition ${tk.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-zinc-500'}`}>
+                              <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition flex-shrink-0 ${tk.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-zinc-500'}`}>
                                 {tk.done && <i className="fa-solid fa-check text-[10px] font-black"></i>}
                               </div>
-                              <span className={`text-sm font-medium leading-snug ${tk.done ? `line-through ${t.textSub}` : t.textMain}`}>{tk.text}</span>
+                              <div className="flex flex-col min-w-0 flex-1">
+                                <span className={`text-sm font-medium leading-snug ${tk.done ? `line-through ${t.textSub}` : t.textMain}`}>{tk.text}</span>
+                                {tk.time && (
+                                  <span className={`text-[10px] font-mono flex items-center gap-1 mt-0.5 ${tk.done ? t.textSub : 'text-amber-400 font-bold'}`}>
+                                    <i className="fa-regular fa-clock text-[9px]"></i> {tk.time}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <div className="flex items-center gap-2 ml-2">
-                              <button onClick={() => { setEditingTaskId(tk.id); setEditingTaskText(tk.text); }} className={`${t.textSub} text-xs p-1.5`}><i className="fa-solid fa-pen"></i></button>
+                              <button onClick={() => { setEditingTaskId(tk.id); setEditingTaskText(tk.text); setEditingTaskTime(tk.time || ""); }} className={`${t.textSub} text-xs p-1.5`}><i className="fa-solid fa-pen"></i></button>
                               <button onClick={() => deleteTask(tk.id)} className={`${t.textSub} hover:text-rose-500 text-xs p-1.5`}><i className="fa-solid fa-trash-can"></i></button>
                             </div>
                           </>
@@ -1355,9 +1382,16 @@
                       <div className={`text-center py-4 text-sm ${t.textSub}`}>Bu kunga vazifalar belgilanmagan</div>
                     )}
                   </div>
-                  <div className="flex gap-2 pt-1">
-                    <input type="text" placeholder="Yangi vazifa..." value={newTaskText} onChange={(e) => setNewTaskText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTask()} className={`flex-1 ${t.subtleBg} border ${t.border} rounded-xl px-4 py-2.5 text-sm ${t.textMain} focus:outline-none focus:border-amber-500`} />
-                    <button onClick={addTask} className={`px-5 py-2.5 rounded-xl text-sm font-bold ${t.accent}`}>+</button>
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex gap-2 items-center">
+                      <input type="text" placeholder="Yangi vazifa..." value={newTaskText} onChange={(e) => setNewTaskText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTask()} className={`flex-1 ${t.subtleBg} border ${t.border} rounded-xl px-3 sm:px-4 py-2.5 text-sm ${t.textMain} focus:outline-none focus:border-amber-500`} />
+                      <input type="time" title="Eslatish vaqti (ixtiyoriy)" value={newTaskTime} onChange={(e) => setNewTaskTime(e.target.value)} className={`w-24 sm:w-28 ${t.subtleBg} border ${t.border} rounded-xl px-2 py-2 text-xs text-amber-400 font-mono outline-none focus:border-amber-500 cursor-pointer`} />
+                      <button onClick={addTask} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold ${t.accent}`}>+</button>
+                    </div>
+                    <div className="text-[10px] text-zinc-500 px-1 flex items-center gap-1">
+                      <i className="fa-regular fa-clock text-[9px]"></i>
+                      <span>Vaqt tanlansa, o‘sha soatda Telegram botingiz eslatma yuboradi.</span>
+                    </div>
                   </div>
                 </div>
               </div>
