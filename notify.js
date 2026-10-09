@@ -74,16 +74,15 @@ async function syncTelegramUsers(botToken, db) {
           const uid = parts[1].trim();
           console.log(`🔗 Yangi foydalanuvchi ulanmoqda: UID ${uid} -> Chat ID ${chatId}`);
 
-          // Firestore bazasiga Chat ID ni avtomatik yozish
           await db.collection('intizom_users').doc(uid).set({
             telegramChatId: chatId,
             telegramUser: msg.from?.username || msg.from?.first_name || '',
             telegramConnectedAt: new Date().toISOString()
           }, { merge: true });
 
-          await sendTelegramMessage(botToken, chatId, `🎉 <b>Tabriklaymiz!</b>\n\nHisobingiz <b>"Intizom"</b> ilovasi bilan muvaffaqiyatli ulandi.\n\nEndi namoz vaqtlari sizga mana shu bot orqali avtomatik eslatib turiladi! 🕌`);
+          await sendTelegramMessage(botToken, chatId, `🎉 <b>Tabriklaymiz!</b>\n\nHisobingiz <b>"Intizom"</b> ilovasi bilan muvaffaqiyatli ulandi.\n\nEndi namoz va rejalashtirilgan vazifalaringiz o‘z vaqtida sizga mana shu bot orqali eslatib turiladi! 🔔`);
         } else {
-          await sendTelegramMessage(botToken, chatId, `Assalomu alaykum! 🕌\n\n<b>"Intizom"</b> ilovasi bilan hisobingizni ulash uchun ilovadagi <b>"Eslatmani yoqish"</b> tugmasini bosing.`);
+          await sendTelegramMessage(botToken, chatId, `Assalomu alaykum! 🔔\n\n<b>"Intizom"</b> ilovasi bilan hisobingizni ulash uchun ilovadagi <b>"Eslatmani yoqish"</b> tugmasini bosing.`);
         }
       } else if (parts[0] === '/uzish' || parts[0] === '/stop') {
         console.log(`🔌 Foydalanuvchi hisobdan uzishni so'radi: Chat ID ${chatId}`);
@@ -93,11 +92,10 @@ async function syncTelegramUsers(botToken, db) {
             telegramChatId: admin.firestore.FieldValue.delete()
           });
         }
-        await sendTelegramMessage(botToken, chatId, `🔌 <b>Telegram bot hisobingizdan uzildi!</b>\n\nEndi sizga namoz eslatmalari yuborilmaydi.\nQaytadan ulash uchun ilovaga kirib <b>"Eslatmani yoqish"</b> tugmasini bosing.`);
+        await sendTelegramMessage(botToken, chatId, `🔌 <b>Telegram bot hisobingizdan uzildi!</b>\n\nEndi sizga eslatmalar yuborilmaydi.\nQaytadan ulash uchun ilovaga kirib <b>"Eslatmani yoqish"</b> tugmasini bosing.`);
       }
     }
 
-    // Navbatni tozalash
     if (maxUpdateId > 0) {
       await fetch(`https://api.telegram.org/bot${botToken}/getUpdates?offset=${maxUpdateId + 1}`);
     }
@@ -152,14 +150,10 @@ const prayerNames = {
 };
 
 async function checkAndSend() {
-  // 1. Telegram botga yangi ulanishlar yoki uzish so'rovlarini qabul qilish
   if (TELEGRAM_BOT_TOKEN) {
     await syncTelegramUsers(TELEGRAM_BOT_TOKEN, db);
-  } else {
-    console.warn("⚠️ TELEGRAM_BOT_TOKEN topilmadi!");
   }
 
-  // 2. Namoz vaqtlarini tekshirish
   const now = new Date();
   const uzbDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tashkent' }).format(now);
   const uzbHoursStr = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Tashkent', hour: 'numeric', hour12: false }).format(now);
@@ -174,7 +168,6 @@ async function checkAndSend() {
   const usersSnap = await db.collection('intizom_users').get();
   console.log(`👥 Jami foydalanuvchilar: ${usersSnap.docs.length}`);
 
-  // Bitta Telegram hisobiga bitta namoz uchun faqat 1 marta yuborish (Dublikatni oldini oladi)
   const sentPrayerToChats = new Set();
 
   for (const doc of usersSnap.docs) {
@@ -187,6 +180,7 @@ async function checkAndSend() {
       continue;
     }
 
+    // A) NAMOZ VAQTLARINI TEKSHIRISH
     for (const [key, prayerName] of Object.entries(prayerNames)) {
       const pTime = times[key];
       if (!pTime || !pTime.includes(':')) continue;
@@ -200,35 +194,19 @@ async function checkAndSend() {
       const diff = (currentTotalMinutes - targetMinutes + 1440) % 1440;
 
       if (diff >= 0 && diff < WINDOW_MINUTES) {
-        console.log(`🚀 ${prayerName} (${pTime}) vaqti kirdi! User: ${doc.id}`);
+        console.log(`🚀 Namoz: ${prayerName} (${pTime}) vaqti kirdi! User: ${doc.id}`);
 
         const text = `🕌 <b>${prayerName} vaqti kirdi!</b>\n\nNamoz vaqti bo‘ldi (${pTime}). Ado etishni unutmang!`;
         let sent = false;
 
-        // Telegramga yuborish (dublikat tekshiruvi bilan)
         if (TELEGRAM_BOT_TOKEN && telegramChatId) {
           const chatDedupeKey = `${telegramChatId}_${key}_${uzbDate}`;
           if (sentPrayerToChats.has(chatDedupeKey)) {
-            console.log(`   ⏭ Telegram xabari allaqachon ${telegramChatId} ga yuborilgan, ikkinchi nusxa bekor qilindi.`);
             sent = true;
           } else {
             sent = await sendTelegramMessage(TELEGRAM_BOT_TOKEN, telegramChatId, text);
-            if (sent) {
-              sentPrayerToChats.add(chatDedupeKey);
-            }
+            if (sent) sentPrayerToChats.add(chatDedupeKey);
           }
-        }
-
-        // Web push (agar mavjud bo'lsa)
-        if (data.fcmToken) {
-          try {
-            await admin.messaging().send({
-              token: data.fcmToken,
-              notification: { title: `🕌 ${prayerName} vaqti kirdi!`, body: `Namoz vaqti bo‘ldi (${pTime}).` },
-              data: { title: `🕌 ${prayerName} vaqti kirdi!`, body: `Namoz vaqti bo‘ldi (${pTime}).`, prayer: key }
-            });
-            sent = true;
-          } catch (e) {}
         }
 
         if (sent) {
@@ -238,6 +216,50 @@ async function checkAndSend() {
               [key]: uzbDate
             }
           }, { merge: true });
+        }
+      }
+    }
+
+    // B) KUNLIK SHAXSIY VAZIFALAR VAQTINI TEKSHIRISH
+    const currentDay = data.currentDay || 1;
+    const todayTasks = (data.dayTasks && data.dayTasks[currentDay]) || [];
+
+    for (const task of todayTasks) {
+      // Faqat bajarilmagan va vaqti bor vazifalar
+      if (!task.done && task.time && typeof task.time === 'string' && task.time.includes(':')) {
+        const taskSentKey = `task_${task.id}_${uzbDate}`;
+        if (lastSent[taskSentKey]) continue;
+
+        const [tHour, tMin] = task.time.trim().split(':').map(Number);
+        if (isNaN(tHour) || isNaN(tMin)) continue;
+
+        const targetMinutes = tHour * 60 + tMin;
+        const diff = (currentTotalMinutes - targetMinutes + 1440) % 1440;
+
+        if (diff >= 0 && diff < WINDOW_MINUTES) {
+          console.log(`📌 Vazifa vaqti kirdi! User: ${doc.id} - "${task.text}" (${task.time})`);
+
+          const text = `📌 <b>Vazifa vaqti bo‘ldi!</b>\n\n📝 <b>${task.text}</b>\n⏰ Belgilangan vaqt: <b>${task.time}</b>\n\n<i>Ado etishni unutmang!</i>`;
+          let sent = false;
+
+          if (TELEGRAM_BOT_TOKEN && telegramChatId) {
+            const chatDedupeKey = `${telegramChatId}_task_${task.id}_${uzbDate}`;
+            if (sentPrayerToChats.has(chatDedupeKey)) {
+              sent = true;
+            } else {
+              sent = await sendTelegramMessage(TELEGRAM_BOT_TOKEN, telegramChatId, text);
+              if (sent) sentPrayerToChats.add(chatDedupeKey);
+            }
+          }
+
+          if (sent) {
+            await doc.ref.set({
+              lastSent: {
+                ...lastSent,
+                [taskSentKey]: uzbDate
+              }
+            }, { merge: true });
+          }
         }
       }
     }
