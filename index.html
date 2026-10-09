@@ -487,6 +487,26 @@
       }, [prayerTimes]);
 
       // Push token olish va bazaga yozish funksiyasi
+            const disconnectTelegram = async () => {
+        if (!window.confirm("Telegram botni ushbu hisobdan uzmoqchimisiz?")) return;
+        try {
+          if (user) {
+            await userRef(user.uid).set({
+              telegramChatId: firebase.firestore.FieldValue.delete()
+            }, { merge: true });
+          }
+          setTelegramChatId(null);
+          alert("Telegram bot ushbu hisobingizdan uzildi!");
+        } catch (err) {
+          console.error("Uzishda xatolik:", err);
+          if (user) {
+            await userRef(user.uid).set({ telegramChatId: "" }, { merge: true });
+          }
+          setTelegramChatId(null);
+          alert("Telegram bot uzildi!");
+        }
+      };
+
       const enablePushNotifications = async () => {
         initAudioOnUserAction();
         try {
@@ -1382,22 +1402,44 @@
                       {telegramChatId ? 'Ulangan ●' : 'Ulanmagan'}
                     </span>
                   </div>
-                  <a 
-                    href={user ? `https://t.me/Intizomimuz_bot?start=${user.uid}` : '#'} 
-                    onClick={(e) => {
-                      if (!user) {
-                        e.preventDefault();
-                        alert("Avval yuqoridagi 'Kirish' tugmasi orqali Google hisobingizga kiring!");
-                        signIn();
-                      }
-                    }}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="w-full py-2.5 px-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-sky-500/20 transition active:scale-95 text-center"
-                  >
-                    <i className="fa-brands fa-telegram text-sm"></i>
-                    <span>{telegramChatId ? "Botni ochish" : "Eslatmani yoqish"}</span>
-                  </a>
+                  {telegramChatId ? (
+                    <div className="flex gap-2">
+                      <a 
+                        href="https://t.me/Intizomimuz_bot" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex-1 py-2.5 px-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-zinc-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/20 transition active:scale-95 text-center"
+                      >
+                        <i className="fa-brands fa-telegram text-sm"></i>
+                        <span>Botni ochish</span>
+                      </a>
+                      <button 
+                        onClick={disconnectTelegram}
+                        className="px-3.5 py-2.5 rounded-xl border border-red-500/40 text-red-400 hover:bg-red-500/10 font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95"
+                        title="Telegram botni hisobdan uzish"
+                      >
+                        <i className="fa-solid fa-link-slash"></i>
+                        <span>Uzish</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <a 
+                      href={user ? `https://t.me/Intizomimuz_bot?start=${user.uid}` : '#'} 
+                      onClick={(e) => {
+                        if (!user) {
+                          e.preventDefault();
+                          alert("Avval yuqoridagi 'Kirish' tugmasi orqali Google hisobingizga kiring!");
+                          signIn();
+                        }
+                      }}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-full py-2.5 px-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-sky-500/20 transition active:scale-95 text-center"
+                    >
+                      <i className="fa-brands fa-telegram text-sm"></i>
+                      <span>Eslatmani yoqish</span>
+                    </a>
+                  )}
                 </div>
 
                 {/* ASOSIY QAZO KARTASI */}
