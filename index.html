@@ -312,7 +312,23 @@
         }
       }, []);
 
-            const [activeTab, setActiveTab] = useState('namoz');
+      // Telegram Mini App foydalanuvchisini dastlabki yuklanishdayoq aniqlash
+      const initialTgUser = useMemo(() => {
+        if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe?.user) {
+          const tg = window.Telegram.WebApp.initDataUnsafe.user;
+          return {
+            uid: "tg_" + tg.id,
+            displayName: tg.first_name + (tg.last_name ? " " + tg.last_name : ""),
+            email: tg.username ? `@${tg.username}` : `Telegram ID: ${tg.id}`,
+            photoURL: tg.photo_url || null,
+            isTelegram: true,
+            telegramId: String(tg.id)
+          };
+        }
+        return null;
+      }, []);
+
+      const [activeTab, setActiveTab] = useState('namoz');
       const [themeKey, setThemeKey] = useState(cachedData?.themeKey || 'obsidian');
       const [goalTitle, setGoalTitle] = useState(cachedData?.goalTitle !== undefined ? cachedData.goalTitle : "");
       const [goalDays, setGoalDays] = useState(cachedData?.goalDays || 10);
@@ -322,8 +338,13 @@
       const [tempDays, setTempDays] = useState(10);
       const [dayTasks, setDayTasks] = useState(cachedData?.dayTasks || {});
       const [completedDays, setCompletedDays] = useState(cachedData?.completedDays || []);
-      const [onboarded, setOnboarded] = useState(cachedData?.onboarded !== undefined ? cachedData.onboarded : false);
-      const [user, setUser] = useState(null);
+      const [onboarded, setOnboarded] = useState(() => {
+        if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe?.user) {
+          return true; // Telegram ichida ochilganda darhol ilovaga o'tkazish
+        }
+        return cachedData?.onboarded !== undefined ? cachedData.onboarded : false;
+      });
+      const [user, setUser] = useState(initialTgUser);
       const [syncError, setSyncError] = useState("");
       const [archive, setArchive] = useState(cachedData?.archive || []);
       const [creatingNew, setCreatingNew] = useState(false);
@@ -486,7 +507,10 @@
         }
       });
 
-      const [telegramChatId, setTelegramChatId] = useState(cachedData?.telegramChatId || null);
+      const [telegramChatId, setTelegramChatId] = useState(() => {
+        if (initialTgUser?.telegramId) return initialTgUser.telegramId;
+        return cachedData?.telegramChatId || null;
+      });
       const [todayReadQazo, setTodayReadQazo] = useState(() => {
         try {
           const raw = localStorage.getItem('intizom_today_qazo');
@@ -1008,50 +1032,48 @@
 
         const chatIdStr = String(tgUser.id);
         setTelegramChatId(chatIdStr);
+        setOnboarded(true);
 
         (async () => {
           try {
             if (!cloudReady) return;
-            // Barcha foydalanuvchilar orasidan ushbu Telegram ID ga tegishli hujjatni qidiramiz
             const usersSnap = await firebase.firestore().collection('intizom_users').get();
-            let matchedDoc = usersSnap.docs.find(d => {
+            const matchedDoc = usersSnap.docs.find(d => {
               const data = d.data();
               return String(data.telegramChatId) === chatIdStr || String(data.chatId) === chatIdStr;
             });
 
-            let docId = matchedDoc ? matchedDoc.id : ("tg_" + chatIdStr);
+            const docId = matchedDoc ? matchedDoc.id : ("tg_" + chatIdStr);
 
             if (matchedDoc) {
-              console.log("✅ Telegram hisob topildi va ulandi:", matchedDoc.id);
+              console.log("✅ Telegram hisob topildi va ma'lumotlar yuklandi:", matchedDoc.id);
               applyData(matchedDoc.data());
-              setOnboarded(true);
             } else {
               const userDoc = await firebase.firestore().collection('intizom_users').doc(docId).get();
               if (userDoc.exists) {
                 applyData(userDoc.data());
-                setOnboarded(true);
               } else {
                 await firebase.firestore().collection('intizom_users').doc(docId).set({
                   telegramChatId: chatIdStr,
                   telegramUser: tgUser.username || tgUser.first_name || '',
                   createdAt: new Date().toISOString()
                 }, { merge: true });
-                setOnboarded(true);
               }
             }
 
-            const tgProfile = {
+            setUser({
               uid: docId,
               displayName: tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : ""),
-              email: tgUser.username ? `@${tgUser.username}` : `Telegram`,
+              email: tgUser.username ? `@${tgUser.username}` : `ID: ${chatIdStr}`,
               photoURL: tgUser.photo_url || null,
-              isTelegram: true
-            };
-            setUser(tgProfile);
+              isTelegram: true,
+              telegramId: chatIdStr
+            });
             cloudLoadedRef.current = true;
             setSyncError("");
           } catch (err) {
-            console.error("Telegram avto-kirish xatosi:", err);
+            console.warn("Telegram avto-kirish:", err);
+            cloudLoadedRef.current = true;
           }
         })();
       }, [cloudReady]);
@@ -1919,20 +1941,41 @@
             {activeTab === 'profile' && (
               <div className="space-y-4">
                 <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-3.5 shadow-sm`}>
-                  <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Profil</span>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Profil</span>
+                    {user?.isTelegram && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-400 border border-sky-500/30 flex items-center gap-1">
+                        <i className="fa-brands fa-telegram"></i> Telegram
+                      </span>
+                    )}
+                  </div>
                   {user ? (
                     <>
                       <div className="flex items-center gap-3">
-                        {user.photoURL ? <div className="avatar-ring"><img src={user.photoURL} referrerPolicy="no-referrer" className="w-14 h-14 rounded-full" /></div> : <i className={`fa-solid fa-circle-user text-5xl ${t.textSub}`}></i>}
-                        <div className="min-w-0">
+                        {user.photoURL ? (
+                          <div className="avatar-ring"><img src={user.photoURL} referrerPolicy="no-referrer" className="w-14 h-14 rounded-full" /></div>
+                        ) : (
+                          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-sky-600 to-blue-500 text-white flex items-center justify-center font-black text-xl shadow-md">
+                            {user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
                           <div className={`font-bold text-sm truncate ${t.textMain}`}>{user.displayName || "Foydalanuvchi"}</div>
-                          <div className={`text-xs truncate ${t.textSub}`}>{user.email}</div>
+                          <div className={`text-xs truncate ${t.textSub}`}>{user.email || ''}</div>
+                          {user.isTelegram && (
+                            <div className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1 mt-0.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                              <span>Telegram orqali ulangan (Faol)</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className={`text-xs font-semibold ${syncError ? 'text-red-500' : 'text-emerald-500'}`}>
                         {syncError ? `⚠ Bulutda xatolik: ${syncError}` : "☁ Ma’lumotlar bulutda xavfsiz saqlanmoqda"}
                       </div>
-                      <button onClick={signOut} className="w-full py-2.5 rounded-xl text-sm font-bold border border-red-500/40 text-red-500 flex items-center justify-center gap-2 hover:bg-red-500/10"><i className="fa-solid fa-right-from-bracket"></i> Profildan chiqish</button>
+                      <button onClick={signOut} className="w-full py-2.5 rounded-xl text-sm font-bold border border-red-500/40 text-red-500 flex items-center justify-center gap-2 hover:bg-red-500/10">
+                        <i className="fa-solid fa-right-from-bracket"></i> {user.isTelegram ? "Sessiyani yopish" : "Profildan chiqish"}
+                      </button>
                     </>
                   ) : (
                     <>
