@@ -312,61 +312,7 @@
         }
       }, []);
 
-            // Telegram Mini App: to'liq ekranga yoyish va avtomatik Telegram hisobini ulash
-      useEffect(() => {
-        if (window.Telegram && window.Telegram.WebApp) {
-          const tg = window.Telegram.WebApp;
-          tg.ready();
-          tg.expand();
-          const tgUser = tg.initDataUnsafe?.user;
-          if (tgUser && tgUser.id) {
-            const chatIdStr = String(tgUser.id);
-            setTelegramChatId(chatIdStr);
-
-            // Telegram ichida ochilganda foydalanuvchini avtomatik tizimga kiritish
-            (async () => {
-              try {
-                if (!cloudReady) return;
-                // Avval bu Telegram ID ga ulangan mavjud foydalanuvchi bor-yo'qligini tekshirish
-                const snap = await firebase.firestore().collection('intizom_users')
-                  .where('telegramChatId', '==', chatIdStr).limit(1).get();
-
-                let docId = "tg_" + chatIdStr;
-                if (!snap.empty) {
-                  docId = snap.docs[0].id;
-                  applyData(snap.docs[0].data());
-                } else {
-                  const userDoc = await firebase.firestore().collection('intizom_users').doc(docId).get();
-                  if (userDoc.exists) {
-                    applyData(userDoc.data());
-                  } else {
-                    await firebase.firestore().collection('intizom_users').doc(docId).set({
-                      telegramChatId: chatIdStr,
-                      telegramUser: tgUser.username || tgUser.first_name || '',
-                      createdAt: new Date().toISOString()
-                    }, { merge: true });
-                  }
-                }
-
-                const tgProfile = {
-                  uid: docId,
-                  displayName: tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : ""),
-                  email: tgUser.username ? `@${tgUser.username}` : `tg:${chatIdStr}`,
-                  photoURL: tgUser.photo_url || null,
-                  isTelegram: true
-                };
-                setUser(tgProfile);
-                cloudLoadedRef.current = true;
-                setSyncError("");
-              } catch (err) {
-                console.error("Telegram avto-kirish:", err);
-              }
-            })();
-          }
-        }
-      }, [cloudReady]);
-
-      const [activeTab, setActiveTab] = useState('namoz');
+            const [activeTab, setActiveTab] = useState('namoz');
       const [themeKey, setThemeKey] = useState(cachedData?.themeKey || 'obsidian');
       const [goalTitle, setGoalTitle] = useState(cachedData?.goalTitle !== undefined ? cachedData.goalTitle : "");
       const [goalDays, setGoalDays] = useState(cachedData?.goalDays || 10);
@@ -1050,6 +996,66 @@
         }
       }, []);
 
+      // Telegram Mini App: to'liq ekranga yoyish va avtomatik hisobni aniqlash
+      useEffect(() => {
+        if (!window.Telegram || !window.Telegram.WebApp) return;
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const tgUser = tg.initDataUnsafe?.user;
+        if (!tgUser || !tgUser.id) return;
+
+        const chatIdStr = String(tgUser.id);
+        setTelegramChatId(chatIdStr);
+
+        (async () => {
+          try {
+            if (!cloudReady) return;
+            // Barcha foydalanuvchilar orasidan ushbu Telegram ID ga tegishli hujjatni qidiramiz
+            const usersSnap = await firebase.firestore().collection('intizom_users').get();
+            let matchedDoc = usersSnap.docs.find(d => {
+              const data = d.data();
+              return String(data.telegramChatId) === chatIdStr || String(data.chatId) === chatIdStr;
+            });
+
+            let docId = matchedDoc ? matchedDoc.id : ("tg_" + chatIdStr);
+
+            if (matchedDoc) {
+              console.log("✅ Telegram hisob topildi va ulandi:", matchedDoc.id);
+              applyData(matchedDoc.data());
+              setOnboarded(true);
+            } else {
+              const userDoc = await firebase.firestore().collection('intizom_users').doc(docId).get();
+              if (userDoc.exists) {
+                applyData(userDoc.data());
+                setOnboarded(true);
+              } else {
+                await firebase.firestore().collection('intizom_users').doc(docId).set({
+                  telegramChatId: chatIdStr,
+                  telegramUser: tgUser.username || tgUser.first_name || '',
+                  createdAt: new Date().toISOString()
+                }, { merge: true });
+                setOnboarded(true);
+              }
+            }
+
+            const tgProfile = {
+              uid: docId,
+              displayName: tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : ""),
+              email: tgUser.username ? `@${tgUser.username}` : `Telegram`,
+              photoURL: tgUser.photo_url || null,
+              isTelegram: true
+            };
+            setUser(tgProfile);
+            cloudLoadedRef.current = true;
+            setSyncError("");
+          } catch (err) {
+            console.error("Telegram avto-kirish xatosi:", err);
+          }
+        })();
+      }, [cloudReady]);
+
       useEffect(() => {
         const savedToken = localStorage.getItem('intizom_fcm_token');
         const data = JSON.parse(JSON.stringify({ 
@@ -1285,9 +1291,32 @@
       };
 
       const signIn = async () => {
-        // Telegram Mini App ichida Google login shart emas va cheklangan
+        // Telegram Mini App ichida: hisobni avtomatik ochish
         if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe?.user) {
-          alert("Siz allaqachon Telegram hisobingiz orqali tizimga ulangansiz!");
+          const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+          const chatIdStr = String(tgUser.id);
+          try {
+            const usersSnap = await firebase.firestore().collection('intizom_users').get();
+            let matchedDoc = usersSnap.docs.find(d => {
+              const data = d.data();
+              return String(data.telegramChatId) === chatIdStr || String(data.chatId) === chatIdStr;
+            });
+            if (matchedDoc) {
+              applyData(matchedDoc.data());
+            }
+            setUser({
+              uid: matchedDoc ? matchedDoc.id : ("tg_" + chatIdStr),
+              displayName: tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : ""),
+              photoURL: tgUser.photo_url || null,
+              email: tgUser.username ? `@${tgUser.username}` : `Telegram`,
+              isTelegram: true
+            });
+            setOnboarded(true);
+            setActiveTab('home');
+          } catch(e) {
+            console.error(e);
+            setOnboarded(true);
+          }
           return;
         }
         if (!cloudReady) { alert("Firebase sozlamalari to‘ldirilmagan."); return; }
