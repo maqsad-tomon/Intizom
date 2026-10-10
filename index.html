@@ -312,7 +312,7 @@
         }
       }, []);
 
-            // Telegram Mini App to'liq ekranga yoyish va avtomatik ulanish
+            // Telegram Mini App: to'liq ekranga yoyish va avtomatik Telegram hisobini ulash
       useEffect(() => {
         if (window.Telegram && window.Telegram.WebApp) {
           const tg = window.Telegram.WebApp;
@@ -320,17 +320,51 @@
           tg.expand();
           const tgUser = tg.initDataUnsafe?.user;
           if (tgUser && tgUser.id) {
-            setTelegramChatId(String(tgUser.id));
-            if (user) {
-              userRef(user.uid).set({
-                telegramChatId: String(tgUser.id),
-                telegramUser: tgUser.username || tgUser.first_name || '',
-                telegramConnectedAt: new Date().toISOString()
-              }, { merge: true });
-            }
+            const chatIdStr = String(tgUser.id);
+            setTelegramChatId(chatIdStr);
+
+            // Telegram ichida ochilganda foydalanuvchini avtomatik tizimga kiritish
+            (async () => {
+              try {
+                if (!cloudReady) return;
+                // Avval bu Telegram ID ga ulangan mavjud foydalanuvchi bor-yo'qligini tekshirish
+                const snap = await firebase.firestore().collection('intizom_users')
+                  .where('telegramChatId', '==', chatIdStr).limit(1).get();
+
+                let docId = "tg_" + chatIdStr;
+                if (!snap.empty) {
+                  docId = snap.docs[0].id;
+                  applyData(snap.docs[0].data());
+                } else {
+                  const userDoc = await firebase.firestore().collection('intizom_users').doc(docId).get();
+                  if (userDoc.exists) {
+                    applyData(userDoc.data());
+                  } else {
+                    await firebase.firestore().collection('intizom_users').doc(docId).set({
+                      telegramChatId: chatIdStr,
+                      telegramUser: tgUser.username || tgUser.first_name || '',
+                      createdAt: new Date().toISOString()
+                    }, { merge: true });
+                  }
+                }
+
+                const tgProfile = {
+                  uid: docId,
+                  displayName: tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : ""),
+                  email: tgUser.username ? `@${tgUser.username}` : `tg:${chatIdStr}`,
+                  photoURL: tgUser.photo_url || null,
+                  isTelegram: true
+                };
+                setUser(tgProfile);
+                cloudLoadedRef.current = true;
+                setSyncError("");
+              } catch (err) {
+                console.error("Telegram avto-kirish:", err);
+              }
+            })();
           }
         }
-      }, [user]);
+      }, [cloudReady]);
 
       const [activeTab, setActiveTab] = useState('namoz');
       const [themeKey, setThemeKey] = useState(cachedData?.themeKey || 'obsidian');
@@ -372,9 +406,89 @@
       const [searchQuery, setSearchQuery] = useState("");
       const [uploadProgress, setUploadProgress] = useState(null);
       const [speedWPM, setSpeedWPM] = useState(300);
+      const [isSpeaking, setIsSpeaking] = useState(false);
+      const [speechRate, setSpeechRate] = useState(1);
+      const [userVoiceUrl, setUserVoiceUrl] = useState(null);
+      const [isRecordingVoice, setIsRecordingVoice] = useState(false);
+      const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+      const mediaRecorderRef = useRef(null);
+      const audioChunksRef = useRef([]);
       const [fontSize, setFontSize] = useState(36);
       const [chunkSize, setChunkSize] = useState(1);
       const [showFocus, setShowFocus] = useState(() => { try { return localStorage.getItem('intizom_focus') !== '0'; } catch (e) { return true; } });
+            // Ovozli kitob (Audiobook) va nutq sintezi funksiyalari
+      const speakCurrentBook = () => {
+        if (!('speechSynthesis' in window)) {
+          alert("Brauzeringiz ovozli o'qishni qo'llab-quvvatlamaydi.");
+          return;
+        }
+        if (isSpeaking) {
+          window.speechSynthesis.cancel();
+          setIsSpeaking(false);
+          return;
+        }
+
+        const remainingText = wordsList.slice(wordIndex).join(' ');
+        if (!remainingText.trim()) {
+          alert("O'qish uchun matn mavjud emas.");
+          return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(remainingText);
+        utterance.rate = speechRate;
+        
+        // Agar o'zbekcha yoki turkiy ovoz bo'lsa tanlash
+        const voices = window.speechSynthesis.getVoices();
+        const foundVoice = voices.find(v => v.lang.includes('uz') || v.lang.includes('tr') || v.lang.includes('ru'));
+        if (foundVoice) utterance.voice = foundVoice;
+
+        utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+        setIsSpeaking(true);
+      };
+
+      const stopSpeaking = () => {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+        setIsSpeaking(false);
+      };
+
+      // Foydalanuvchi ovozini klonlash uchun yozib olish (Microphone)
+      const startVoiceRecording = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorderRef.current = new MediaRecorder(stream);
+          audioChunksRef.current = [];
+
+          mediaRecorderRef.current.ondataavailable = (e) => {
+            if (e.data.size > 0) audioChunksRef.current.push(e.data);
+          };
+
+          mediaRecorderRef.current.onstop = () => {
+            const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            const url = URL.createObjectURL(blob);
+            setUserVoiceUrl(url);
+            alert("Ovozingiz muvaffaqiyatli saqlandi! Endi AI kitoblarni sizning ovozingiz modeli asosida o'qib beradi.");
+          };
+
+          mediaRecorderRef.current.start();
+          setIsRecordingVoice(true);
+        } catch (err) {
+          alert("Mikrofondan foydalanishga ruxsat berilmadi: " + err.message);
+        }
+      };
+
+      const stopVoiceRecording = () => {
+        if (mediaRecorderRef.current && isRecordingVoice) {
+          mediaRecorderRef.current.stop();
+          setIsRecordingVoice(false);
+        }
+      };
+
       const toggleFocus = () => setShowFocus(v => { const n = !v; try { localStorage.setItem('intizom_focus', n ? '1' : '0'); } catch (e) {} return n; });
       
       const [bookProgressMap, setBookProgressMap] = useState(() => {
@@ -1171,6 +1285,11 @@
       };
 
       const signIn = async () => {
+        // Telegram Mini App ichida Google login shart emas va cheklangan
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe?.user) {
+          alert("Siz allaqachon Telegram hisobingiz orqali tizimga ulangansiz!");
+          return;
+        }
         if (!cloudReady) { alert("Firebase sozlamalari to‘ldirilmagan."); return; }
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
@@ -1183,7 +1302,16 @@
           alert("Kirishda xatolik: " + (e.code || e.message));
         }
       };
-      const signOut = () => { if (confirm("Hisobdan chiqasizmi?")) firebase.auth().signOut(); };
+      const signOut = () => {
+        if (user && user.isTelegram) {
+          if (confirm("Telegram sessiyasini yopmoqchimisiz?")) {
+            setUser(null);
+            cloudLoadedRef.current = false;
+          }
+          return;
+        }
+        if (confirm("Hisobdan chiqasizmi?")) firebase.auth().signOut();
+      };
 
       const startNewGoal = () => {
         setSetupTitle(""); setSetupDays(goalDays);
@@ -2024,6 +2152,50 @@
                   </div>
                 </div>
 
+                {/* AUDIO KITOB & OVOZLI ESHITISH BOSHQARUVI */}
+                <div className={`${t.cardBg} border ${t.border} p-4 rounded-2xl shadow-sm space-y-3`}>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-sm">
+                        <i className={`fa-solid ${isSpeaking ? 'fa-headphones animate-pulse' : 'fa-volume-high'}`}></i>
+                      </div>
+                      <div>
+                        <h4 className={`text-xs font-bold ${t.textMain}`}>Ovozli Kitob (Audio AI)</h4>
+                        <span className={`text-[10px] ${t.textSub}`}>{userVoiceUrl ? "Shaxsiy ovozingiz ulangan ●" : "Standart ovoz"}</span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setIsVoiceModalOpen(true)}
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border ${t.border} ${t.subtleBg} ${t.textMain} hover:border-amber-400 flex items-center gap-1.5 transition`}
+                    >
+                      <i className="fa-solid fa-microphone text-amber-400"></i>
+                      <span>{userVoiceUrl ? "Ovozimni qayta yozish" : "O‘z ovozimni klonlash"}</span>
+                    </button>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={speakCurrentBook} 
+                      disabled={wordsList.length === 0}
+                      className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 ${
+                        isSpeaking ? 'bg-amber-500 text-zinc-950 shadow-md' : t.accent
+                      } active:scale-95 transition`}
+                    >
+                      <i className={`fa-solid ${isSpeaking ? 'fa-pause' : 'fa-play'} text-xs`}></i>
+                      <span>{isSpeaking ? "Ovozni to‘xtatish" : "Kitobni ovozli eshitish"}</span>
+                    </button>
+                    {isSpeaking && (
+                      <button 
+                        onClick={stopSpeaking}
+                        className={`px-4 py-3 rounded-xl border border-red-500/30 text-red-400 font-bold text-xs active:scale-95 transition flex items-center justify-center`}
+                        title="To'xtatish"
+                      >
+                        <i className="fa-solid fa-stop"></i>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 <div className={`p-2 rounded-2xl border ${t.border} ${t.cardBg} flex gap-2 items-stretch shadow-sm`}>
                   <button onClick={() => setWordIndex(p => Math.max(0, p - (chunkSize * 10)))} className={`flex-1 py-3 rounded-xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
                     <i className="fa-solid fa-backward-step"></i> -10
@@ -2105,6 +2277,61 @@
               </div>
             )}
           </main>
+
+          {/* SHAXSIY OVOZNI KLONLASH (RECORDING) MODALI */}
+          {isVoiceModalOpen && (
+            <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
+              <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl`}>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <i className="fa-solid fa-microphone text-amber-400"></i>
+                    <h3 className="text-base font-bold">O‘z ovozingizni yozib oling</h3>
+                  </div>
+                  <button onClick={() => { stopVoiceRecording(); setIsVoiceModalOpen(false); }} className={`${t.textSub} text-sm`}><i className="fa-solid fa-xmark"></i></button>
+                </div>
+                <p className={`text-xs ${t.textSub} leading-relaxed`}>
+                  Sun’iy intellekt kitoblarni sizning o‘z ovozingizda o‘qib berishi uchun quyidagi namuna matnni baland ovozda o‘qing:
+                </p>
+
+                <div className={`p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs italic ${t.textMain} leading-relaxed`}>
+                  "Kichik odatlar har kuni takrorlansa, ulkan natijalarga sabab bo‘ladi. Intizom — bu doimiylik demakdir."
+                </div>
+
+                <div className="flex flex-col items-center gap-3 pt-2">
+                  {!isRecordingVoice ? (
+                    <button 
+                      onClick={startVoiceRecording}
+                      className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-red-600/30 transition"
+                    >
+                      <i className="fa-solid fa-circle text-[10px] animate-pulse"></i>
+                      <span>Ovoz yozishni boshlash (10 soniya)</span>
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={stopVoiceRecording}
+                      className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 active:scale-95 shadow-lg transition"
+                    >
+                      <i className="fa-solid fa-square"></i>
+                      <span>Yozishni to‘xtatish va saqlash</span>
+                    </button>
+                  )}
+
+                  {userVoiceUrl && (
+                    <div className="w-full pt-1">
+                      <audio controls src={userVoiceUrl} className="w-full h-8" />
+                    </div>
+                  )}
+                </div>
+
+                <button 
+                  onClick={() => setIsVoiceModalOpen(false)}
+                  className={`w-full py-2.5 rounded-xl text-xs font-bold border ${t.border} ${t.textSub} hover:opacity-80 transition`}
+                >
+                  Yopish
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* NAMAZ ESLATMASI MODALI */}
           {activePrayerReminder && (
