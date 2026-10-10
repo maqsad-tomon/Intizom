@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
   <title>Intizom - Shaxsiy Rivojlanish</title>
   <link rel="manifest" href="manifest.json">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <meta name="theme-color" content="#09090b">
   
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -310,6 +311,26 @@
           return null;
         }
       }, []);
+
+            // Telegram Mini App to'liq ekranga yoyish va avtomatik ulanish
+      useEffect(() => {
+        if (window.Telegram && window.Telegram.WebApp) {
+          const tg = window.Telegram.WebApp;
+          tg.ready();
+          tg.expand();
+          const tgUser = tg.initDataUnsafe?.user;
+          if (tgUser && tgUser.id) {
+            setTelegramChatId(String(tgUser.id));
+            if (user) {
+              userRef(user.uid).set({
+                telegramChatId: String(tgUser.id),
+                telegramUser: tgUser.username || tgUser.first_name || '',
+                telegramConnectedAt: new Date().toISOString()
+              }, { merge: true });
+            }
+          }
+        }
+      }, [user]);
 
       const [activeTab, setActiveTab] = useState('namoz');
       const [themeKey, setThemeKey] = useState(cachedData?.themeKey || 'obsidian');
