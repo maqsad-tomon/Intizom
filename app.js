@@ -11,6 +11,15 @@ const { useState, useEffect, useRef, useMemo } = React;
 
     const VAPID_KEY = "BOml4UKYetLZuCaCrblgSJwp58PLOXcZIY3C1O37vwTOe3Vr1VyrwLDk1pHOHtQX_ezwk_QLZJdneEz4lalMag8";
 
+    // Firebase ilovasini birinchi bo'lib global ishga tushirish
+    try {
+      if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+        firebase.initializeApp(FIREBASE_CONFIG);
+      }
+    } catch(e) {
+      console.error("Firebase global init:", e);
+    }
+
     const mk = (id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg, navBg) =>
       ({ id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg, navBg });
 
@@ -179,10 +188,13 @@ const { useState, useEffect, useRef, useMemo } = React;
       const initialTgUser = useMemo(() => {
         if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe?.user) {
           const tg = window.Telegram.WebApp.initDataUnsafe.user;
+          const fullName = (tg.first_name || "") + (tg.last_name ? " " + tg.last_name : "");
+          const userName = fullName.trim() || (tg.username ? `@${tg.username}` : "Foydalanuvchi");
           return {
             uid: "tg_" + tg.id,
-            displayName: tg.first_name + (tg.last_name ? " " + tg.last_name : ""),
-            email: tg.username ? `@${tg.username}` : `Telegram ID: ${tg.id}`,
+            displayName: userName, // Asosiy ism!
+            username: tg.username ? `@${tg.username}` : "",
+            email: tg.username ? `@${tg.username}` : `ID: ${tg.id}`,
             photoURL: tg.photo_url || null,
             isTelegram: true,
             telegramId: String(tg.id)
@@ -883,7 +895,7 @@ const { useState, useEffect, useRef, useMemo } = React;
         }
       }, []);
 
-      // Telegram Mini App: to'liq ekranga yoyish va avtomatik hisobni aniqlash
+      // Telegram Mini App: to'liq ekranga yoyish va barcha ma'lumotlarni Firestore'dan bir zumda yuklash
       useEffect(() => {
         if (!window.Telegram || !window.Telegram.WebApp) return;
         const tg = window.Telegram.WebApp;
@@ -894,12 +906,16 @@ const { useState, useEffect, useRef, useMemo } = React;
         if (!tgUser || !tgUser.id) return;
 
         const chatIdStr = String(tgUser.id);
+        const userNik = tgUser.username ? `@${tgUser.username}` : (tgUser.first_name || "Foydalanuvchi");
+        
         setTelegramChatId(chatIdStr);
         setOnboarded(true);
 
         (async () => {
           try {
-            if (!cloudReady) return;
+            if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+            
+            // 1. Avval barcha foydalanuvchilar orasidan ushbu Telegram ID ga bog'langan hujjatni qidiramiz
             const usersSnap = await firebase.firestore().collection('intizom_users').get();
             const matchedDoc = usersSnap.docs.find(d => {
               const data = d.data();
@@ -912,6 +928,7 @@ const { useState, useEffect, useRef, useMemo } = React;
               console.log("✅ Telegram hisob topildi va ma'lumotlar yuklandi:", matchedDoc.id);
               applyData(matchedDoc.data());
             } else {
+              // Hali hujjat bo'lmasa, yangi yaratish
               const userDoc = await firebase.firestore().collection('intizom_users').doc(docId).get();
               if (userDoc.exists) {
                 applyData(userDoc.data());
@@ -919,27 +936,45 @@ const { useState, useEffect, useRef, useMemo } = React;
                 await firebase.firestore().collection('intizom_users').doc(docId).set({
                   telegramChatId: chatIdStr,
                   telegramUser: tgUser.username || tgUser.first_name || '',
+                  displayName: userNik,
                   createdAt: new Date().toISOString()
                 }, { merge: true });
               }
             }
 
+            // Foydalanuvchi ma'lumotlarini o'rnatish (ISM ko'rinadigan qilib)
+            const fullName = (tgUser.first_name || "") + (tgUser.last_name ? " " + tgUser.last_name : "");
+            const userName = fullName.trim() || (tgUser.username ? `@${tgUser.username}` : "Foydalanuvchi");
+
             setUser({
               uid: docId,
-              displayName: tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : ""),
+              displayName: userName, // Asosiy ism!
+              username: tgUser.username ? `@${tgUser.username}` : "",
+              email: tgUser.username ? `@${tgUser.username}` : `ID: ${chatIdStr}`,
+              photoURL: tgUser.photo_url || null,
+              isTelegram: true,
+              telegramId: chatIdStr
+            });
+
+            cloudLoadedRef.current = true;
+            setSyncError("");
+          } catch (err) {
+            console.warn("Telegram avto-kirish:", err);
+            // Xatolik bo'lsa ham lokal profilda foydalanuvchi niki chiqadi
+            const fallbackName = ((tgUser.first_name || "") + (tgUser.last_name ? " " + tgUser.last_name : "")).trim() || (tgUser.username ? `@${tgUser.username}` : "Foydalanuvchi");
+            setUser({
+              uid: "tg_" + chatIdStr,
+              displayName: fallbackName,
+              username: tgUser.username ? `@${tgUser.username}` : "",
               email: tgUser.username ? `@${tgUser.username}` : `ID: ${chatIdStr}`,
               photoURL: tgUser.photo_url || null,
               isTelegram: true,
               telegramId: chatIdStr
             });
             cloudLoadedRef.current = true;
-            setSyncError("");
-          } catch (err) {
-            console.warn("Telegram avto-kirish:", err);
-            cloudLoadedRef.current = true;
           }
         })();
-      }, [cloudReady]);
+      }, []);
 
       useEffect(() => {
         const savedToken = localStorage.getItem('intizom_fcm_token');
@@ -1236,7 +1271,7 @@ const { useState, useEffect, useRef, useMemo } = React;
       const authButton = user ? (
         <button onClick={() => setActiveTab('profile')} title={user.email} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${t.subtleBg} border ${t.border} ${t.textMain}`}>
           {user.photoURL ? <img src={user.photoURL} referrerPolicy="no-referrer" className="w-5 h-5 rounded-full" /> : <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-[10px]">{user.displayName ? user.displayName.charAt(0) : 'U'}</div>}
-          <span className="text-[11px] font-bold max-w-[80px] truncate">{user.displayName ? user.displayName.split(' ')[0] : 'Profil'}</span>
+          <span className="text-[11px] font-bold max-w-[100px] truncate">{user.displayName || 'Profil'}</span>
         </button>
       ) : (
         <button onClick={signIn} className={`text-[11px] font-bold px-3 py-1.5 rounded-full border ${t.border} ${t.textMain} flex items-center gap-1.5 bg-black/10 dark:bg-white/10 active:scale-95 transition`}>
@@ -1824,7 +1859,10 @@ const { useState, useEffect, useRef, useMemo } = React;
                         )}
                         <div className="min-w-0 flex-1">
                           <div className={`font-bold text-sm truncate ${t.textMain}`}>{user.displayName || "Foydalanuvchi"}</div>
-                          <div className={`text-xs truncate ${t.textSub}`}>{user.email || ''}</div>
+                          {user.username && (
+                            <div className={`text-xs font-semibold text-sky-400`}>{user.username}</div>
+                          )}
+                          <div className={`text-xs truncate ${t.textSub}`}>{user.email && user.email !== user.username ? user.email : ''}</div>
                           {user.isTelegram && (
                             <div className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1 mt-0.5">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
