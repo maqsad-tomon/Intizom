@@ -1,0 +1,2465 @@
+const { useState, useEffect, useRef, useMemo } = React;
+
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyC7C55ykigI6PPJohUdd422p3UJn0NmNa8",
+      authDomain: "maqsad-tomon.firebaseapp.com",
+      projectId: "maqsad-tomon",
+      storageBucket: "maqsad-tomon.firebasestorage.app",
+      messagingSenderId: "131558530387",
+      appId: "1:131558530387:web:45c4b99acbf7c04654d5a6"
+    };
+
+    const VAPID_KEY = "BOml4UKYetLZuCaCrblgSJwp58PLOXcZIY3C1O37vwTOe3Vr1VyrwLDk1pHOHtQX_ezwk_QLZJdneEz4lalMag8";
+
+    const mk = (id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg, navBg) =>
+      ({ id, name, isDark, appBg, cardBg, border, textMain, textSub, accent, accentText, rangeAccent, badge, subtleBg, sliderBg, navBg });
+
+    const THEMES = {
+      obsidian: mk('obsidian', 'Obsidian Qora', true, 'app-obsidian', 'bg-[#141417]', 'border-[#242429]', 'text-zinc-100', 'text-zinc-400', 'bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold shadow-md shadow-amber-500/20', 'text-amber-400', 'accent-amber-400', 'bg-amber-500/10 text-amber-300 border-amber-500/20', 'bg-[#1a1a20]', 'bg-zinc-800', 'bg-[#121215] border-[#27272a]'),
+      light: mk('light', 'Yorug‘lik Oq', false, 'app-light', 'bg-white shadow-sm', 'border-slate-200', 'text-slate-900', 'text-slate-500', 'bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md shadow-blue-500/20', 'text-blue-600', 'accent-blue-600', 'bg-blue-50 text-blue-800 border-blue-200', 'bg-slate-100', 'bg-slate-200', 'bg-white border-slate-200 shadow-lg'),
+      sepia: mk('sepia', 'Sepia Qog‘oz', false, 'app-sepia', 'bg-[#fcf8f0] shadow-sm', 'border-[#e4d8c5]', 'text-[#2f2416]', 'text-[#75624c]', 'bg-[#8c4f22] hover:bg-[#77411a] text-white font-bold shadow-md', 'text-[#8c4f22]', 'accent-[#8c4f22]', 'bg-[#ede3d1] text-[#5c3417] border-[#d5c3a6]', 'bg-[#f2e9dc]', 'bg-[#ded0be]', 'bg-[#fcf8f0] border-[#decbb4] shadow-md'),
+      midnight: mk('midnight', 'Midnight Ko‘k', true, 'app-midnight', 'bg-[#111827]', 'border-slate-800', 'text-slate-100', 'text-slate-400', 'bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-md shadow-blue-500/20', 'text-blue-400', 'accent-blue-500', 'bg-blue-500/10 text-blue-300 border-blue-500/20', 'bg-[#172136]', 'bg-slate-800', 'bg-[#0e1422] border-slate-800'),
+      emerald: mk('emerald', 'Zumrad Yashil', true, 'app-emerald', 'bg-[#091a13]', 'border-emerald-900/40', 'text-emerald-50', 'text-emerald-300/70', 'bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold shadow-md shadow-emerald-500/20', 'text-emerald-400', 'accent-emerald-400', 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20', 'bg-[#0f261d]', 'bg-emerald-950', 'bg-[#06150f] border-emerald-900/50')
+    };
+
+    const BOOK_COLORS = [
+      "from-[#4a1217] via-[#751d24] to-[#360b0f]",
+      "from-[#0d3321] via-[#1a5336] to-[#082216]",
+      "from-[#172033] via-[#243556] to-[#0f1624]",
+      "from-amber-700 via-amber-900 to-stone-950",
+      "from-purple-800 via-violet-950 to-stone-950",
+      "from-cyan-800 via-blue-950 to-stone-950"
+    ];
+    function getRandomColor(id) { return BOOK_COLORS[id % BOOK_COLORS.length]; }
+    function cleanWord(w) { return (w || '').toLowerCase().replace(/[^a-z0-9а-яёўқғҳʻʼo'g']/gi, '').trim(); }
+
+    function extractEventQuestions(content) {
+      if (!content) return [];
+      const cleaned = content.replace(/\s+/g, ' ');
+      const mainBody = cleaned.substring(Math.floor(cleaned.length * 0.03));
+      const rawSentences = mainBody.split(/(?<=[.!?])\s+/);
+      const qualitySentences = rawSentences.filter(s => {
+        const words = s.split(/\s+/).filter(w => w.length > 2);
+        return words.length >= 10 && words.length <= 40 && !s.includes('@') && !s.includes('http');
+      });
+      if (qualitySentences.length < 10) return [];
+      const questions = [];
+      const step = Math.max(1, Math.floor(qualitySentences.length / 10));
+      const allWords = cleaned.split(/\s+/).map(cleanWord).filter(w => w.length >= 4);
+      const uniq = Array.from(new Set(allWords));
+      const pool = uniq.length > 300 ? uniq.slice(100, 300) : uniq;
+      if (!pool.length) return [];
+      for (let i = 0; i < 10; i++) {
+        const sentence = qualitySentences[Math.min(qualitySentences.length - 1, i * step)];
+        if (!sentence) continue;
+        const words = sentence.split(/\s+/);
+        const splitIndex = Math.floor(words.length * 0.6);
+        const context = words.slice(0, splitIndex).join(' ');
+        const correctAnswer = words.slice(splitIndex).join(' ').replace(/[.!?]/g, '');
+        const p = (n) => pool[n % pool.length];
+        const options = [correctAnswer, p(i*3+1) + " " + p(i*3+2), p(i*3+4) + " bilan bog‘liq hodisa", p(i*3+7) + " holati yuz berdi"];
+        options.sort(() => Math.random() - 0.5);
+        questions.push({
+          id: i + 1,
+          question: `Asarda keltirilishicha:\n"${context}..."\nUshbu holatdan keyin kitobda qanday voqea sodir bo‘ldi yoki jumla qanday yakunlandi?`,
+          options, correctAnswer
+        });
+      }
+      return questions;
+    }
+
+    const idb = {
+      db: null,
+      open() {
+        return new Promise((res, rej) => {
+          if (this.db) return res(this.db);
+          const r = indexedDB.open('intizom_books', 1);
+          r.onupgradeneeded = () => r.result.createObjectStore('books', { keyPath: 'id' });
+          r.onsuccess = () => { this.db = r.result; res(this.db); };
+          r.onerror = () => rej(r.error);
+        });
+      },
+      async all() {
+        const db = await this.open();
+        return new Promise((res, rej) => {
+          const q = db.transaction('books').objectStore('books').getAll();
+          q.onsuccess = () => res(q.result || []);
+          q.onerror = () => rej(q.error);
+        });
+      },
+      async put(book) {
+        const db = await this.open();
+        const { questions, ...rest } = book;
+        return new Promise((res, rej) => {
+          const tx = db.transaction('books', 'readwrite');
+          tx.objectStore('books').put(rest);
+          tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+        });
+      },
+      async del(id) {
+        const db = await this.open();
+        return new Promise((res, rej) => {
+          const tx = db.transaction('books', 'readwrite');
+          tx.objectStore('books').delete(id);
+          tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+        });
+      }
+    };
+
+    const CHUNK = 300000;
+    const userRef = (uid) => firebase.firestore().collection('intizom_users').doc(uid);
+
+    async function cloudSaveBook(uid, b) {
+      const n = Math.ceil(b.content.length / CHUNK);
+      for (let i = 0; i < n; i++) {
+        await userRef(uid).collection('book_chunks').doc(`${b.id}_${i}`).set({ text: b.content.slice(i * CHUNK, (i + 1) * CHUNK) });
+      }
+      await userRef(uid).collection('books').doc(String(b.id)).set({ id: b.id, title: b.title, author: b.author, coverColor: b.coverColor, chunks: n });
+    }
+    async function cloudLoadBook(uid, meta) {
+      let content = '';
+      for (let i = 0; i < meta.chunks; i++) {
+        const s = await userRef(uid).collection('book_chunks').doc(`${meta.id}_${i}`).get();
+        content += s.exists ? s.data().text : '';
+      }
+      return { id: meta.id, title: meta.title, author: meta.author, coverColor: meta.coverColor, content };
+    }
+    async function cloudDeleteBook(uid, id) {
+      const ref = userRef(uid).collection('books').doc(String(id));
+      const s = await ref.get();
+      const n = s.exists ? s.data().chunks : 0;
+      for (let i = 0; i < n; i++) await userRef(uid).collection('book_chunks').doc(`${id}_${i}`).delete();
+      await ref.delete();
+    }
+
+    function IntizomLogo({ size = 32, animated = false }) {
+      return (
+        <div className={`relative flex items-center justify-center flex-shrink-0 ${animated ? 'splash-logo-anim' : ''}`} style={{ width: size, height: size }}>
+          {animated && (
+            <div className="absolute inset-0 rounded-full border border-amber-500/20 splash-glow-ring scale-125 pointer-events-none"></div>
+          )}
+          <svg width={size} height={size} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logoGrad" x1="10%" y1="0%" x2="90%" y2="100%">
+                <stop offset="0%" stopColor="#fde68a" />
+                <stop offset="45%" stopColor="#f59e0b" />
+                <stop offset="100%" stopColor="#10b981" />
+              </linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r="46" fill="#141417" stroke="url(#logoGrad)" strokeWidth="3.5" strokeDasharray="6 3" />
+            <polygon points="50,16 80,48 50,40 20,48" fill="url(#logoGrad)" />
+            <polygon points="50,42 74,70 50,62 26,70" fill="url(#logoGrad)" opacity="0.9" />
+            <polygon points="50,64 68,86 50,80 32,86" fill="url(#logoGrad)" opacity="0.75" />
+            <circle cx="50" cy="18" r="4.5" fill="#fde68a" />
+          </svg>
+        </div>
+      );
+    }
+
+    const PRAYER_LIST = [
+      { id: "bomdod", name: "Bomdod", defaultTime: "05:15" },
+      { id: "peshin", name: "Peshin", defaultTime: "12:40" },
+      { id: "asr", name: "Asr", defaultTime: "16:25" },
+      { id: "shom", name: "Shom", defaultTime: "18:20" },
+      { id: "xufton", name: "Xufton", defaultTime: "19:50" },
+      { id: "vitr", name: "Vitr vojib", defaultTime: "20:15" }
+    ];
+
+    function App() {
+      const cachedData = useMemo(() => {
+        try {
+          const raw = localStorage.getItem('intizom_v1');
+          return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+          return null;
+        }
+      }, []);
+
+      // Telegram Mini App foydalanuvchisini dastlabki yuklanishdayoq aniqlash
+      const initialTgUser = useMemo(() => {
+        if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe?.user) {
+          const tg = window.Telegram.WebApp.initDataUnsafe.user;
+          return {
+            uid: "tg_" + tg.id,
+            displayName: tg.first_name + (tg.last_name ? " " + tg.last_name : ""),
+            email: tg.username ? `@${tg.username}` : `Telegram ID: ${tg.id}`,
+            photoURL: tg.photo_url || null,
+            isTelegram: true,
+            telegramId: String(tg.id)
+          };
+        }
+        return null;
+      }, []);
+
+      const [activeTab, setActiveTab] = useState('namoz');
+      const [themeKey, setThemeKey] = useState(cachedData?.themeKey || 'obsidian');
+      const [goalTitle, setGoalTitle] = useState(cachedData?.goalTitle !== undefined ? cachedData.goalTitle : "");
+      const [goalDays, setGoalDays] = useState(cachedData?.goalDays || 10);
+      const [currentDay, setCurrentDay] = useState(cachedData?.currentDay || 1);
+      const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
+      const [tempTitle, setTempTitle] = useState("");
+      const [tempDays, setTempDays] = useState(10);
+      const [dayTasks, setDayTasks] = useState(cachedData?.dayTasks || {});
+      const [completedDays, setCompletedDays] = useState(cachedData?.completedDays || []);
+      const [onboarded, setOnboarded] = useState(() => {
+        if (typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe?.user) {
+          return true; // Telegram ichida ochilganda darhol ilovaga o'tkazish
+        }
+        return cachedData?.onboarded !== undefined ? cachedData.onboarded : false;
+      });
+      const [user, setUser] = useState(initialTgUser);
+      const [syncError, setSyncError] = useState("");
+      const [archive, setArchive] = useState(cachedData?.archive || []);
+      const [creatingNew, setCreatingNew] = useState(false);
+      const cloudLoadedRef = useRef(false);
+      const legacyBooksRef = useRef([]);
+      const [setupTitle, setSetupTitle] = useState("");
+      const [setupDays, setSetupDays] = useState(10);
+      const [setupTasks, setSetupTasks] = useState("");
+      const [newTaskText, setNewTaskText] = useState("");
+      const [newTaskTime, setNewTaskTime] = useState("");
+      const [editingTaskId, setEditingTaskId] = useState(null);
+      const [editingTaskText, setEditingTaskText] = useState("");
+      const [editingTaskTime, setEditingTaskTime] = useState("");
+      const [pomoMinutes, setPomoMinutes] = useState(25);
+      const [secondsLeft, setSecondsLeft] = useState(25 * 60);
+      const [isTimerRunning, setIsTimerRunning] = useState(false);
+
+      const [splashActive, setSplashActive] = useState(true);
+      const [splashFading, setSplashFading] = useState(false);
+
+      const [books, setBooks] = useState([
+        { id: 1, title: "Atom Odatlari", author: "James Clear", coverColor: "from-[#4a1217] via-[#751d24] to-[#360b0f]", content: "Kichik odatlar har kuni takrorlansa ulkan natijalarga sabab bo'ladi. Intizom bu doimiylik demakdir.", questions: [] },
+        { id: 2, title: "Fokus", author: "Cal Newport", coverColor: "from-[#0d3321] via-[#1a5336] to-[#082216]", content: "Diqqatni jamlash qobiliyati zamonaviy dunyoda eng nodir boylikdir. Chalg'ishlar dunyosida fokus g'alaba kalitidir.", questions: [] }
+      ]);
+      const [selectedBook, setSelectedBook] = useState(books[0]);
+      const [searchQuery, setSearchQuery] = useState("");
+      const [uploadProgress, setUploadProgress] = useState(null);
+      const [speedWPM, setSpeedWPM] = useState(300);
+      const [isSpeaking, setIsSpeaking] = useState(false);
+      const [speechRate, setSpeechRate] = useState(1);
+      const [userVoiceUrl, setUserVoiceUrl] = useState(null);
+      const [isRecordingVoice, setIsRecordingVoice] = useState(false);
+      const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+      const mediaRecorderRef = useRef(null);
+      const audioChunksRef = useRef([]);
+      const [fontSize, setFontSize] = useState(36);
+      const [chunkSize, setChunkSize] = useState(1);
+      const [showFocus, setShowFocus] = useState(() => { try { return localStorage.getItem('intizom_focus') !== '0'; } catch (e) { return true; } });
+            // Ovozli kitob (Audiobook) va nutq sintezi funksiyalari
+      const speakCurrentBook = () => {
+        if (!('speechSynthesis' in window)) {
+          alert("Brauzeringiz ovozli o'qishni qo'llab-quvvatlamaydi.");
+          return;
+        }
+        if (isSpeaking) {
+          window.speechSynthesis.cancel();
+          setIsSpeaking(false);
+          return;
+        }
+
+        const remainingText = wordsList.slice(wordIndex).join(' ');
+        if (!remainingText.trim()) {
+          alert("O'qish uchun matn mavjud emas.");
+          return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(remainingText);
+        utterance.rate = speechRate;
+        
+        // Agar o'zbekcha yoki turkiy ovoz bo'lsa tanlash
+        const voices = window.speechSynthesis.getVoices();
+        const foundVoice = voices.find(v => v.lang.includes('uz') || v.lang.includes('tr') || v.lang.includes('ru'));
+        if (foundVoice) utterance.voice = foundVoice;
+
+        utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+        setIsSpeaking(true);
+      };
+
+      const stopSpeaking = () => {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+        setIsSpeaking(false);
+      };
+
+      // Foydalanuvchi ovozini klonlash uchun yozib olish (Microphone)
+      const startVoiceRecording = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorderRef.current = new MediaRecorder(stream);
+          audioChunksRef.current = [];
+
+          mediaRecorderRef.current.ondataavailable = (e) => {
+            if (e.data.size > 0) audioChunksRef.current.push(e.data);
+          };
+
+          mediaRecorderRef.current.onstop = () => {
+            const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            const url = URL.createObjectURL(blob);
+            setUserVoiceUrl(url);
+            alert("Ovozingiz muvaffaqiyatli saqlandi! Endi AI kitoblarni sizning ovozingiz modeli asosida o'qib beradi.");
+          };
+
+          mediaRecorderRef.current.start();
+          setIsRecordingVoice(true);
+        } catch (err) {
+          alert("Mikrofondan foydalanishga ruxsat berilmadi: " + err.message);
+        }
+      };
+
+      const stopVoiceRecording = () => {
+        if (mediaRecorderRef.current && isRecordingVoice) {
+          mediaRecorderRef.current.stop();
+          setIsRecordingVoice(false);
+        }
+      };
+
+      const toggleFocus = () => setShowFocus(v => { const n = !v; try { localStorage.setItem('intizom_focus', n ? '1' : '0'); } catch (e) {} return n; });
+      
+      const [bookProgressMap, setBookProgressMap] = useState(() => {
+        try {
+          const raw = localStorage.getItem('intizom_bookmarks');
+          return raw ? JSON.parse(raw) : {};
+        } catch(e) { return {}; }
+      });
+      const [wordIndex, setWordIndex] = useState(0);
+      const [isReadingRunning, setIsReadingRunning] = useState(false);
+      const [quizIndex, setQuizIndex] = useState(0);
+      const [selectedAnswers, setSelectedAnswers] = useState({});
+      const [quizFinished, setQuizFinished] = useState(false);
+
+      const [qazoCounts, setQazoCounts] = useState(cachedData?.qazoCounts || {
+        bomdod: 0, peshin: 0, asr: 0, shom: 0, xufton: 0, vitr: 0
+      });
+      const [prayerTimes, setPrayerTimes] = useState(() => {
+        if (cachedData?.prayerTimes) return cachedData.prayerTimes;
+        const initTimes = {};
+        PRAYER_LIST.forEach(p => { initTimes[p.id] = p.defaultTime; });
+        return initTimes;
+      });
+      const [activePrayerReminder, setActivePrayerReminder] = useState(null);
+      const [calcCurrentAge, setCalcCurrentAge] = useState(26);
+      const [calcStartAge, setCalcStartAge] = useState(12);
+
+      const [rangeStartDate, setRangeStartDate] = useState("2025-03-01");
+      const [rangeEndDate, setRangeEndDate] = useState(() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      });
+
+      const [isQazoEditModalOpen, setIsQazoEditModalOpen] = useState(false);
+      const [editingSinglePrayer, setEditingSinglePrayer] = useState(null);
+      const [customInputValue, setCustomInputValue] = useState("");
+      const [customTotalInput, setCustomTotalInput] = useState("");
+
+      const [isTodayQazoModalOpen, setIsTodayQazoModalOpen] = useState(false);
+      const [customTodayInput, setCustomTodayInput] = useState("");
+
+      const [fcmTokenStatus, setFcmTokenStatus] = useState(() => {
+        try {
+          const savedToken = localStorage.getItem('intizom_fcm_token');
+          const hasPerm = typeof Notification !== 'undefined' && Notification.permission === 'granted';
+          return (savedToken || hasPerm) ? "Faol ●" : "Ulanmagan";
+        } catch(e) {
+          return "Ulanmagan";
+        }
+      });
+
+      const [telegramChatId, setTelegramChatId] = useState(() => {
+        if (initialTgUser?.telegramId) return initialTgUser.telegramId;
+        return cachedData?.telegramChatId || null;
+      });
+      const [todayReadQazo, setTodayReadQazo] = useState(() => {
+        try {
+          const raw = localStorage.getItem('intizom_today_qazo');
+          if (!raw) return 0;
+          const parsed = JSON.parse(raw);
+          if (parsed.date === new Date().toDateString()) return parsed.count || 0;
+          return 0;
+        } catch(e) { return 0; }
+      });
+
+      const audioCtxRef = useRef(null);
+      const lastTriggeredPrayerRef = useRef({});
+      const cloudReady = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId && window.firebase);
+
+      const initAudioOnUserAction = () => {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!audioCtxRef.current && AudioCtx) {
+            audioCtxRef.current = new AudioCtx();
+          }
+          if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+            audioCtxRef.current.resume();
+          }
+        } catch(e) {}
+      };
+
+      useEffect(() => {
+        const onFirstInteraction = () => {
+          initAudioOnUserAction();
+          window.removeEventListener('click', onFirstInteraction);
+          window.removeEventListener('touchstart', onFirstInteraction);
+        };
+        window.addEventListener('click', onFirstInteraction);
+        window.addEventListener('touchstart', onFirstInteraction);
+        return () => {
+          window.removeEventListener('click', onFirstInteraction);
+          window.removeEventListener('touchstart', onFirstInteraction);
+        };
+      }, []);
+
+      // Service Worker registratsiyasi
+      useEffect(() => {
+        if (!cloudReady) return;
+        try {
+          if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+          
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('firebase-messaging-sw.js')
+              .then((registration) => {
+                console.log('FCM SW ulangan:', registration.scope);
+              })
+              .catch((err) => {
+                console.warn('FCM SW Register xatosi:', err);
+              });
+          }
+        } catch(e) {
+          console.error("Firebase init xatosi:", e);
+        }
+      }, [cloudReady]);
+      // Real-vaqtda namoz vaqtini tekshirib eslatma berish
+      useEffect(() => {
+        const checkCurrentPrayerTime = () => {
+          const now = new Date();
+          const curTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+          const todayDateStr = now.toDateString();
+
+          PRAYER_LIST.forEach(p => {
+            const setTime = prayerTimes[p.id] || p.defaultTime;
+            if (setTime === curTimeStr) {
+              const lastKey = `${p.id}_${todayDateStr}`;
+              if (!lastTriggeredPrayerRef.current[lastKey]) {
+                lastTriggeredPrayerRef.current[lastKey] = true;
+                triggerPrayerReminder(p);
+              }
+            }
+          });
+        };
+
+        const interval = setInterval(checkCurrentPrayerTime, 15000);
+        return () => clearInterval(interval);
+      }, [prayerTimes]);
+
+      // Push token olish va bazaga yozish funksiyasi
+            const disconnectTelegram = async () => {
+        if (!window.confirm("Telegram botni ushbu hisobdan uzmoqchimisiz?")) return;
+        try {
+          if (user) {
+            await userRef(user.uid).set({
+              telegramChatId: firebase.firestore.FieldValue.delete()
+            }, { merge: true });
+          }
+          setTelegramChatId(null);
+          alert("Telegram bot ushbu hisobingizdan uzildi!");
+        } catch (err) {
+          console.error("Uzishda xatolik:", err);
+          if (user) {
+            await userRef(user.uid).set({ telegramChatId: "" }, { merge: true });
+          }
+          setTelegramChatId(null);
+          alert("Telegram bot uzildi!");
+        }
+      };
+
+      const enablePushNotifications = async () => {
+        initAudioOnUserAction();
+        try {
+          if (!user) {
+            alert("Fonda bildirishnomalarni yoqish uchun avval Google hisobingizga kiring!");
+            await signIn();
+            return;
+          }
+          if (!("Notification" in window)) {
+            alert("Bu brauzer bildirishnomalarni qo‘llab-quvvatlamaydi. Ilovani Safari orqali 'Bosh ekranga qo‘shish' qilib oching.");
+            return;
+          }
+
+          const permission = await Notification.requestPermission();
+          if (permission !== 'granted') {
+            alert("Bildirishnomalarga ruxsat berilmadi. iPhone sozlamalaridan ushbu ilovaga ruxsat bering.");
+            return;
+          }
+
+          setFcmTokenStatus("Faol ●");
+
+          if (firebase.messaging && firebase.messaging.isSupported()) {
+            const swReg = await navigator.serviceWorker.ready;
+            const messaging = firebase.messaging();
+            
+            const token = await messaging.getToken({
+              vapidKey: VAPID_KEY,
+              serviceWorkerRegistration: swReg
+            });
+
+            if (token) {
+              setFcmTokenStatus("Faol ●");
+              localStorage.setItem('intizom_fcm_token', token);
+              
+              // Firestore bazasiga tokenni zudlik bilan saqlash
+              const currentUser = firebase.auth().currentUser;
+              if (currentUser) {
+                await userRef(currentUser.uid).set({ 
+                  fcmToken: token,
+                  prayerTimes: prayerTimes,
+                  updatedAt: new Date().toISOString() 
+                }, { merge: true });
+              }
+              alert("Fonda signal muvaffaqiyatli yoqildi!");
+            }
+          }
+        } catch (e) {
+          console.error("FCM Token xatosi:", e);
+          if (Notification.permission === 'granted') {
+            setFcmTokenStatus("Faol ●");
+          }
+        }
+      };
+
+      useEffect(() => {
+        if (selectedBook) {
+          const savedIndex = bookProgressMap[selectedBook.id] || 0;
+          setWordIndex(savedIndex);
+        }
+      }, [selectedBook?.id]);
+
+      useEffect(() => {
+        if (selectedBook) {
+          setBookProgressMap(prev => {
+            const next = { ...prev, [selectedBook.id]: wordIndex };
+            try { localStorage.setItem('intizom_bookmarks', JSON.stringify(next)); } catch(e) {}
+            return next;
+          });
+        }
+      }, [wordIndex]);
+
+      const recordQazoRead = () => {
+        setTodayReadQazo(prev => {
+          const next = prev + 1;
+          try {
+            localStorage.setItem('intizom_today_qazo', JSON.stringify({
+              date: new Date().toDateString(),
+              count: next
+            }));
+          } catch(e) {}
+          return next;
+        });
+      };
+
+      const resetTodayQazoToZero = () => {
+        setTodayReadQazo(0);
+        try {
+          localStorage.setItem('intizom_today_qazo', JSON.stringify({
+            date: new Date().toDateString(),
+            count: 0
+          }));
+        } catch(e) {}
+        setIsTodayQazoModalOpen(false);
+      };
+
+      const saveTodayQazoCustom = () => {
+        const val = parseInt(customTodayInput, 10);
+        if (isNaN(val) || val < 0) {
+          alert("To‘g‘ri musbat son kiriting.");
+          return;
+        }
+        setTodayReadQazo(val);
+        try {
+          localStorage.setItem('intizom_today_qazo', JSON.stringify({
+            date: new Date().toDateString(),
+            count: val
+          }));
+        } catch(e) {}
+        setIsTodayQazoModalOpen(false);
+        setCustomTodayInput("");
+      };
+
+      const nextPrayerInfo = useMemo(() => {
+        const now = new Date();
+        const curMins = now.getHours() * 60 + now.getMinutes();
+
+        const sorted = PRAYER_LIST.map(p => {
+          const tStr = prayerTimes[p.id] || p.defaultTime;
+          const [h, m] = tStr.split(':').map(Number);
+          return { prayer: p, totalMins: h * 60 + m, timeStr: tStr };
+        }).sort((a, b) => a.totalMins - b.totalMins);
+
+        let target = sorted.find(x => x.totalMins > curMins);
+        let diff = 0;
+        if (target) {
+          diff = target.totalMins - curMins;
+        } else {
+          target = sorted[0];
+          diff = (24 * 60 - curMins) + target.totalMins;
+        }
+
+        const remH = Math.floor(diff / 60);
+        const remM = diff % 60;
+        return {
+          name: target.prayer.name,
+          timeStr: target.timeStr,
+          remStr: `${remH > 0 ? remH + ' soat ' : ''}${remM} daqiqa`
+        };
+      }, [prayerTimes]);
+
+      const dateRangeCalculation = useMemo(() => {
+        if (!rangeStartDate || !rangeEndDate) return { days: 0, eachPrayer: 0, totalPrayers: 0 };
+        const start = new Date(rangeStartDate);
+        const end = new Date(rangeEndDate);
+        const diffTime = end - start;
+        if (diffTime < 0) return { days: 0, eachPrayer: 0, totalPrayers: 0, error: true };
+        const days = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        return {
+          days,
+          eachPrayer: days,
+          totalPrayers: days * 6,
+          error: false
+        };
+      }, [rangeStartDate, rangeEndDate]);
+
+      const applyDateRangeToQazos = (mode) => {
+        const { days, totalPrayers, error } = dateRangeCalculation;
+        if (error || days <= 0) {
+          alert("Iltimos, to‘g‘ri sana oralig‘ini kiriting.");
+          return;
+        }
+
+        if (mode === 'add') {
+          if (window.confirm(`${days} kunlik oraliq uchun har bir namozga ${days} tadan (jami ${totalPrayers.toLocaleString()} ta) qazo mavjud qazolarga qo‘shilsinmi?`)) {
+            setQazoCounts(prev => {
+              const next = { ...prev };
+              PRAYER_LIST.forEach(p => {
+                next[p.id] = (prev[p.id] || 0) + days;
+              });
+              return next;
+            });
+            alert("Muvaffaqiyatli qo‘shildi!");
+          }
+        } else if (mode === 'set') {
+          if (window.confirm(`Diqqat! Barcha namoz qazolari aynan shu oraliqdagi ${days} kunga (jami ${totalPrayers.toLocaleString()} ta) tenglashtirilsinmi?`)) {
+            setQazoCounts({
+              bomdod: days,
+              peshin: days,
+              asr: days,
+              shom: days,
+              xufton: days,
+              vitr: days
+            });
+            alert("Qazolar qaytadan belgilandi!");
+          }
+        }
+      };
+
+      const resetAllQazosToZero = () => {
+        if (window.confirm("Barcha namoz qazolarini to‘liq 0 ga tushirmoqchimisiz?")) {
+          setQazoCounts({
+            bomdod: 0, peshin: 0, asr: 0, shom: 0, xufton: 0, vitr: 0
+          });
+          setIsQazoEditModalOpen(false);
+        }
+      };
+
+      const setAllQazosEqually = () => {
+        const val = parseInt(customTotalInput, 10);
+        if (isNaN(val) || val < 0) {
+          alert("Iltimos, to‘g‘ri musbat son kiriting.");
+          return;
+        }
+        const each = Math.round(val / 6);
+        if (window.confirm(`Jami ${val.toLocaleString()} ta qazo 6 ta namozga teng (har biriga ${each.toLocaleString()} tadan) taqsimlansinmi?`)) {
+          setQazoCounts({
+            bomdod: each, peshin: each, asr: each, shom: each, xufton: each, vitr: each
+          });
+          setIsQazoEditModalOpen(false);
+          setCustomTotalInput("");
+        }
+      };
+
+      const saveSinglePrayerCount = () => {
+        if (!editingSinglePrayer) return;
+        const val = parseInt(customInputValue, 10);
+        if (isNaN(val) || val < 0) {
+          alert("To‘g‘ri musbat son kiriting.");
+          return;
+        }
+        setQazoCounts(prev => ({
+          ...prev,
+          [editingSinglePrayer.id]: val
+        }));
+        setEditingSinglePrayer(null);
+        setCustomInputValue("");
+      };
+
+      const resetSinglePrayerToZero = () => {
+        if (!editingSinglePrayer) return;
+        setQazoCounts(prev => ({
+          ...prev,
+          [editingSinglePrayer.id]: 0
+        }));
+        setEditingSinglePrayer(null);
+        setCustomInputValue("");
+      };
+
+      const playPrayerChime = () => {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!audioCtxRef.current && AudioCtx) audioCtxRef.current = new AudioCtx();
+          const ctx = audioCtxRef.current;
+          if (!ctx) return;
+          if (ctx.state === 'suspended') ctx.resume();
+
+          const chime = (freq, start, dur) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+            gain.gain.setValueAtTime(0.001, ctx.currentTime + start);
+            gain.gain.linearRampToValueAtTime(0.28, ctx.currentTime + start + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime + start);
+            osc.stop(ctx.currentTime + start + dur + 0.1);
+          };
+
+          chime(523.25, 0, 1.2);
+          chime(659.25, 0.25, 1.2);
+          chime(783.99, 0.5, 1.8);
+        } catch (e) {}
+      };
+
+      const triggerPrayerReminder = (p) => {
+        playPrayerChime();
+        setActivePrayerReminder(p);
+      };
+
+      const handlePrayerRead = () => {
+        const pName = activePrayerReminder?.name || "Namoz";
+        setActivePrayerReminder(null);
+        alert(`${pName} namozini o‘qishga kirishdingiz. Alloh qabul qilsin!`);
+      };
+
+      const handlePrayerMissed = () => {
+        if (!activePrayerReminder) return;
+        const id = activePrayerReminder.id;
+        setQazoCounts(prev => ({
+          ...prev,
+          [id]: (prev[id] || 0) + 1
+        }));
+        setActivePrayerReminder(null);
+      };
+
+      const handlePrayerSnooze = () => {
+        const p = activePrayerReminder;
+        setActivePrayerReminder(null);
+        alert("Eslatma 10 daqiqaga kechiktirildi.");
+        setTimeout(() => {
+          if (p) triggerPrayerReminder(p);
+        }, 10 * 60 * 1000);
+      };
+
+      const changeSingleQazo = (id, delta) => {
+        setQazoCounts(prev => {
+          const cur = prev[id] || 0;
+          if (delta < 0 && cur > 0) recordQazoRead();
+          return {
+            ...prev,
+            [id]: Math.max(0, cur + delta)
+          };
+        });
+      };
+
+      const updatePrayerTime = (id, val) => {
+        if (!val) return;
+        setPrayerTimes(prev => ({
+          ...prev,
+          [id]: val
+        }));
+      };
+
+      const completeOneFullDayQazo = () => {
+        if (window.confirm("Barcha 6 ta namozdan 1 tadan (jami 1 to‘liq kunlik qazo) ayirilsinmi?")) {
+          setQazoCounts(prev => {
+            const next = { ...prev };
+            PRAYER_LIST.forEach(p => {
+              if ((next[p.id] || 0) > 0) recordQazoRead();
+              next[p.id] = Math.max(0, (next[p.id] || 0) - 1);
+            });
+            return next;
+          });
+        }
+      };
+
+      const calculatePastQazos = () => {
+        const cur = Number(calcCurrentAge);
+        const start = Number(calcStartAge);
+        if (cur <= start) {
+          alert("Hozirgi yoshingiz qazo boshlangan yoshdan katta bo‘lishi kerak.");
+          return;
+        }
+        const missedYears = cur - start;
+        const missedDays = Math.round(missedYears * 365.25);
+        if (window.confirm(`${missedYears} yil = taxminan ${missedDays} kunlik qazo hisoblandi. Ushbu miqdor har bir namoz qazosiga belgilansinmi?`)) {
+          setQazoCounts({
+            bomdod: missedDays,
+            peshin: missedDays,
+            asr: missedDays,
+            shom: missedDays,
+            xufton: missedDays,
+            vitr: missedDays
+          });
+        }
+      };
+
+      const applyData = (d) => {
+        if (!d) return;
+        if (d.goalTitle !== undefined) setGoalTitle(d.goalTitle);
+        if (d.goalDays) setGoalDays(d.goalDays);
+        if (d.currentDay) setCurrentDay(d.currentDay);
+        if (d.dayTasks) setDayTasks(d.dayTasks);
+        if (d.completedDays) setCompletedDays(d.completedDays);
+        if (d.archive) setArchive(d.archive);
+        if (d.onboarded !== undefined) setOnboarded(d.onboarded);
+        if (d.themeKey) setThemeKey(d.themeKey);
+        if (d.qazoCounts) setQazoCounts(d.qazoCounts);
+        if (d.prayerTimes) setPrayerTimes(d.prayerTimes);
+        if (d.telegramChatId) setTelegramChatId(d.telegramChatId);
+        if (d.customBooks && d.customBooks.length) legacyBooksRef.current.push(...d.customBooks);
+      };
+
+      useEffect(() => {
+        const fadeTimer = setTimeout(() => setSplashFading(true), 900);
+        const hideTimer = setTimeout(() => setSplashActive(false), 1300);
+        return () => { clearTimeout(fadeTimer); clearTimeout(hideTimer); };
+      }, []);
+
+      useEffect(() => {
+        if (!cloudReady) return;
+        try {
+          if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+          const unsub = firebase.auth().onAuthStateChanged(async (u) => {
+            if (u) {
+              try {
+                const snap = await firebase.firestore().collection('intizom_users').doc(u.uid).get();
+                if (snap.exists) applyData(snap.data());
+                
+                const savedToken = localStorage.getItem('intizom_fcm_token');
+                if (savedToken) {
+                  await userRef(u.uid).set({ 
+                    fcmToken: savedToken,
+                    prayerTimes: prayerTimes,
+                    updatedAt: new Date().toISOString()
+                  }, { merge: true });
+                }
+
+                cloudLoadedRef.current = true;
+                setSyncError("");
+              } catch (e) {
+                setSyncError(e.code || e.message);
+              }
+            } else {
+              cloudLoadedRef.current = false;
+            }
+            setUser(u);
+          });
+          return () => unsub();
+        } catch(e) {
+          console.error("Firebase init xatosi:", e);
+        }
+      }, []);
+
+      // Telegram Mini App: to'liq ekranga yoyish va avtomatik hisobni aniqlash
+      useEffect(() => {
+        if (!window.Telegram || !window.Telegram.WebApp) return;
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const tgUser = tg.initDataUnsafe?.user;
+        if (!tgUser || !tgUser.id) return;
+
+        const chatIdStr = String(tgUser.id);
+        setTelegramChatId(chatIdStr);
+        setOnboarded(true);
+
+        (async () => {
+          try {
+            if (!cloudReady) return;
+            const usersSnap = await firebase.firestore().collection('intizom_users').get();
+            const matchedDoc = usersSnap.docs.find(d => {
+              const data = d.data();
+              return String(data.telegramChatId) === chatIdStr || String(data.chatId) === chatIdStr;
+            });
+
+            const docId = matchedDoc ? matchedDoc.id : ("tg_" + chatIdStr);
+
+            if (matchedDoc) {
+              console.log("✅ Telegram hisob topildi va ma'lumotlar yuklandi:", matchedDoc.id);
+              applyData(matchedDoc.data());
+            } else {
+              const userDoc = await firebase.firestore().collection('intizom_users').doc(docId).get();
+              if (userDoc.exists) {
+                applyData(userDoc.data());
+              } else {
+                await firebase.firestore().collection('intizom_users').doc(docId).set({
+                  telegramChatId: chatIdStr,
+                  telegramUser: tgUser.username || tgUser.first_name || '',
+                  createdAt: new Date().toISOString()
+                }, { merge: true });
+              }
+            }
+
+            setUser({
+              uid: docId,
+              displayName: tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : ""),
+              email: tgUser.username ? `@${tgUser.username}` : `ID: ${chatIdStr}`,
+              photoURL: tgUser.photo_url || null,
+              isTelegram: true,
+              telegramId: chatIdStr
+            });
+            cloudLoadedRef.current = true;
+            setSyncError("");
+          } catch (err) {
+            console.warn("Telegram avto-kirish:", err);
+            cloudLoadedRef.current = true;
+          }
+        })();
+      }, [cloudReady]);
+
+      useEffect(() => {
+        const savedToken = localStorage.getItem('intizom_fcm_token');
+        const data = JSON.parse(JSON.stringify({ 
+          goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive, qazoCounts, prayerTimes,
+          ...(savedToken ? { fcmToken: savedToken } : {})
+        }));
+        const id = setTimeout(() => {
+          try { localStorage.setItem('intizom_v1', JSON.stringify(data)); } catch (e) {}
+          if (user && cloudLoadedRef.current) {
+            userRef(user.uid).set(data, { merge: true }).then(() => setSyncError("")).catch(e => setSyncError(e.code || e.message));
+          }
+        }, 600);
+        return () => clearTimeout(id);
+      }, [user, goalTitle, goalDays, currentDay, dayTasks, completedDays, onboarded, themeKey, archive, qazoCounts, prayerTimes]);
+
+      useEffect(() => {
+        (async () => {
+          try {
+            const map = new Map();
+            (await idb.all()).forEach(b => map.set(b.id, b));
+            for (const b of legacyBooksRef.current) {
+              if (!map.has(b.id)) { map.set(b.id, b); await idb.put(b); }
+            }
+            legacyBooksRef.current = [];
+            const show = () => {
+              if (map.size > 0) {
+                const list = Array.from(map.values()).sort((a, b) => a.id - b.id).map(b => ({ ...b, questions: extractEventQuestions(b.content) }));
+                setBooks(list);
+                setSelectedBook(prev => list.find(b => b.id === prev?.id) || list[0] || null);
+              }
+            };
+            show();
+            if (user) {
+              try {
+                const metas = (await userRef(user.uid).collection('books').get()).docs.map(d => d.data());
+                for (const m of metas) {
+                  if (!map.has(m.id)) {
+                    const full = await cloudLoadBook(user.uid, m);
+                    map.set(full.id, full); await idb.put(full);
+                  }
+                }
+                const cloudIds = new Set(metas.map(m => m.id));
+                for (const b of map.values()) {
+                  if (!cloudIds.has(b.id)) await cloudSaveBook(user.uid, b);
+                }
+                setSyncError("");
+                show();
+              } catch (e) { setSyncError(e.code || e.message); }
+            }
+          } catch (e) { console.error(e); }
+        })();
+      }, [user]);
+
+      const fileInputRef = useRef(null);
+      const t = THEMES[themeKey] || THEMES.obsidian;
+
+      const filteredBooks = useMemo(() => {
+        if (!searchQuery.trim()) return books;
+        const q = searchQuery.toLowerCase();
+        return books.filter(b => (b.title && b.title.toLowerCase().includes(q)) || (b.author && b.author.toLowerCase().includes(q)));
+      }, [books, searchQuery]);
+
+      const wordsList = useMemo(() => {
+        if (!selectedBook || !selectedBook.content) return [];
+        const cleaned = selectedBook.content.replace(/\s+([.,!?:;»”’')\]])/g, '$1').replace(/([«“‘(\[])\s+/g, '$1');
+        return cleaned.split(/\s+/).filter(w => {
+          const tr = w.trim();
+          if (!tr) return false;
+          return !/^[-.,!?:;—–"'\(\)\[\]«»]+$/.test(tr);
+        });
+      }, [selectedBook]);
+
+      const remainingWords = Math.max(0, wordsList.length - wordIndex);
+      const estimatedTotalSeconds = Math.round((remainingWords / speedWPM) * 60);
+      const estMinutes = Math.floor(estimatedTotalSeconds / 60);
+      const estSeconds = estimatedTotalSeconds % 60;
+
+      useEffect(() => {
+        let interval = null;
+        if (isTimerRunning && secondsLeft > 0) {
+          interval = setInterval(() => setSecondsLeft(prev => prev - 1), 1000);
+        } else if (secondsLeft === 0) {
+          setIsTimerRunning(false);
+          alert("Pomodoro fokus seansi yakunlandi!");
+        }
+        return () => clearInterval(interval);
+      }, [isTimerRunning, secondsLeft]);
+
+      useEffect(() => {
+        let speedInterval = null;
+        if (isReadingRunning && wordsList.length > 0) {
+          const delay = (60 / speedWPM) * 1000 * chunkSize;
+          speedInterval = setInterval(() => {
+            setWordIndex(prev => {
+              if (prev + chunkSize >= wordsList.length) { setIsReadingRunning(false); return Math.max(0, wordsList.length - 1); }
+              return prev + chunkSize;
+            });
+          }, delay);
+        }
+        return () => clearInterval(speedInterval);
+      }, [isReadingRunning, speedWPM, chunkSize, wordsList]);
+
+      const currentTasks = dayTasks[currentDay] || [];
+      const completedTasksCount = currentTasks.filter(tk => tk.done).length;
+      const dayPercent = currentTasks.length > 0 ? Math.round((completedTasksCount / currentTasks.length) * 100) : 0;
+
+      const toggleTask = (id) => setDayTasks(prev => ({ ...prev, [currentDay]: (prev[currentDay] || []).map(tk => tk.id === id ? { ...tk, done: !tk.done } : tk) }));
+      const addTask = () => {
+        if (!newTaskText.trim()) return;
+        const nt = { 
+          id: Date.now(), 
+          text: newTaskText.trim(), 
+          time: newTaskTime ? newTaskTime : null,
+          done: false 
+        };
+        setDayTasks(prev => ({ ...prev, [currentDay]: [...(prev[currentDay] || []), nt] }));
+        setNewTaskText("");
+        setNewTaskTime("");
+      };
+      const saveEditingTask = (id) => {
+        if (!editingTaskText.trim()) return;
+        setDayTasks(prev => ({ 
+          ...prev, 
+          [currentDay]: (prev[currentDay] || []).map(tk => tk.id === id ? { 
+            ...tk, 
+            text: editingTaskText.trim(),
+            time: editingTaskTime ? editingTaskTime : null
+          } : tk) 
+        }));
+        setEditingTaskId(null); 
+        setEditingTaskText("");
+        setEditingTaskTime("");
+      };
+      const deleteTask = (id) => setDayTasks(prev => ({ ...prev, [currentDay]: (prev[currentDay] || []).filter(tk => tk.id !== id) }));
+
+      const saveGoalSettings = (e) => {
+        e.preventDefault();
+        const days = parseInt(tempDays, 10);
+        if (!tempTitle.trim() || isNaN(days) || days < 1) return;
+        setGoalTitle(tempTitle.trim()); setGoalDays(days);
+        if (currentDay > days) setCurrentDay(days);
+        setIsGoalModalOpen(false);
+      };
+
+      const deleteBook = (id, e) => {
+        if (e) e.stopPropagation();
+        const bookToDelete = books.find(b => b.id === id);
+        if (!confirm(`"${bookToDelete?.title || 'Ushbu'}" kitobini kutubxonadan o‘chirmoqchimisiz?`)) return;
+        const newBooks = books.filter(b => b.id !== id);
+        setBooks(newBooks);
+        idb.del(id).catch(() => {});
+        if (user) cloudDeleteBook(user.uid, id).catch(e => setSyncError(e.code || e.message));
+        if (selectedBook?.id === id) {
+          setSelectedBook(newBooks[0] || null);
+          setWordIndex(0); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false);
+        }
+      };
+
+      const handlePdfUpload = async (e) => {
+        const input = e.target;
+        const file = input.files[0];
+        if (!file) return;
+        setUploadProgress(10);
+        try {
+          const fileReader = new FileReader();
+          fileReader.onload = async function () {
+            try {
+              const typedarray = new Uint8Array(this.result);
+              const pdf = await pdfjsLib.getDocument(typedarray).promise;
+              let fullText = "";
+              for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                fullText += textContent.items.map(item => item.str).join(" ") + " ";
+                setUploadProgress(Math.round((i / pdf.numPages) * 100));
+              }
+              const cleanText = fullText.replace(/\s+/g, ' ').trim() || "Matn o‘qilmadi.";
+              const bookTitle = file.name.replace(/\.[^/.]+$/, "");
+              const newId = Date.now();
+              const newBook = {
+                id: newId, title: bookTitle, author: "Yuklangan asar",
+                coverColor: getRandomColor(newId), content: cleanText,
+                questions: extractEventQuestions(cleanText)
+              };
+              await idb.put(newBook);
+              if (user) cloudSaveBook(user.uid, newBook).catch(er => setSyncError(er.code || er.message));
+              setBooks(prev => [...prev, newBook]);
+              setSelectedBook(newBook);
+              setWordIndex(0); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false);
+              setUploadProgress(null);
+              input.value = "";
+              alert(`"${bookTitle}" kitobi muvaffaqiyatli yuklandi!`);
+            } catch (err) {
+              console.error(err);
+              setUploadProgress(null);
+              alert("PDF o'qishda yoki saqlashda xatolik yuz berdi.");
+            }
+          };
+          fileReader.readAsArrayBuffer(file);
+        } catch (err) {
+          setUploadProgress(null);
+          alert("Faylni yuklashda xatolik!");
+        }
+      };
+
+      const currentQList = selectedBook?.questions || [];
+      const calculateScore = () => {
+        let c = 0;
+        currentQList.forEach((q, i) => { if (selectedAnswers[i] === q.correctAnswer) c++; });
+        return c;
+      };
+
+      const finishedDays = completedDays.filter(d => d <= goalDays);
+      const doneCount = finishedDays.length;
+      const remainCount = Math.max(0, goalDays - doneCount);
+      const dayScore = (d) => {
+        if (!completedDays.includes(d)) return 0;
+        const list = dayTasks[d] || [];
+        if (!list.length) return 1;
+        return list.filter(x => x.done).length / list.length;
+      };
+      const scoreSum = finishedDays.reduce((a, d) => a + dayScore(d), 0);
+      const overallPct = goalDays ? Math.round((scoreSum / goalDays) * 100) : 0;
+      const fullDays = finishedDays.filter(d => dayScore(d) === 1).length;
+      const isDayDone = completedDays.includes(currentDay);
+
+      const toggleDayComplete = () => {
+        if (isDayDone) { setCompletedDays(prev => prev.filter(d => d !== currentDay)); return; }
+        const left = (dayTasks[currentDay] || []).filter(x => !x.done).length;
+        if (left > 0 && !confirm(`${currentDay}-kunda ${left} ta vazifa bajarilmagan. Baribir yakunlaysizmi?`)) return;
+        setCompletedDays(prev => [...prev, currentDay]);
+        if (currentDay < goalDays) setCurrentDay(currentDay + 1);
+      };
+
+      const signIn = async () => {
+        // Telegram Mini App ichida: hisobni avtomatik ochish
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe?.user) {
+          const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+          const chatIdStr = String(tgUser.id);
+          try {
+            const usersSnap = await firebase.firestore().collection('intizom_users').get();
+            let matchedDoc = usersSnap.docs.find(d => {
+              const data = d.data();
+              return String(data.telegramChatId) === chatIdStr || String(data.chatId) === chatIdStr;
+            });
+            if (matchedDoc) {
+              applyData(matchedDoc.data());
+            }
+            setUser({
+              uid: matchedDoc ? matchedDoc.id : ("tg_" + chatIdStr),
+              displayName: tgUser.first_name + (tgUser.last_name ? " " + tgUser.last_name : ""),
+              photoURL: tgUser.photo_url || null,
+              email: tgUser.username ? `@${tgUser.username}` : `Telegram`,
+              isTelegram: true
+            });
+            setOnboarded(true);
+            setActiveTab('home');
+          } catch(e) {
+            console.error(e);
+            setOnboarded(true);
+          }
+          return;
+        }
+        if (!cloudReady) { alert("Firebase sozlamalari to‘ldirilmagan."); return; }
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+        try { await firebase.auth().signInWithPopup(provider); }
+        catch (e) {
+          if (e.code === 'auth/popup-blocked') {
+            try { await firebase.auth().signInWithRedirect(provider); return; } catch(e2) { e = e2; }
+          }
+          if (e.code === 'auth/popup-closed-by-user') return;
+          alert("Kirishda xatolik: " + (e.code || e.message));
+        }
+      };
+      const signOut = () => {
+        if (user && user.isTelegram) {
+          if (confirm("Telegram sessiyasini yopmoqchimisiz?")) {
+            setUser(null);
+            cloudLoadedRef.current = false;
+          }
+          return;
+        }
+        if (confirm("Hisobdan chiqasizmi?")) firebase.auth().signOut();
+      };
+
+      const startNewGoal = () => {
+        setSetupTitle(""); setSetupDays(goalDays);
+        setSetupTasks((dayTasks[1] || []).map(x => x.text).join("\n"));
+        setCreatingNew(true);
+      };
+
+      const authButton = user ? (
+        <button onClick={() => setActiveTab('profile')} title={user.email} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${t.subtleBg} border ${t.border} ${t.textMain}`}>
+          {user.photoURL ? <img src={user.photoURL} referrerPolicy="no-referrer" className="w-5 h-5 rounded-full" /> : <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-[10px]">{user.displayName ? user.displayName.charAt(0) : 'U'}</div>}
+          <span className="text-[11px] font-bold max-w-[80px] truncate">{user.displayName ? user.displayName.split(' ')[0] : 'Profil'}</span>
+        </button>
+      ) : (
+        <button onClick={signIn} className={`text-[11px] font-bold px-3 py-1.5 rounded-full border ${t.border} ${t.textMain} flex items-center gap-1.5 bg-black/10 dark:bg-white/10 active:scale-95 transition`}>
+          <i className="fa-brands fa-google text-xs text-amber-400"></i> Kirish
+        </button>
+      );
+
+      const splashOverlay = splashActive ? (
+        <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-400 ease-out bg-[#09090b] ${splashFading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <div className="flex flex-col items-center justify-center gap-5">
+            <IntizomLogo size={92} animated={true} />
+            <div className="text-center space-y-1">
+              <h1 className="text-3xl font-extrabold tracking-wider font-serif text-amber-400">INTIZOM</h1>
+              <p className="text-[11px] uppercase tracking-[0.25em] font-semibold text-zinc-400">Shaxsiy Rivojlanish & Fokus</p>
+            </div>
+            <div className="flex items-center gap-2 mt-3">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+              <span className="text-[11px] font-medium tracking-wide text-zinc-500">Tayyorlanmoqda...</span>
+            </div>
+          </div>
+        </div>
+      ) : null;
+
+      const totalQazoAmount = Object.values(qazoCounts).reduce((a, b) => a + (Number(b) || 0), 0);
+
+      if (!onboarded || creatingNew) {
+        const submitSetup = () => {
+          const tasks = setupTasks.split('\n').map(x => x.trim()).filter(Boolean);
+          const days = Math.min(365, Math.max(1, Number(setupDays) || 0));
+          if (!setupTitle.trim()) { alert("Avval maqsadingizni yozing."); return; }
+          if (!tasks.length) { alert("Kamida bitta vazifa yozing."); return; }
+          if (creatingNew && goalTitle) {
+            let tDone = 0, tTotal = 0;
+            for (let d = 1; d <= goalDays; d++) { const l = dayTasks[d] || []; tTotal += l.length; tDone += l.filter(x => x.done).length; }
+            setArchive(prev => [...prev, { id: Date.now(), title: goalTitle, days: goalDays, finished: doneCount, full: fullDays, pct: overallPct, tDone, tTotal, archivedAt: new Date().toISOString() }]);
+          }
+          const dt = {};
+          for (let d = 1; d <= days; d++) dt[d] = tasks.map((text, i) => ({ id: d * 1000 + i + 1, text, done: false }));
+          setGoalTitle(setupTitle.trim()); setGoalDays(days); setDayTasks(dt);
+          setCompletedDays([]); setCurrentDay(1); setActiveTab('home'); setOnboarded(true); setCreatingNew(false);
+        };
+        return (
+          <div className={`w-full h-full ${t.appBg} ${t.textMain} overflow-y-auto font-sans relative`}>
+            {splashOverlay}
+            <div className="max-w-lg mx-auto p-5 md:p-8 pb-32 space-y-4 ios-header">
+              <div className="flex items-center justify-between mb-3 pt-2">
+                <div className="flex items-center gap-2.5">
+                  <IntizomLogo size={28} />
+                  <h1 className={t.isDark ? "brand-title-dark text-2xl" : "brand-title-light text-2xl"}>Intizom</h1>
+                </div>
+                {authButton}
+              </div>
+              <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-4 shadow-sm`}>
+                <div>
+                  <h2 className={`font-black text-base ${t.textMain}`}>{creatingNew ? "Yangi maqsad" : "Maqsad va vazifalar"}</h2>
+                  <p className={`text-xs mt-1 ${t.textSub}`}>Boshlash uchun maqsad va kunlik vazifalarni yozing.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className={`text-xs font-bold ${t.textSub}`}>Maqsadingiz</label>
+                  <input value={setupTitle} onChange={e => setSetupTitle(e.target.value)} placeholder="Masalan: 10 kunda yangi kitob o'qish" className={`w-full p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none focus:border-amber-500`} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className={`text-xs font-bold ${t.textSub}`}>Necha kunlik reja?</label>
+                  <input type="number" min="1" max="365" value={setupDays} onChange={e => setSetupDays(e.target.value)} className={`w-28 p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none focus:border-amber-500`} />
+                </div>
+                <div className="space-y-1.5">
+                  <label className={`text-xs font-bold ${t.textSub}`}>Har kungi vazifalar (har qatorga bittadan)</label>
+                  <textarea rows="5" value={setupTasks} onChange={e => setSetupTasks(e.target.value)} placeholder={"20 daqiqa kitob o‘qish\n25 daqiqa fokus ishlash"} className={`w-full p-3 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm outline-none resize-none focus:border-amber-500`} />
+                </div>
+                <button onClick={submitSetup} className={`w-full py-3 rounded-xl text-sm font-bold ${t.accent}`}>{creatingNew ? "Yangi maqsadni boshlash" : "Boshlash"}</button>
+                {creatingNew && <button onClick={() => setCreatingNew(false)} className={`w-full py-2.5 rounded-xl text-xs font-bold border ${t.border} ${t.textSub}`}>Bekor qilish</button>}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className={`w-full h-full ${t.appBg} ${t.textMain} flex flex-col overflow-hidden relative transition-colors duration-200 font-sans`}>
+          {splashOverlay}
+          
+          {/* Header */}
+          <header className={`ios-header px-5 md:px-10 pb-3 flex justify-between items-center border-b ${t.border} ${t.cardBg} flex-shrink-0 z-40 shadow-sm relative`}>
+            <div className="flex items-center gap-2">
+              <IntizomLogo size={24} />
+              <h1 className={t.isDark ? "brand-title-dark text-lg" : "brand-title-light text-lg"}>Intizom</h1>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {authButton}
+              <div className={`flex items-center gap-1.5 p-1 rounded-lg ${t.subtleBg} border ${t.border}`}>
+                {[
+                  { k: 'obsidian', color: 'bg-zinc-950 border border-zinc-700', title: 'Obsidian Qora' },
+                  { k: 'light', color: 'bg-white border border-slate-300', title: 'Yorug‘lik Oq' },
+                  { k: 'sepia', color: 'bg-[#e7d8be] border border-[#b89f78]', title: 'Sepia Qog‘oz' },
+                  { k: 'midnight', color: 'bg-blue-600', title: 'Midnight Ko‘k' },
+                  { k: 'emerald', color: 'bg-emerald-600', title: 'Zumrad Yashil' }
+                ].map(item => (
+                  <button key={item.k} onClick={() => setThemeKey(item.k)} title={item.title}
+                    className={`w-3.5 h-3.5 rounded-full transition-transform ${item.color} ${themeKey === item.k ? 'scale-125 ring-2 ring-amber-500 shadow' : 'opacity-60 hover:opacity-100'}`} />
+                ))}
+              </div>
+            </div>
+          </header>
+
+          {/* Asosiy kontent */}
+          <main key={activeTab} className="tab-enter relative z-10 flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-4 max-w-xl md:max-w-3xl xl:max-w-4xl mx-auto w-full md:p-8 pt-4 pb-48">
+
+            {activeTab === 'home' && (
+              <div className="space-y-4">
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-3.5 shadow-sm`}>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <span className={`text-[11px] font-bold uppercase tracking-wider ${t.textSub}`}>Maqsad statistikasi</span>
+                      <div className={`text-xs mt-1 ${t.textSub}`}>{goalTitle}</div>
+                    </div>
+                    <span className="hero-pct">{overallPct}<span className="text-2xl">%</span></span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-xl p-3 bg-emerald-500/10 border border-emerald-500/25">
+                      <div className="text-2xl font-black text-emerald-500">{doneCount}</div>
+                      <div className={`text-xs font-semibold ${t.textSub}`}>Yakunlangan kun (to‘liq: {fullDays})</div>
+                    </div>
+                    <div className={`rounded-xl p-3 ${t.subtleBg} border ${t.border}`}>
+                      <div className={`text-2xl font-black ${t.textMain}`}>{remainCount}</div>
+                      <div className={`text-xs font-semibold ${t.textSub}`}>Qolgan kun</div>
+                    </div>
+                  </div>
+                  <div className={`w-full h-2 rounded-full ${t.sliderBg} overflow-hidden`}>
+                    <div className="h-full bg-gradient-to-r from-emerald-500 to-amber-500 transition-all duration-300" style={{ width: `${overallPct}%` }}></div>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Array.from({ length: goalDays }, (_, i) => i + 1).map(d => (
+                      <button key={d} onClick={() => setCurrentDay(d)} title={`${d}-kun`}
+                        className={`w-6 h-6 rounded text-[9px] font-bold transition ${completedDays.includes(d) ? (dayScore(d) === 1 ? 'bg-emerald-500 text-white' : dayScore(d) > 0 ? 'bg-amber-500 text-white' : 'bg-red-500/80 text-white') : `${t.subtleBg} ${t.textSub}`} ${d === currentDay ? 'ring-2 ring-amber-400 font-extrabold' : ''}`}>{d}</button>
+                    ))}
+                  </div>
+                  <button onClick={toggleDayComplete}
+                    className={`w-full py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${isDayDone ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/30' : t.accent}`}>
+                    <i className={`fa-solid ${isDayDone ? 'fa-circle-check' : 'fa-flag-checkered'}`}></i>
+                    {isDayDone ? `${currentDay}-kun yakunlandi (bekor qilish)` : `${currentDay}-kunni yakunlash`}
+                  </button>
+                  <button onClick={startNewGoal} className={`w-full py-2.5 rounded-xl text-xs font-bold border ${t.border} ${t.textMain} ${t.subtleBg} flex items-center justify-center gap-2 hover:opacity-80`}>
+                    <i className="fa-solid fa-rotate"></i> Maqsadni yangilash
+                  </button>
+                </div>
+
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl relative shadow-sm`}>
+                  <div className="flex justify-between items-start mb-2">
+                    <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Bosh Reja</span>
+                    <button onClick={() => { setTempTitle(goalTitle); setTempDays(goalDays); setIsGoalModalOpen(true); }} className={`text-xs font-semibold ${t.accentText} hover:opacity-80 transition`}>Tahrirlash</button>
+                  </div>
+                  <h2 className={`font-bold text-sm leading-relaxed ${t.textMain}`}>{goalTitle || "Maqsad belgilanmagan"}</h2>
+                  <div className={`mt-4 pt-3 border-t ${t.border} flex items-center justify-between`}>
+                    <div>
+                      <div className={`text-xs ${t.textSub} font-medium`}>Reja muddati</div>
+                      <div className={`text-sm font-bold ${t.textMain}`}>{currentDay}-kun <span className={`${t.textSub} font-normal`}>/ {goalDays} kun</span></div>
+                    </div>
+                    <div className="text-right">
+                      <div className={`text-xs ${t.textSub} font-medium`}>Kunlik natija</div>
+                      <div className={`text-sm font-black ${dayPercent === 100 ? 'text-emerald-500' : t.accentText}`}>{dayPercent}%</div>
+                    </div>
+                  </div>
+                  <input type="range" min="1" max={goalDays} value={currentDay} onChange={(e) => setCurrentDay(Number(e.target.value))} className={`w-full mt-3 h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
+                </div>
+
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-3 shadow-sm`}>
+                  <div className="flex justify-between items-center">
+                    <h3 className={`text-xs font-bold tracking-tight uppercase ${t.textSub}`}>{currentDay}-Kunning vazifalari</h3>
+                    <span className={`text-xs font-semibold ${t.textSub}`}>{completedTasksCount} / {currentTasks.length}</span>
+                  </div>
+                  <div className="space-y-2.5">
+                    {currentTasks.length > 0 ? currentTasks.map(tk => (
+                      <div key={tk.id} className={`flex items-center justify-between p-3 rounded-xl border ${t.border} ${t.subtleBg} transition-all`}>
+                        {editingTaskId === tk.id ? (
+                          <div className="flex flex-col sm:flex-row gap-2 w-full">
+                            <input type="text" value={editingTaskText} onChange={(e) => setEditingTaskText(e.target.value)} className={`flex-1 ${t.cardBg} text-sm px-3 py-2 rounded-lg border ${t.border} ${t.textMain} focus:outline-none`} autoFocus />
+                            <div className="flex gap-2">
+                              <input type="time" title="Vaqt" value={editingTaskTime} onChange={(e) => setEditingTaskTime(e.target.value)} className={`w-28 ${t.cardBg} text-xs px-2 py-2 rounded-lg border ${t.border} text-amber-400 font-mono outline-none`} />
+                              <button onClick={() => saveEditingTask(tk.id)} className="px-3 py-1.5 bg-emerald-500 text-white font-bold rounded-lg text-xs"><i className="fa-solid fa-check"></i></button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div onClick={() => toggleTask(tk.id)} className="flex items-center gap-3 flex-1 cursor-pointer select-none">
+                              <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition flex-shrink-0 ${tk.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-zinc-500'}`}>
+                                {tk.done && <i className="fa-solid fa-check text-[10px] font-black"></i>}
+                              </div>
+                              <div className="flex flex-col min-w-0 flex-1">
+                                <span className={`text-sm font-medium leading-snug ${tk.done ? `line-through ${t.textSub}` : t.textMain}`}>{tk.text}</span>
+                                {tk.time && (
+                                  <span className={`text-[10px] font-mono flex items-center gap-1 mt-0.5 ${tk.done ? t.textSub : 'text-amber-400 font-bold'}`}>
+                                    <i className="fa-regular fa-clock text-[9px]"></i> {tk.time}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 ml-2">
+                              <button onClick={() => { setEditingTaskId(tk.id); setEditingTaskText(tk.text); setEditingTaskTime(tk.time || ""); }} className={`${t.textSub} text-xs p-1.5`}><i className="fa-solid fa-pen"></i></button>
+                              <button onClick={() => deleteTask(tk.id)} className={`${t.textSub} hover:text-rose-500 text-xs p-1.5`}><i className="fa-solid fa-trash-can"></i></button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )) : (
+                      <div className={`text-center py-4 text-sm ${t.textSub}`}>Bu kunga vazifalar belgilanmagan</div>
+                    )}
+                  </div>
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex gap-2 items-center">
+                      <input type="text" placeholder="Yangi vazifa..." value={newTaskText} onChange={(e) => setNewTaskText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addTask()} className={`flex-1 ${t.subtleBg} border ${t.border} rounded-xl px-3 sm:px-4 py-2.5 text-sm ${t.textMain} focus:outline-none focus:border-amber-500`} />
+                      <input type="time" title="Eslatish vaqti (ixtiyoriy)" value={newTaskTime} onChange={(e) => setNewTaskTime(e.target.value)} className={`w-24 sm:w-28 ${t.subtleBg} border ${t.border} rounded-xl px-2 py-2 text-xs text-amber-400 font-mono outline-none focus:border-amber-500 cursor-pointer`} />
+                      <button onClick={addTask} className={`px-4 sm:px-5 py-2.5 rounded-xl text-sm font-bold ${t.accent}`}>+</button>
+                    </div>
+                    <div className="text-[10px] text-zinc-500 px-1 flex items-center gap-1">
+                      <i className="fa-regular fa-clock text-[9px]"></i>
+                      <span>Vaqt tanlansa, o‘sha soatda Telegram botingiz eslatma yuboradi.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* NAMOZ BO'LIMI */}
+            {activeTab === 'namoz' && (
+              <div className="space-y-4">
+                
+                {/* KEYINGI NAMOZ TAYMERI */}
+                <div className={`${t.cardBg} border ${t.border} p-4 rounded-2xl shadow-sm flex items-center justify-between`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center text-lg">
+                      <i className="fa-solid fa-hourglass-half animate-pulse"></i>
+                    </div>
+                    <div>
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${t.textSub}`}>Keyingi namoz</span>
+                      <h4 className={`text-sm font-black ${t.textMain}`}>{nextPrayerInfo.name} ({nextPrayerInfo.timeStr})</h4>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-[10px] ${t.textSub}`}>Qolgan vaqt:</span>
+                    <div className="text-xs font-black text-amber-400 font-mono">{nextPrayerInfo.remStr}</div>
+                  </div>
+                </div>
+
+                {/* TELEGRAM BILDIRISHNOMA KARTASI */}
+                <div className={`${t.cardBg} border border-sky-500/30 p-4 rounded-2xl shadow-sm bg-gradient-to-r from-sky-500/10 to-blue-500/5 space-y-3`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-base">
+                        <i className="fa-brands fa-telegram"></i>
+                      </div>
+                      <div>
+                        <h4 className={`text-xs font-bold ${t.textMain}`}>Telegram Bildirishnoma</h4>
+                        <span className={`text-[10px] ${t.textSub}`}>Vaqt kirganda bot eslatib turadi</span>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                      telegramChatId ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                    }`}>
+                      {telegramChatId ? 'Ulangan ●' : 'Ulanmagan'}
+                    </span>
+                  </div>
+                  {telegramChatId ? (
+                    <div className="flex gap-2">
+                      <a 
+                        href="https://t.me/Intizomimuz_bot" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex-1 py-2.5 px-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-zinc-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-sky-500/20 transition active:scale-95 text-center"
+                      >
+                        <i className="fa-brands fa-telegram text-sm"></i>
+                        <span>Botni ochish</span>
+                      </a>
+                      <button 
+                        onClick={disconnectTelegram}
+                        className="px-3.5 py-2.5 rounded-xl border border-red-500/40 text-red-400 hover:bg-red-500/10 font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95"
+                        title="Telegram botni hisobdan uzish"
+                      >
+                        <i className="fa-solid fa-link-slash"></i>
+                        <span>Uzish</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <a 
+                      href={user ? `https://t.me/Intizomimuz_bot?start=${user.uid}` : '#'} 
+                      onClick={(e) => {
+                        if (!user) {
+                          e.preventDefault();
+                          alert("Avval yuqoridagi 'Kirish' tugmasi orqali Google hisobingizga kiring!");
+                          signIn();
+                        }
+                      }}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-full py-2.5 px-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-sky-500/20 transition active:scale-95 text-center"
+                    >
+                      <i className="fa-brands fa-telegram text-sm"></i>
+                      <span>Eslatmani yoqish</span>
+                    </a>
+                  )}
+                </div>
+
+                {/* ASOSIY QAZO KARTASI */}
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-4`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className={`text-lg font-black tracking-tight ${t.textMain}`}>Mening qazo namozlarim</h2>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <div className="bg-emerald-500/15 border border-emerald-500/30 px-3.5 py-1.5 rounded-xl text-right">
+                        <span className="text-[10px] text-zinc-400 uppercase font-bold block">Jami Qazo</span>
+                        <span className="text-base font-black text-emerald-400">{totalQazoAmount.toLocaleString()} ta</span>
+                      </div>
+                      <button 
+                        onClick={() => { setCustomTotalInput(String(totalQazoAmount)); setIsQazoEditModalOpen(true); }}
+                        className="text-[11px] font-bold text-amber-400 hover:underline flex items-center gap-1"
+                      >
+                        <i className="fa-solid fa-pen-to-square text-[10px]"></i> Tahrirlash / 0 qilish
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between px-3 py-2 text-xs bg-black/20 rounded-xl border border-zinc-800">
+                    <span className={t.textSub}>Bugun o‘qilgan qazo namozlari:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-emerald-400 font-mono text-sm">{todayReadQazo} ta</span>
+                      <button 
+                        onClick={() => { setCustomTodayInput(String(todayReadQazo)); setIsTodayQazoModalOpen(true); }}
+                        className="text-[10px] px-2 py-0.5 rounded-md border border-zinc-700 hover:border-amber-400 text-zinc-400 hover:text-amber-400 transition"
+                      >
+                        <i className="fa-solid fa-rotate-left mr-1"></i>0 qilish
+                      </button>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={completeOneFullDayQazo}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition flex items-center justify-center gap-2"
+                  >
+                    <i className="fa-solid fa-layer-group"></i>
+                    1 to‘liq kunlik qazo o‘qidim (Barchasidan −1)
+                  </button>
+                </div>
+
+                {/* SANA ORALIG'I BO'YICHA QAZO KALKULYATORI */}
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-4`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <i className="fa-solid fa-calendar-days text-amber-400 text-sm"></i>
+                      <h3 className={`text-sm font-bold ${t.textMain}`}>Sana oralig‘i bo‘yicha qazo hisoblash</h3>
+                    </div>
+                    <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-md">
+                      Aniq kunbay
+                    </span>
+                  </div>
+                  <p className={`text-xs leading-relaxed ${t.textSub}`}>
+                    Namoz o‘qimay qolgan davringizni kiriting. Dastur oradagi aniq kunlar va qazolarni hisoblab beradi.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                    <div className={`p-3 rounded-xl border ${t.border} ${t.subtleBg} space-y-1.5 shadow-sm`}>
+                      <span className={`text-[11px] font-bold block ${t.textSub}`}>
+                        Boshlanish sanasi (Dan)
+                      </span>
+                      <input 
+                        type="date" 
+                        value={rangeStartDate} 
+                        onChange={e => setRangeStartDate(e.target.value)}
+                        className={`w-full py-2 px-3 rounded-lg border ${t.border} bg-black/30 ${t.textMain} text-xs font-semibold outline-none focus:border-amber-400 block`} 
+                      />
+                    </div>
+                    <div className={`p-3 rounded-xl border ${t.border} ${t.subtleBg} space-y-1.5 shadow-sm`}>
+                      <span className={`text-[11px] font-bold block ${t.textSub}`}>
+                        Tugash sanasi (Gacha)
+                      </span>
+                      <input 
+                        type="date" 
+                        value={rangeEndDate} 
+                        onChange={e => setRangeEndDate(e.target.value)}
+                        className={`w-full py-2 px-3 rounded-lg border ${t.border} bg-black/30 ${t.textMain} text-xs font-semibold outline-none focus:border-amber-400 block`} 
+                      />
+                    </div>
+                  </div>
+
+                  <div className={`p-3.5 rounded-xl border ${t.border} ${t.subtleBg} flex items-center justify-between text-xs`}>
+                    <div>
+                      <span className={`${t.textSub} block text-[11px]`}>Oraliq muddati:</span>
+                      <b className="text-amber-400 font-mono text-sm">{dateRangeCalculation.days.toLocaleString()} kun</b>
+                    </div>
+                    <div className="text-right">
+                      <span className={`${t.textSub} block text-[11px]`}>Jami qazo namozi:</span>
+                      <b className="text-emerald-400 font-mono text-sm">{dateRangeCalculation.totalPrayers.toLocaleString()} ta</b>
+                      <span className="text-[10px] text-zinc-500 block">(har bir namozdan {dateRangeCalculation.eachPrayer} ta)</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button 
+                      onClick={() => applyDateRangeToQazos('add')}
+                      className={`py-2.5 rounded-xl text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30 transition`}
+                    >
+                      Qazolarga qo‘shish (+{dateRangeCalculation.eachPrayer})
+                    </button>
+                    <button 
+                      onClick={() => applyDateRangeToQazos('set')}
+                      className={`py-2.5 rounded-xl text-xs font-bold border ${t.border} ${t.subtleBg} ${t.textMain} hover:border-emerald-400 transition`}
+                    >
+                      Boshidan belgilash
+                    </button>
+                  </div>
+                </div>
+
+                {/* NAMOZ VAQTLARI VA FONDA SIGNAL */}
+                <div className={`${t.cardBg} border ${t.border} p-4 rounded-2xl shadow-sm space-y-3`}>
+                  <div className="flex justify-between items-center px-1">
+                    <div>
+                      <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Namoz vaqtlari</span>
+                      <span className={`text-[10px] block ${t.textSub}`}>Vaqtlarni o‘zgartiring</span>
+                    </div>
+                    <button 
+                      onClick={enablePushNotifications}
+                      className="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/25 flex items-center gap-1.5 hover:bg-emerald-500/20 active:scale-95 transition"
+                    >
+                      <i className="fa-solid fa-bell"></i>
+                      <span>Fonda signal: {fcmTokenStatus}</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {PRAYER_LIST.map(p => {
+                      const curTime = prayerTimes[p.id] || p.defaultTime;
+                      return (
+                        <div key={p.id} className={`p-3 rounded-xl border ${t.border} ${t.subtleBg} flex flex-col justify-between space-y-2.5 overflow-hidden box-border`}>
+                          <div className="flex justify-between items-center">
+                            <span className={`text-xs font-bold ${t.textMain}`}>{p.name}</span>
+                            <button 
+                              onClick={() => triggerPrayerReminder(p)}
+                              title="Signalni sinab ko‘rish"
+                              className="text-[10px] text-zinc-400 hover:text-amber-400 transition"
+                            >
+                              <i className="fa-solid fa-bell"></i>
+                            </button>
+                          </div>
+                          
+                          <div className="w-full flex justify-center items-center">
+                            <div className="w-full max-w-[140px] h-10 rounded-xl border border-zinc-800 bg-black/40 flex items-center justify-center px-1">
+                              <input 
+                                type="time" 
+                                value={curTime} 
+                                onChange={(e) => updatePrayerTime(p.id, e.target.value)}
+                                className="prayer-time-input w-full bg-transparent text-amber-400 font-mono font-black text-sm text-center outline-none cursor-pointer"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="text-[9px] text-center text-zinc-500">
+                            Signal vaqti: <b className="text-zinc-400">{curTime}</b>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* NAMOZLAR BO'YICHA QAZO SONI */}
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-3`}>
+                  <div className="flex justify-between items-center px-1">
+                    <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Namozlar bo‘yicha qazo soni</span>
+                    <span className="text-[10px] text-zinc-500">O‘zgartirish uchun qalamchani bosing</span>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {PRAYER_LIST.map(p => {
+                      const count = Number(qazoCounts[p.id]) || 0;
+                      return (
+                        <div key={p.id} className={`flex items-center justify-between p-3 rounded-xl border ${t.border} ${t.subtleBg}`}>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className={`text-sm font-bold ${t.textMain}`}>{p.name}</h4>
+                              <button 
+                                onClick={() => {
+                                  setEditingSinglePrayer(p);
+                                  setCustomInputValue(String(count));
+                                }}
+                                title="Sonini o‘zgartirish yoki 0 qilish"
+                                className="text-zinc-500 hover:text-amber-400 text-xs transition"
+                              >
+                                <i className="fa-solid fa-pen text-[11px]"></i>
+                              </button>
+                            </div>
+                            <span className={`text-xs ${t.textSub}`}>
+                              Qolgan: <b className="text-amber-400 font-mono">{count.toLocaleString()} ta</b>
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-1.5">
+                            <button 
+                              onClick={() => changeSingleQazo(p.id, -1)}
+                              disabled={count === 0}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-30 disabled:hover:bg-emerald-600 text-white font-bold text-xs transition"
+                              title="1 ta o‘qidim"
+                            >
+                              O‘qidim (−1)
+                            </button>
+                            <button 
+                              onClick={() => changeSingleQazo(p.id, 1)}
+                              className="w-7 h-7 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 font-bold text-xs flex items-center justify-center transition"
+                              title="1 ta qo‘shish"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* YILLAR BO'YICHA KALKULYATOR */}
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm space-y-3`}>
+                  <div className="flex items-center gap-2">
+                    <i className="fa-solid fa-calculator text-amber-400 text-sm"></i>
+                    <h3 className={`text-sm font-bold ${t.textMain}`}>Yillar bo‘yicha umumiy hisoblash</h3>
+                  </div>
+                  <p className={`text-xs leading-relaxed ${t.textSub}`}>
+                    Yoshingiz bo‘yicha umumiy qoldirilgan yillarni 6 ta namozga teng taqsimlaydi.
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="space-y-1">
+                      <label className={`text-[11px] font-bold ${t.textSub}`}>Hozirgi yoshingiz</label>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        max="120"
+                        value={calcCurrentAge} 
+                        onChange={e => setCalcCurrentAge(e.target.value)}
+                        className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm font-bold outline-none focus:border-amber-400`} 
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className={`text-[11px] font-bold ${t.textSub}`}>Qazo boshlangan yosh</label>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        max="120"
+                        value={calcStartAge} 
+                        onChange={e => setCalcStartAge(e.target.value)}
+                        className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm font-bold outline-none focus:border-amber-400`} 
+                      />
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={calculatePastQazos}
+                    className={`w-full py-2.5 rounded-xl text-xs font-bold border ${t.border} ${t.subtleBg} ${t.textMain} hover:border-amber-400 transition mt-1`}
+                  >
+                    Yillar bo‘yicha hisoblash
+                  </button>
+                </div>
+
+              </div>
+            )}
+
+            {activeTab === 'profile' && (
+              <div className="space-y-4">
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-3.5 shadow-sm`}>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Profil</span>
+                    {user?.isTelegram && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-500/15 text-sky-400 border border-sky-500/30 flex items-center gap-1">
+                        <i className="fa-brands fa-telegram"></i> Telegram
+                      </span>
+                    )}
+                  </div>
+                  {user ? (
+                    <>
+                      <div className="flex items-center gap-3">
+                        {user.photoURL ? (
+                          <div className="avatar-ring"><img src={user.photoURL} referrerPolicy="no-referrer" className="w-14 h-14 rounded-full" /></div>
+                        ) : (
+                          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-sky-600 to-blue-500 text-white flex items-center justify-center font-black text-xl shadow-md">
+                            {user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <div className={`font-bold text-sm truncate ${t.textMain}`}>{user.displayName || "Foydalanuvchi"}</div>
+                          <div className={`text-xs truncate ${t.textSub}`}>{user.email || ''}</div>
+                          {user.isTelegram && (
+                            <div className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1 mt-0.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                              <span>Telegram orqali ulangan (Faol)</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className={`text-xs font-semibold ${syncError ? 'text-red-500' : 'text-emerald-500'}`}>
+                        {syncError ? `⚠ Bulutda xatolik: ${syncError}` : "☁ Ma’lumotlar bulutda xavfsiz saqlanmoqda"}
+                      </div>
+                      <button onClick={signOut} className="w-full py-2.5 rounded-xl text-sm font-bold border border-red-500/40 text-red-500 flex items-center justify-center gap-2 hover:bg-red-500/10">
+                        <i className="fa-solid fa-right-from-bracket"></i> {user.isTelegram ? "Sessiyani yopish" : "Profildan chiqish"}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className={`text-xs ${t.textSub}`}>Hisobga kirmagansiz — ma’lumotlar faqat shu qurilmada saqlanadi.</p>
+                      <button onClick={signIn} className={`w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 ${t.accent}`}><i className="fa-brands fa-google"></i> Google bilan kirish</button>
+                    </>
+                  )}
+                </div>
+                <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-3 shadow-sm`}>
+                  <div className="flex justify-between items-center">
+                    <span className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Maqsadlar arxivi</span>
+                    <span className={`text-xs font-semibold ${t.textSub}`}>{archive.length} ta</span>
+                  </div>
+                  {archive.length === 0 ? (
+                    <div className={`text-center text-sm py-3 ${t.textSub}`}>Hozircha arxiv bo‘sh.</div>
+                  ) : [...archive].reverse().map(a => (
+                    <div key={a.id} className={`archive-card rounded-xl p-3.5 border ${t.border} ${t.subtleBg} space-y-2`}>
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0">
+                          <div className={`text-sm font-bold ${t.textMain}`}>{a.title}</div>
+                          <div className={`text-[11px] ${t.textSub}`}>{new Date(a.archivedAt).toLocaleDateString()} • {a.days} kunlik</div>
+                        </div>
+                        <span className={`text-sm font-black ${a.pct >= 100 ? 'text-emerald-500' : t.accentText}`}>{a.pct}%</span>
+                      </div>
+                      <div className={`w-full h-2 rounded-full ${t.sliderBg} overflow-hidden`}><div className="h-full bg-emerald-500" style={{ width: `${a.pct}%` }}></div></div>
+                      <div className={`flex justify-between items-center text-[11px] ${t.textSub}`}>
+                        <span>Yakunlangan kun: {a.finished}/{a.days}</span>
+                        <span>Vazifalar: {a.tDone}/{a.tTotal}</span>
+                        <button onClick={() => { if (confirm("Arxivdan o‘chirasizmi?")) setArchive(prev => prev.filter(x => x.id !== a.id)); }} className="text-red-500 hover:text-red-600"><i className="fa-solid fa-trash"></i></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'timer' && (
+              <div className="flex flex-col items-center justify-center space-y-6 pt-5">
+                <span className={`text-xs font-bold uppercase tracking-widest ${t.textSub}`}>Chuqur Ishlash Rejimi</span>
+                <div className="ring-wrap">
+                  <svg width="250" height="250" viewBox="0 0 250 250">
+                    <circle cx="125" cy="125" r="108" fill="none" stroke={t.isDark ? "#1c1c21" : "#e2e8f0"} strokeWidth="12" />
+                    <circle cx="125" cy="125" r="108" fill="none" stroke="url(#tg)" strokeWidth="12" strokeLinecap="round" strokeDasharray={2*Math.PI*108} strokeDashoffset={2*Math.PI*108*(1 - secondsLeft/(pomoMinutes*60))} style={{ transition: 'stroke-dashoffset 1s linear' }} />
+                    <defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#fbbf24" /><stop offset="100%" stopColor="#10b981" /></linearGradient></defs>
+                  </svg>
+                  <div className="ring-center">
+                    <span className={`text-6xl font-black tracking-tight font-mono ${t.textMain}`}>{Math.floor(secondsLeft / 60).toString().padStart(2, '0')}:{(secondsLeft % 60).toString().padStart(2, '0')}</span>
+                    <span className={`text-xs ${t.textSub} font-medium mt-1.5`}>Fokus seansi</span>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setIsTimerRunning(!isTimerRunning)} className={`px-8 py-3 rounded-xl font-bold text-sm ${t.accent}`}>{isTimerRunning ? 'To‘xtatish' : 'Boshlash'}</button>
+                  <button onClick={() => { setIsTimerRunning(false); setSecondsLeft(pomoMinutes * 60); }} className={`px-5 py-3 rounded-xl font-semibold text-sm border ${t.border} ${t.subtleBg} ${t.textMain} hover:opacity-80`}>Qaytarish</button>
+                </div>
+                <div className={`w-full ${t.cardBg} border ${t.border} p-5 rounded-2xl shadow-sm`}>
+                  <div className="flex justify-between text-sm mb-2.5">
+                    <span className={t.textSub}>Vaqtni sozlash</span>
+                    <span className={`font-bold ${t.textMain}`}>{pomoMinutes} daqiqa</span>
+                  </div>
+                  <input type="range" min="5" max="60" step="5" value={pomoMinutes}
+                    onChange={(e) => { const v = Number(e.target.value); setPomoMinutes(v); setSecondsLeft(v * 60); setIsTimerRunning(false); }}
+                    className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'library' && (
+              <div className="space-y-4">
+                <div className={`p-4 rounded-2xl border ${t.border} ${t.cardBg} space-y-3.5 shadow-sm`}>
+                  <div className="flex justify-between items-center px-1">
+                    <div>
+                      <h2 className={t.isDark ? "brand-title-dark text-2xl" : "brand-title-light text-2xl"}>Kitob Javoni</h2>
+                      <span className={`text-xs ${t.textSub} font-medium`}>Mening kitoblarim ({books.length} ta)</span>
+                    </div>
+                    <input type="file" accept="application/pdf" ref={fileInputRef} onChange={handlePdfUpload} className="hidden" />
+                    <button onClick={() => fileInputRef.current.click()} disabled={uploadProgress !== null}
+                      className={`text-xs px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 ${t.accent} active:scale-95 transition`}>
+                      <i className="fa-solid fa-file-pdf text-xs"></i>
+                      <span>{uploadProgress !== null ? `${uploadProgress}%` : "+ PDF Qo‘shish"}</span>
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <i className={`fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-xs ${t.textSub}`}></i>
+                    <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Kitoblardan qidirish..."
+                      className={`w-full pl-10 pr-4 py-2.5 text-xs rounded-xl ${t.subtleBg} border ${t.border} ${t.textMain} focus:outline-none focus:border-amber-500`} />
+                  </div>
+                </div>
+
+                {books.length === 0 ? (
+                  <div className="text-center py-16 space-y-3">
+                    <i className={`fa-solid fa-book-open text-4xl ${t.textSub}`}></i>
+                    <p className={`text-sm ${t.textSub}`}>Hozircha kitoblar mavjud emas.</p>
+                    <button onClick={() => fileInputRef.current.click()} className={`text-xs font-bold px-4 py-2 rounded-xl ${t.accent}`}>+ PDF Kitob Yuklash</button>
+                  </div>
+                ) : (
+                  <div className="bookcase">
+                    <div className="bookcase-crown"></div>
+                    <div className="bookcase-back">
+                      {Array.from({ length: Math.max(1, Math.ceil(filteredBooks.length / 5)) }, (_, r) => filteredBooks.slice(r * 5, r * 5 + 5)).map((row, r) => (
+                        <div key={r}>
+                          <div className="shelf-books">
+                            {row.map(b => {
+                              const isCurrent = selectedBook?.id === b.id;
+                              const w = 46 + ((b.title || '').length % 3) * 8;
+                              return (
+                                <div key={b.id} title={b.title}
+                                  style={{ height: 120 + (b.id % 4) * 12, width: w }}
+                                  onClick={() => { setSelectedBook(b); setWordIndex(bookProgressMap[b.id] || 0); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }}
+                                  className={`real-spine bg-gradient-to-b ${b.coverColor} ${isCurrent ? 'sel' : ''}`}>
+                                  <div className="spine-gold" style={{ top: 8 }}></div>
+                                  <div className="spine-gold" style={{ top: 12 }}></div>
+                                  <div className="spine-title relative z-10">{b.title}</div>
+                                  <i className="fa-solid fa-feather-pointed text-[9px] text-amber-300/80 relative z-10"></i>
+                                  <div className="spine-gold" style={{ bottom: 8 }}></div>
+                                  <div className="ribbon-tail"></div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div className="shelf-plank"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedBook && (
+                  <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-4 shadow-sm`}>
+                    <div className="flex gap-4 items-center pb-1">
+                      <div className={`book-cover bg-gradient-to-br ${selectedBook.coverColor}`}>
+                        <div className="cover-frame">
+                          <div className="text-[7px] tracking-[.3em] text-amber-300/80 uppercase">Kitob</div>
+                          <div className="cover-title">{selectedBook.title}</div>
+                          <div className="w-6 h-px bg-amber-300/70"></div>
+                          <div className="text-[7px] text-amber-200/80">{selectedBook.author}</div>
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-[10px] uppercase tracking-wider font-bold ${t.accentText}`}>Tanlangan asar</span>
+                          <button onClick={(e) => deleteBook(selectedBook.id, e)} title="Kitobni o'chirish" className="text-xs text-red-500 hover:text-red-600 font-bold px-2 py-0.5 rounded-lg border border-red-500/20 bg-red-500/10">
+                            <i className="fa-solid fa-trash-can mr-1"></i> O‘chirish
+                          </button>
+                        </div>
+                        <h4 className={`text-sm font-bold truncate ${t.textMain}`}>{selectedBook.title}</h4>
+                        <div className={`text-xs ${t.textSub}`}><i className="fa-regular fa-clock text-amber-500 mr-1.5"></i>≈ {Math.max(1, Math.round(wordsList.length / 250))} daq o‘qish</div>
+                        <div className={`text-xs ${t.textSub}`}><i className="fa-solid fa-bookmark text-emerald-400 mr-1.5"></i>Xatcho‘p: {bookProgressMap[selectedBook.id] || 0}-so‘zda</div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 pt-1">
+                      <button onClick={() => { setActiveTab('speed'); }} className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 ${t.accent}`}>
+                        <i className="fa-solid fa-bolt text-xs"></i><span>Tez O‘qish</span>
+                      </button>
+                      <button onClick={() => { setActiveTab('ai_exam'); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider border ${t.border} ${t.subtleBg} ${t.textMain} hover:opacity-80 flex items-center justify-center gap-2`}>
+                        <i className={`fa-solid ${showFocus ? 'fa-brain' : 'fa-brain'} ${t.accentText} text-xs`}></i><span>Test / Viktorina</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'speed' && (
+              <div className="space-y-4 pt-1">
+                <div className={`flex justify-between items-center text-sm ${t.textSub}`}>
+                  <span className={`truncate max-w-[200px] font-semibold ${t.textMain}`}>{selectedBook ? selectedBook.title : "Kitob tanlanmagan"}</span>
+                  <span className={`font-mono text-xs ${t.textSub}`}>{wordsList.length > 0 ? wordIndex + 1 : 0} / {wordsList.length}</span>
+                </div>
+
+                <div className={`w-full h-44 md:h-64 rounded-2xl ${t.isDark ? 'rsvp-box-solid-dark' : 'rsvp-box-solid-light'} flex items-center justify-center p-5 relative`}>
+                  {!selectedBook ? (
+                    <div className="text-center space-y-2">
+                      <p className={`text-sm ${t.textSub}`}>Kutubxonadan kitob tanlang yoki yangi PDF yuklang</p>
+                      <button onClick={() => setActiveTab('library')} className={`px-4 py-2 rounded-xl text-xs font-bold ${t.accent}`}>Kutubxonaga o'tish</button>
+                    </div>
+                  ) : wordIndex >= wordsList.length - 1 && wordsList.length > 0 ? (
+                    <div className="text-center space-y-3">
+                      <span className="text-sm font-bold text-emerald-500 block">Kitob to‘liq mutolaa qilindi! 🎉</span>
+                      <button onClick={() => setActiveTab('ai_exam')} className={`px-5 py-2.5 rounded-xl text-xs font-bold ${t.accent}`}>Testni Boshlash</button>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: `${fontSize}px` }} className={`font-black text-center ${t.textMain} tracking-wide select-none leading-tight transition-all duration-75 px-4`}>
+                      {(() => {
+                        const chunk = wordsList.slice(wordIndex, wordIndex + chunkSize);
+                        if (chunk.length === 0) return "Tayyor";
+                        if (chunkSize === 1) {
+                          const chars = Array.from(chunk[0]);
+                          const mid = Math.floor((chars.length - 1) / 2);
+                          return (<span>{chars.slice(0, mid).join("")}<span className={showFocus ? "text-red-500 rsvp-focus" : ""}>{chars[mid]}</span>{chars.slice(mid + 1).join("")}</span>);
+                        }
+                        if (chunkSize === 2) return <span>{chunk.join(" ")}</span>;
+                        if (chunkSize === 3) {
+                          return (
+                            <span>
+                              {chunk[0]}
+                              {chunk.length > 1 && (<>{" "}<span className={showFocus ? "text-red-500 rsvp-focus" : ""}>{chunk[1]}</span></>)}
+                              {chunk.length > 2 && (<>{" "}{chunk.slice(2).join(" ")}</>)}
+                            </span>
+                          );
+                        }
+                        return chunk.join(" ");
+                      })()}
+                    </span>
+                  )}
+                </div>
+
+                <div className={`${t.cardBg} border ${t.border} p-4 rounded-xl space-y-3 shadow-sm`}>
+                  <div className="flex justify-between text-xs font-medium">
+                    <span className={`${t.textSub} flex items-center gap-1.5`}><i className="fa-solid fa-sliders text-xs"></i> Pozitsiya:</span>
+                    <span className={`${t.textMain} font-bold`}>
+                      {wordsList.length > 0 ? Math.round(((wordIndex + 1) / wordsList.length) * 100) : 0}%
+                      <span className={`${t.textSub} font-normal ml-1`}>({wordIndex + 1}-so‘z)</span>
+                    </span>
+                  </div>
+                  <input type="range" min="0" max={Math.max(0, wordsList.length - 1)} value={wordIndex} onChange={(e) => { setWordIndex(Number(e.target.value)); setIsReadingRunning(false); }} className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
+                  <div className={`flex justify-between items-center pt-2 border-t ${t.border} text-xs`}>
+                    <span className={t.textSub}>Tugashiga qolgan vaqt:</span>
+                    <span className={`font-mono font-bold ${t.accentText}`}>~{estMinutes > 0 ? `${estMinutes} daq ` : ''}{estSeconds} soniya</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                    <span className={`text-xs ${t.textSub} font-bold mr-1 whitespace-nowrap`}>Ko‘rinish:</span>
+                    <div className="flex items-center gap-1.5 flex-nowrap">
+                      {[1, 2, 3].map(n => (
+                        <button key={n} onClick={() => setChunkSize(n)} className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] font-bold border transition whitespace-nowrap flex items-center gap-1 ${chunkSize === n ? t.accent : `${t.border} ${t.subtleBg} ${t.textMain}`}`}>
+                          <i className="fa-solid fa-font text-[9px]"></i> {n} ta
+                        </button>
+                      ))}
+                      
+                      <button onClick={toggleFocus} title="Markazdagi qizil harfni yoqish/o‘chirish" className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border transition whitespace-nowrap ${showFocus ? 'border-red-500/50 bg-red-500/15 text-red-500' : `${t.border} ${t.subtleBg} ${t.textSub}`}`}>
+                        <i className={`fa-solid ${showFocus ? 'fa-eye' : 'fa-eye-slash'} text-[10px]`}></i> Qizil: {showFocus ? 'Yoq' : 'O‘chiq'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between px-1">
+                    <span className={`text-xs ${t.textSub} font-medium`}>Shrift o‘lchami:</span>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setFontSize(p => Math.max(22, p - 4))} className={`w-8 h-8 rounded-lg border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>−</button>
+                      <span className={`text-xs font-bold ${t.textMain} px-1.5 min-w-[2rem] text-center`}>{fontSize}</span>
+                      <button onClick={() => setFontSize(p => Math.min(64, p + 4))} className={`w-8 h-8 rounded-lg border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>+</button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* AUDIO KITOB & OVOZLI ESHITISH BOSHQARUVI */}
+                <div className={`${t.cardBg} border ${t.border} p-4 rounded-2xl shadow-sm space-y-3`}>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-sm">
+                        <i className={`fa-solid ${isSpeaking ? 'fa-headphones animate-pulse' : 'fa-volume-high'}`}></i>
+                      </div>
+                      <div>
+                        <h4 className={`text-xs font-bold ${t.textMain}`}>Ovozli Kitob (Audio AI)</h4>
+                        <span className={`text-[10px] ${t.textSub}`}>{userVoiceUrl ? "Shaxsiy ovozingiz ulangan ●" : "Standart ovoz"}</span>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setIsVoiceModalOpen(true)}
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border ${t.border} ${t.subtleBg} ${t.textMain} hover:border-amber-400 flex items-center gap-1.5 transition`}
+                    >
+                      <i className="fa-solid fa-microphone text-amber-400"></i>
+                      <span>{userVoiceUrl ? "Ovozimni qayta yozish" : "O‘z ovozimni klonlash"}</span>
+                    </button>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={speakCurrentBook} 
+                      disabled={wordsList.length === 0}
+                      className={`flex-1 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 ${
+                        isSpeaking ? 'bg-amber-500 text-zinc-950 shadow-md' : t.accent
+                      } active:scale-95 transition`}
+                    >
+                      <i className={`fa-solid ${isSpeaking ? 'fa-pause' : 'fa-play'} text-xs`}></i>
+                      <span>{isSpeaking ? "Ovozni to‘xtatish" : "Kitobni ovozli eshitish"}</span>
+                    </button>
+                    {isSpeaking && (
+                      <button 
+                        onClick={stopSpeaking}
+                        className={`px-4 py-3 rounded-xl border border-red-500/30 text-red-400 font-bold text-xs active:scale-95 transition flex items-center justify-center`}
+                        title="To'xtatish"
+                      >
+                        <i className="fa-solid fa-stop"></i>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className={`p-2 rounded-2xl border ${t.border} ${t.cardBg} flex gap-2 items-stretch shadow-sm`}>
+                  <button onClick={() => setWordIndex(p => Math.max(0, p - (chunkSize * 10)))} className={`flex-1 py-3 rounded-xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
+                    <i className="fa-solid fa-backward-step"></i> -10
+                  </button>
+                  <button onClick={() => setIsReadingRunning(!isReadingRunning)} disabled={wordsList.length === 0} className={`flex-[1.6] py-3 rounded-xl text-sm font-black flex items-center justify-center gap-2 ${t.accent} disabled:opacity-50 active:scale-95 transition`}>
+                    <i className={`fa-solid ${isReadingRunning ? 'fa-pause' : 'fa-play'} text-xs`}></i>
+                    <span>{isReadingRunning ? 'To‘xtatish' : 'Boshlash'}</span>
+                  </button>
+                  <button onClick={() => setWordIndex(p => Math.min(wordsList.length - 1, p + (chunkSize * 10)))} className={`flex-1 py-3 rounded-xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
+                    +10 <i className="fa-solid fa-forward-step"></i>
+                  </button>
+                </div>
+
+                <div className={`p-4 rounded-xl ${t.cardBg} border ${t.border} space-y-2 shadow-sm`}>
+                  <div className="flex justify-between text-xs">
+                    <span className={t.textSub}>O‘qish tezligi</span>
+                    <span className={`font-bold ${t.textMain}`}>{speedWPM} WPM</span>
+                  </div>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {[200, 300, 400, 600].map(w => (
+                      <button key={w} onClick={() => setSpeedWPM(w)} className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition ${speedWPM === w ? t.accent : `${t.border} ${t.subtleBg}${t.textMain}`}`}>{w}</button>
+                    ))}
+                  </div>
+                  <input type="range" min="100" max="900" step="50" value={speedWPM} onChange={(e) => setSpeedWPM(Number(e.target.value))} className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'ai_exam' && (
+              <div className="space-y-4 pt-1 max-w-xl mx-auto">
+                <div className="flex justify-between items-center mb-2">
+                  <span className={`text-xs ${t.textSub}`}>{selectedBook ? selectedBook.title : "Kitob tanlanmagan"}</span>
+                  <button onClick={() => setActiveTab('library')} className={`text-xs ${t.textSub}`}>Chiqish</button>
+                </div>
+                {!selectedBook ? (
+                  <div className={`text-center py-12 text-sm ${t.textSub}`}>Iltimos, avval kutubxonadan kitob tanlang yoki yuklang.</div>
+                ) : currentQList.length === 0 ? (
+                  <div className={`text-center py-12 text-sm ${t.textSub}`}>Kitob hajmi test tuzish uchun yetarli emas.</div>
+                ) : quizFinished ? (
+                  <div className={`${t.cardBg} border ${t.border} p-6 rounded-2xl text-center space-y-4 shadow-sm`}>
+                    <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold"><i className="fa-solid fa-trophy"></i></div>
+                    <h3 className={`text-lg font-black ${t.textMain}`}>Test yakunlandi!</h3>
+                    <p className={`text-sm ${t.textSub}`}>Siz {currentQList.length} ta savoldan <span className="font-bold text-emerald-500">{calculateScore()} ta</span> to‘g‘ri javob berdingiz.</p>
+                    <div className="text-3xl font-black text-amber-500">{Math.round((calculateScore() / currentQList.length) * 100)}%</div>
+                    <button onClick={() => { setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`w-full py-3 rounded-xl text-xs font-bold ${t.accent}`}>Qaytadan topshirish</button>
+                  </div>
+                ) : (
+                  <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-5 shadow-sm`}>
+                    <div className={`text-xs font-medium ${t.textSub}`}>Savol {quizIndex + 1}/{currentQList.length}</div>
+                    <div className="flex justify-between items-center gap-1.5 overflow-x-auto pb-1">
+                      {currentQList.map((_, idx) => (
+                        <button key={idx} onClick={() => setQuizIndex(idx)}
+                          className={`w-7 h-7 flex-shrink-0 rounded-lg text-xs font-bold transition flex items-center justify-center ${quizIndex === idx ? 'border-2 border-red-500 text-red-500 bg-red-500/10' : selectedAnswers[idx] !== undefined ? `${t.subtleBg}${t.textMain}` : `${t.subtleBg}${t.textSub}`}`}>{idx + 1}</button>
+                      ))}
+                    </div>
+                    <p className={`text-sm font-semibold leading-relaxed whitespace-pre-line ${t.textMain}`}>{currentQList[quizIndex]?.question}</p>
+                    <div className="space-y-2.5">
+                      {currentQList[quizIndex]?.options.map((opt, oIdx) => {
+                        const isSelected = selectedAnswers[quizIndex] === opt;
+                        return (
+                          <button key={oIdx} onClick={() => setSelectedAnswers(prev => ({ ...prev, [quizIndex]: opt }))}
+                            className={`w-full text-left p-3.5 rounded-xl text-xs leading-relaxed font-medium transition flex items-center gap-3 border ${t.textMain} ${isSelected ? 'border-amber-400 bg-amber-400/15' : `${t.border}${t.subtleBg} hover:border-zinc-500`}`}>
+                            <div className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center ${isSelected ? 'border-amber-400 bg-amber-400' : 'border-zinc-500'}`}>
+                              {isSelected && <div className="w-1.5 h-1.5 bg-zinc-950 rounded-full"></div>}
+                            </div>
+                            <span className="flex-1">{opt}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="flex justify-between items-center gap-4 pt-3">
+                      <button onClick={() => setQuizIndex(p => Math.max(0, p - 1))} disabled={quizIndex === 0} className={`text-xs font-bold px-4 py-2.5 rounded-lg ${t.textSub} disabled:opacity-30`}>Ortga</button>
+                      <button onClick={() => { if (quizIndex < currentQList.length - 1) setQuizIndex(p => p + 1); else setQuizFinished(true); }} className="px-8 py-2.5 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-500 text-white shadow-md active:scale-95 transition">
+                        {quizIndex === currentQList.length - 1 ? "Yakunlash" : "Keyingi"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </main>
+
+          {/* SHAXSIY OVOZNI KLONLASH (RECORDING) MODALI */}
+          {isVoiceModalOpen && (
+            <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
+              <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl`}>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <i className="fa-solid fa-microphone text-amber-400"></i>
+                    <h3 className="text-base font-bold">O‘z ovozingizni yozib oling</h3>
+                  </div>
+                  <button onClick={() => { stopVoiceRecording(); setIsVoiceModalOpen(false); }} className={`${t.textSub} text-sm`}><i className="fa-solid fa-xmark"></i></button>
+                </div>
+                <p className={`text-xs ${t.textSub} leading-relaxed`}>
+                  Sun’iy intellekt kitoblarni sizning o‘z ovozingizda o‘qib berishi uchun quyidagi namuna matnni baland ovozda o‘qing:
+                </p>
+
+                <div className={`p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs italic ${t.textMain} leading-relaxed`}>
+                  "Kichik odatlar har kuni takrorlansa, ulkan natijalarga sabab bo‘ladi. Intizom — bu doimiylik demakdir."
+                </div>
+
+                <div className="flex flex-col items-center gap-3 pt-2">
+                  {!isRecordingVoice ? (
+                    <button 
+                      onClick={startVoiceRecording}
+                      className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-red-600/30 transition"
+                    >
+                      <i className="fa-solid fa-circle text-[10px] animate-pulse"></i>
+                      <span>Ovoz yozishni boshlash (10 soniya)</span>
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={stopVoiceRecording}
+                      className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 active:scale-95 shadow-lg transition"
+                    >
+                      <i className="fa-solid fa-square"></i>
+                      <span>Yozishni to‘xtatish va saqlash</span>
+                    </button>
+                  )}
+
+                  {userVoiceUrl && (
+                    <div className="w-full pt-1">
+                      <audio controls src={userVoiceUrl} className="w-full h-8" />
+                    </div>
+                  )}
+                </div>
+
+                <button 
+                  onClick={() => setIsVoiceModalOpen(false)}
+                  className={`w-full py-2.5 rounded-xl text-xs font-bold border ${t.border} ${t.textSub} hover:opacity-80 transition`}
+                >
+                  Yopish
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* NAMAZ ESLATMASI MODALI */}
+          {activePrayerReminder && (
+            <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
+              <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl text-center`}>
+                <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl font-bold">
+                  <i className="fa-solid fa-bell animate-bounce"></i>
+                </div>
+                <div>
+                  <h3 className="text-lg font-black">{activePrayerReminder.name} vaqti kirdi!</h3>
+                  <p className={`text-xs mt-1 ${t.textSub}`}>Ushbu namozni hozir ado etasizmi yoki qazoga qoldirasizmi?</p>
+                </div>
+                <div className="space-y-2 pt-2">
+                  <button 
+                    onClick={handlePrayerRead}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-zinc-950 font-bold text-sm shadow-md active:scale-95 transition flex items-center justify-center gap-2"
+                  >
+                    <i className="fa-solid fa-check"></i> O‘qiyman
+                  </button>
+                  <button 
+                    onClick={handlePrayerSnooze}
+                    className="w-full py-2.5 rounded-xl border border-amber-500/40 text-amber-400 hover:bg-amber-500/10 font-bold text-xs active:scale-95 transition flex items-center justify-center gap-2"
+                  >
+                    <i className="fa-solid fa-clock"></i> 10 daqiqadan keyin yana eslat
+                  </button>
+                  <button 
+                    onClick={handlePrayerMissed}
+                    className="w-full py-2.5 rounded-xl border border-red-500/40 text-red-500 hover:bg-red-500/10 font-bold text-xs active:scale-95 transition flex items-center justify-center gap-2"
+                  >
+                    <i className="fa-solid fa-clock-rotate-left"></i> O‘qishga ulgurmayman (Qazoga tushsin)
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ALOHIDA NAMOZ QAZOSINI TAHRIRLASH MODALI */}
+          {editingSinglePrayer && (
+            <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
+              <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl`}>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-base font-bold">{editingSinglePrayer.name} qazosini to‘g‘rilash</h3>
+                  <button onClick={() => setEditingSinglePrayer(null)} className={`${t.textSub} text-sm`}><i className="fa-solid fa-xmark"></i></button>
+                </div>
+                <p className={`text-xs ${t.textSub}`}>Istalgan yangi sonni kiriting yoki to‘g‘ridan-to‘g‘ri 0 ga tushiring.</p>
+                <div>
+                  <label className={`text-[11px] font-bold ${t.textSub} block mb-1`}>Qazo soni</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    value={customInputValue}
+                    onChange={(e) => setCustomInputValue(e.target.value)}
+                    className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm font-bold outline-none focus:border-amber-400`}
+                    autoFocus
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button 
+                    onClick={resetSinglePrayerToZero}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold border border-red-500/40 text-red-500 hover:bg-red-500/10 transition"
+                  >
+                    0 ga tushirish
+                  </button>
+                  <button 
+                    onClick={saveSinglePrayerCount}
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold ${t.accent} transition`}
+                  >
+                    Saqlash
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* UMUMIY QAZONI TAHRIRLASH MODALI */}
+          {isQazoEditModalOpen && (
+            <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
+              <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl`}>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-base font-bold">Umumiy qazoni to‘g‘rilash</h3>
+                  <button onClick={() => setIsQazoEditModalOpen(false)} className={`${t.textSub} text-sm`}><i className="fa-solid fa-xmark"></i></button>
+                </div>
+                <p className={`text-xs ${t.textSub}`}>
+                  Umumiy yangi yig‘indini kiritsangiz, dastur uni 6 ta namozga teng bo‘lib chiqadi.
+                </p>
+                <div>
+                  <label className={`text-[11px] font-bold ${t.textSub} block mb-1`}>Jami qazolar soni (6 ta namoz uchun umumiy)</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    placeholder="Masalan: 30000 yoki 6000"
+                    value={customTotalInput}
+                    onChange={(e) => setCustomTotalInput(e.target.value)}
+                    className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm font-bold outline-none focus:border-amber-400`}
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button 
+                    onClick={resetAllQazosToZero}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold border border-red-500/40 text-red-500 hover:bg-red-500/10 transition"
+                  >
+                    Barchasini 0 qilish
+                  </button>
+                  <button 
+                    onClick={setAllQazosEqually}
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold ${t.accent} transition`}
+                  >
+                    Taqsimlab belgilash
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* BUGUNGI QAZONI TAHRIRLASH MODALI */}
+          {isTodayQazoModalOpen && (
+            <div className="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50">
+              <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-2xl`}>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-base font-bold">Bugun o‘qilgan qazolarni to‘g‘rilash</h3>
+                  <button onClick={() => setIsTodayQazoModalOpen(false)} className={`${t.textSub} text-sm`}><i className="fa-solid fa-xmark"></i></button>
+                </div>
+                <p className={`text-xs ${t.textSub}`}>Bugungi kungi hisoblagichni 0 ga tushirishingiz yoki yangi son kiritishingiz mumkin.</p>
+                <div>
+                  <label className={`text-[11px] font-bold ${t.textSub} block mb-1`}>Bugun o‘qilgan namozlar soni</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    value={customTodayInput}
+                    onChange={(e) => setCustomTodayInput(e.target.value)}
+                    className={`w-full p-2.5 rounded-xl border ${t.border} ${t.subtleBg} ${t.textMain} text-sm font-bold outline-none focus:border-amber-400`}
+                    autoFocus
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button 
+                    onClick={resetTodayQazoToZero}
+                    className="flex-1 py-2.5 rounded-xl text-xs font-bold border border-red-500/40 text-red-500 hover:bg-red-500/10 transition"
+                  >
+                    0 ga tushirish
+                  </button>
+                  <button 
+                    onClick={saveTodayQazoCustom}
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-bold ${t.accent} transition`}
+                  >
+                    Saqlash
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DOCK NAVIGATSIYA */}
+          <nav className={`fixed bottom-4 left-3 right-3 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[32rem] h-16 rounded-2xl border ${t.navBg} flex justify-around items-center px-2 z-40 shadow-xl backdrop-blur-md`}>
+            {[
+              { id: 'home', icon: 'fa-house', label: 'Asosiy' },
+              { id: 'namoz', icon: 'fa-kaaba', label: 'Namoz' },
+              { id: 'timer', icon: 'fa-stopwatch', label: 'Fokus' },
+              { id: 'library', icon: 'fa-book-bookmark', label: 'Kutubxona' },
+              { id: 'speed', icon: 'fa-bolt', label: 'Tez O‘qish' },
+              { id: 'profile', icon: 'fa-user', label: 'Profil' },
+            ].map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex flex-col items-center gap-1 transition px-2.5 py-1.5 rounded-xl ${activeTab === tab.id ? t.accentText + ' font-bold bg-black/10 dark:bg-white/10' : t.textSub}`}>
+                <i className={`fa-solid ${tab.icon} text-base`}></i>
+                <span className="text-[10px] tracking-tight">{tab.label}</span>
+              </button>
+            ))}
+          </nav>
+
+          {isGoalModalOpen && (
+            <div className="absolute inset-0 bg-black/80 flex items-center justify-center p-5 z-50">
+              <div className={`${t.isDark ? t.cardBg : 'bg-white'} ${t.textMain} border ${t.border} w-full max-w-sm p-6 rounded-2xl space-y-4 shadow-xl`}>
+                <h3 className={`text-xs font-bold uppercase tracking-wider ${t.textSub}`}>Rejani Tahrirlash</h3>
+                <form onSubmit={saveGoalSettings} className="space-y-3.5">
+                  <div>
+                    <label className={`text-xs ${t.textSub} uppercase font-bold block mb-1.5`}>Maqsad</label>
+                    <input type="text" required value={tempTitle} onChange={(e) => setTempTitle(e.target.value)} className={`w-full ${t.subtleBg} border ${t.border} rounded-xl px-4 py-2.5 text-sm ${t.textMain} focus:outline-none focus:border-amber-500`} />
+                  </div>
+                  <div>
+                    <label className={`text-xs ${t.textSub} uppercase font-bold block mb-1.5`}>Muddat (kunlar soni)</label>
+                    <input type="number" min="1" max="365" required value={tempDays} onChange={(e) => setTempDays(e.target.value)} className={`w-full ${t.subtleBg} border ${t.border} rounded-xl px-4 py-2.5 text-sm ${t.textMain} focus:outline-none focus:border-amber-500`} />
+                  </div>
+                  <div className="flex gap-3 pt-2">
+                    <button type="button" onClick={() => setIsGoalModalOpen(false)} className={`flex-1 py-2.5 text-xs rounded-xl border ${t.border} ${t.textSub}`}>Bekor qilish</button>
+                    <button type="submit" className={`flex-1 py-2.5 text-xs font-bold rounded-xl ${t.accent}`}>Saqlash</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
