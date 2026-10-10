@@ -1865,6 +1865,186 @@ const { useState, useEffect, useRef, useMemo } = React;
 
             {activeTab === 'library' && (
               <div className="space-y-4">
+                <div className={`p-4 rounded-2xl border ${t.border} ${t.cardBg} space-y-3.5 shadow-sm`}>
+                  <div className="flex justify-between items-center px-1">
+                    <div>
+                      <h2 className={t.isDark ? "brand-title-dark text-2xl" : "brand-title-light text-2xl"}>Kitob Javoni</h2>
+                      <span className={`text-xs ${t.textSub} font-medium`}>Mening kitoblarim ({books.length} ta)</span>
+                    </div>
+                    <input type="file" accept="application/pdf" ref={fileInputRef} onChange={handlePdfUpload} className="hidden" />
+                    <button onClick={() => fileInputRef.current.click()} disabled={uploadProgress !== null}
+                      className={`text-xs px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 ${t.accent} active:scale-95 transition`}>
+                      <i className="fa-solid fa-file-pdf text-xs"></i>
+                      <span>{uploadProgress !== null ? `${uploadProgress}%` : "+ PDF Qo‘shish"}</span>
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <i className={`fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-xs ${t.textSub}`}></i>
+                    <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Kitoblardan qidirish..."
+                      className={`w-full pl-10 pr-4 py-2.5 text-xs rounded-xl ${t.subtleBg} border ${t.border} ${t.textMain} focus:outline-none focus:border-amber-500`} />
+                  </div>
+                </div>
+
+                {books.length === 0 ? (
+                  <div className="text-center py-16 space-y-3">
+                    <i className={`fa-solid fa-book-open text-4xl ${t.textSub}`}></i>
+                    <p className={`text-sm ${t.textSub}`}>Hozircha kitoblar mavjud emas.</p>
+                    <button onClick={() => fileInputRef.current.click()} className={`text-xs font-bold px-4 py-2 rounded-xl ${t.accent}`}>+ PDF Kitob Yuklash</button>
+                  </div>
+                ) : (
+                  <div className="bookcase">
+                    <div className="bookcase-crown"></div>
+                    <div className="bookcase-back">
+                      {Array.from({ length: Math.max(1, Math.ceil(filteredBooks.length / 5)) }, (_, r) => filteredBooks.slice(r * 5, r * 5 + 5)).map((row, r) => (
+                        <div key={r}>
+                          <div className="shelf-books">
+                            {row.map(b => {
+                              const isCurrent = selectedBook?.id === b.id;
+                              const w = 46 + ((b.title || '').length % 3) * 8;
+                              return (
+                                <div key={b.id} title={b.title}
+                                  style={{ height: 120 + (b.id % 4) * 12, width: w }}
+                                  onClick={() => { setSelectedBook(b); setWordIndex(bookProgressMap[b.id] || 0); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }}
+                                  className={`real-spine bg-gradient-to-b ${b.coverColor} ${isCurrent ? 'sel' : ''}`}>
+                                  <div className="spine-gold" style={{ top: 8 }}></div>
+                                  <div className="spine-gold" style={{ top: 12 }}></div>
+                                  <div className="spine-title relative z-10">{b.title}</div>
+                                  <i className="fa-solid fa-feather-pointed text-[9px] text-amber-300/80 relative z-10"></i>
+                                  <div className="spine-gold" style={{ bottom: 8 }}></div>
+                                  <div className="ribbon-tail"></div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div className="shelf-plank"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedBook && (
+                  <div className={`${t.cardBg} border ${t.border} p-5 rounded-2xl space-y-4 shadow-sm`}>
+                    <div className="flex gap-4 items-center pb-1">
+                      <div className={`book-cover bg-gradient-to-br ${selectedBook.coverColor}`}>
+                        <div className="cover-frame">
+                          <div className="text-[7px] tracking-[.3em] text-amber-300/80 uppercase">Kitob</div>
+                          <div className="cover-title">{selectedBook.title}</div>
+                          <div className="w-6 h-px bg-amber-300/70"></div>
+                          <div className="text-[7px] text-amber-200/80">{selectedBook.author}</div>
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-[10px] uppercase tracking-wider font-bold ${t.accentText}`}>Tanlangan asar</span>
+                          <button onClick={(e) => deleteBook(selectedBook.id, e)} title="Kitobni o'chirish" className="text-xs text-red-500 hover:text-red-600 font-bold px-2 py-0.5 rounded-lg border border-red-500/20 bg-red-500/10">
+                            <i className="fa-solid fa-trash-can mr-1"></i> O‘chirish
+                          </button>
+                        </div>
+                        <h4 className={`text-sm font-bold truncate ${t.textMain}`}>{selectedBook.title}</h4>
+                        <div className={`text-xs ${t.textSub}`}><i className="fa-regular fa-clock text-amber-500 mr-1.5"></i>≈ {Math.max(1, Math.round(wordsList.length / 250))} daq o‘qish</div>
+                        <div className={`text-xs ${t.textSub}`}><i className="fa-solid fa-bookmark text-emerald-400 mr-1.5"></i>Xatcho‘p: {bookProgressMap[selectedBook.id] || 0}-so‘zda</div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 pt-1">
+                      <button onClick={() => { setActiveTab('speed'); }} className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 ${t.accent}`}>
+                        <i className="fa-solid fa-bolt text-xs"></i><span>Tez O‘qish</span>
+                      </button>
+                      <button onClick={() => { setActiveTab('ai_exam'); setQuizIndex(0); setSelectedAnswers({}); setQuizFinished(false); }} className={`py-3 rounded-xl text-xs font-black uppercase tracking-wider border ${t.border} ${t.subtleBg} ${t.textMain} hover:opacity-80 flex items-center justify-center gap-2`}>
+                        <i className={`fa-solid ${showFocus ? 'fa-brain' : 'fa-brain'} ${t.accentText} text-xs`}></i><span>Test / Viktorina</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'speed' && (
+              <div className="space-y-4 pt-1">
+                <div className={`flex justify-between items-center text-sm ${t.textSub}`}>
+                  <span className={`truncate max-w-[200px] font-semibold ${t.textMain}`}>{selectedBook ? selectedBook.title : "Kitob tanlanmagan"}</span>
+                  <span className={`font-mono text-xs ${t.textSub}`}>{wordsList.length > 0 ? wordIndex + 1 : 0} / {wordsList.length}</span>
+                </div>
+
+                <div className={`w-full h-44 md:h-64 rounded-2xl ${t.isDark ? 'rsvp-box-solid-dark' : 'rsvp-box-solid-light'} flex items-center justify-center p-5 relative`}>
+                  {!selectedBook ? (
+                    <div className="text-center space-y-2">
+                      <p className={`text-sm ${t.textSub}`}>Kutubxonadan kitob tanlang yoki yangi PDF yuklang</p>
+                      <button onClick={() => setActiveTab('library')} className={`px-4 py-2 rounded-xl text-xs font-bold ${t.accent}`}>Kutubxonaga o'tish</button>
+                    </div>
+                  ) : wordIndex >= wordsList.length - 1 && wordsList.length > 0 ? (
+                    <div className="text-center space-y-3">
+                      <span className="text-sm font-bold text-emerald-500 block">Kitob to‘liq mutolaa qilindi! 🎉</span>
+                      <button onClick={() => setActiveTab('ai_exam')} className={`px-5 py-2.5 rounded-xl text-xs font-bold ${t.accent}`}>Testni Boshlash</button>
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: `${fontSize}px` }} className={`font-black text-center ${t.textMain} tracking-wide select-none leading-tight transition-all duration-75 px-4`}>
+                      {(() => {
+                        const chunk = wordsList.slice(wordIndex, wordIndex + chunkSize);
+                        if (chunk.length === 0) return "Tayyor";
+                        if (chunkSize === 1) {
+                          const chars = Array.from(chunk[0]);
+                          const mid = Math.floor((chars.length - 1) / 2);
+                          return (<span>{chars.slice(0, mid).join("")}<span className={showFocus ? "text-red-500 rsvp-focus" : ""}>{chars[mid]}</span>{chars.slice(mid + 1).join("")}</span>);
+                        }
+                        if (chunkSize === 2) return <span>{chunk.join(" ")}</span>;
+                        if (chunkSize === 3) {
+                          return (
+                            <span>
+                              {chunk[0]}
+                              {chunk.length > 1 && (<>{" "}<span className={showFocus ? "text-red-500 rsvp-focus" : ""}>{chunk[1]}</span></>)}
+                              {chunk.length > 2 && (<>{" "}{chunk.slice(2).join(" ")}</>)}
+                            </span>
+                          );
+                        }
+                        return chunk.join(" ");
+                      })()}
+                    </span>
+                  )}
+                </div>
+
+                <div className={`${t.cardBg} border ${t.border} p-4 rounded-xl space-y-3 shadow-sm`}>
+                  <div className="flex justify-between text-xs font-medium">
+                    <span className={`${t.textSub} flex items-center gap-1.5`}><i className="fa-solid fa-sliders text-xs"></i> Pozitsiya:</span>
+                    <span className={`${t.textMain} font-bold`}>
+                      {wordsList.length > 0 ? Math.round(((wordIndex + 1) / wordsList.length) * 100) : 0}%
+                      <span className={`${t.textSub} font-normal ml-1`}>({wordIndex + 1}-so‘z)</span>
+                    </span>
+                  </div>
+                  <input type="range" min="0" max={Math.max(0, wordsList.length - 1)} value={wordIndex} onChange={(e) => { setWordIndex(Number(e.target.value)); setIsReadingRunning(false); }} className={`w-full h-2 ${t.sliderBg} rounded-lg appearance-none cursor-pointer ${t.rangeAccent}`} />
+                  <div className={`flex justify-between items-center pt-2 border-t ${t.border} text-xs`}>
+                    <span className={t.textSub}>Tugashiga qolgan vaqt:</span>
+                    <span className={`font-mono font-bold ${t.accentText}`}>~{estMinutes > 0 ? `${estMinutes} daq ` : ''}{estSeconds} soniya</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                    <span className={`text-xs ${t.textSub} font-bold mr-1 whitespace-nowrap`}>Ko‘rinish:</span>
+                    <div className="flex items-center gap-1.5 flex-nowrap">
+                      {[1, 2, 3].map(n => (
+                        <button key={n} onClick={() => setChunkSize(n)} className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] font-bold border transition whitespace-nowrap flex items-center gap-1 ${chunkSize === n ? t.accent : `${t.border} ${t.subtleBg} ${t.textMain}`}`}>
+                          <i className="fa-solid fa-font text-[9px]"></i> {n} ta
+                        </button>
+                      ))}
+                      
+                      <button onClick={toggleFocus} title="Markazdagi qizil harfni yoqish/o‘chirish" className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1.5 border transition whitespace-nowrap ${showFocus ? 'border-red-500/50 bg-red-500/15 text-red-500' : `${t.border} ${t.subtleBg} ${t.textSub}`}`}>
+                        <i className={`fa-solid ${showFocus ? 'fa-eye' : 'fa-eye-slash'} text-[10px]`}></i> Qizil: {showFocus ? 'Yoq' : 'O‘chiq'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between px-1">
+                    <span className={`text-xs ${t.textSub} font-medium`}>Shrift o‘lchami:</span>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setFontSize(p => Math.max(22, p - 4))} className={`w-8 h-8 rounded-lg border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>−</button>
+                      <span className={`text-xs font-bold ${t.textMain} px-1.5 min-w-[2rem] text-center`}>{fontSize}</span>
+                      <button onClick={() => setFontSize(p => Math.min(64, p + 4))} className={`w-8 h-8 rounded-lg border ${t.border} ${t.subtleBg} text-sm font-bold ${t.textMain}`}>+</button>
+                    </div>
+                  </div>
+                </div>
+
                 <div className={`p-2 rounded-2xl border ${t.border} ${t.cardBg} flex gap-2 items-stretch shadow-sm`}>
                   <button onClick={() => setWordIndex(p => Math.max(0, p - (chunkSize * 10)))} className={`flex-1 py-3 rounded-xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
                     <i className="fa-solid fa-backward-step"></i> -10
@@ -1874,7 +2054,7 @@ const { useState, useEffect, useRef, useMemo } = React;
                     <span>{isReadingRunning ? 'To‘xtatish' : 'Boshlash'}</span>
                   </button>
                   <button onClick={() => setWordIndex(p => Math.min(wordsList.length - 1, p + (chunkSize * 10)))} className={`flex-1 py-3 rounded-xl border ${t.border} ${t.subtleBg} text-xs font-bold ${t.textMain} flex items-center justify-center gap-1.5 active:scale-95 transition`}>
-                    +10 <i className="fa-solid fa-forward-step"></i>
+                    +10 <i className="fa-forward-step"></i>
                   </button>
                 </div>
 
